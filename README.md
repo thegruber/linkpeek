@@ -1,6 +1,6 @@
 # linkpeek
 
-**Extract link preview metadata from any URL. One dependency. Stops at `</head>`.**
+**Link preview extraction for Node.js, Bun, and Deno. One dependency.**
 
 [![npm](https://img.shields.io/npm/v/linkpeek)](https://www.npmjs.com/package/linkpeek)
 [![bundle size](https://img.shields.io/bundlephobia/minzip/linkpeek)](https://bundlephobia.com/package/linkpeek)
@@ -11,24 +11,22 @@
 ```typescript
 import { preview } from "linkpeek";
 
-const { title, image, description, siteName } = await preview("https://github.com/thegruber/linkpeek");
-// { title: "thegruber/linkpeek", image: "https://opengraph.githubassets.com/...", ... }
-```
+const result = await preview("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
 
-> **Server-side only.** linkpeek makes outbound HTTP requests and cannot run in browsers. Use it in an API route and return the result to the client.
+result.title;       // "Rick Astley - Never Gonna Give You Up"
+result.image;       // "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg"
+result.siteName;    // "YouTube"
+result.favicon;     // "https://www.youtube.com/favicon.ico"
+result.description; // "The official video for \"Never Gonna Give You Up\"..."
+```
 
 ## Install
 
 ```bash
-# Node.js
 npm install linkpeek
-
-# Bun
-bun add linkpeek
-
-# Deno
-import { preview } from "npm:linkpeek";
 ```
+
+Also works with `bun add linkpeek` and `import { preview } from "npm:linkpeek"` (Deno).
 
 ## Why linkpeek
 
@@ -36,56 +34,13 @@ import { preview } from "npm:linkpeek";
 - **Stops at `</head>`** — downloads 30 KB, not the full 2 MB page
 - **SAX streaming** — no DOM construction, ~2 ms parse time
 - **SSRF protection** — private/internal IPs blocked by default
-- **Runs everywhere** — Node.js 20+, Bun, Deno (tested in CI). Uses only Web Standard APIs, so edge runtimes like Cloudflare Workers should work too
+- **Runs on Node.js 20+, Bun, and Deno** (tested in CI) — uses only Web Standard APIs
 
-## Quick Start
+> linkpeek is server-side only. Use it in an API route and return the result to the client.
 
-```typescript
-import { preview } from "linkpeek";
+## Full Result
 
-const result = await preview("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
-console.log(result.title); // "Rick Astley - Never Gonna Give You Up"
-console.log(result.image); // "https://i.ytimg.com/vi/..."
-console.log(result.siteName); // "YouTube"
-```
-
-Use the `quality` preset for better coverage (body JSON-LD, image fallback, meta-refresh):
-
-```typescript
-import { preview, presets } from "linkpeek";
-
-const result = await preview(url, presets.quality);
-```
-
-## Framework Examples
-
-| Example | Runtime | Description |
-| ------- | ------- | ----------- |
-| [Next.js API Route](./examples/nextjs-app-router) | Node / Edge | App Router route handler + React preview card |
-| [Express](./examples/express-api) | Node | `/api/preview?url=` endpoint |
-| [Cloudflare Worker](./examples/cloudflare-worker) | Edge | Deploy link previews to the edge |
-| [React Component](./examples/react-preview-card) | Browser | `<LinkPreview>` card component |
-| [Supabase Edge Function](./examples/supabase-edge-function) | Deno | Edge function for Supabase projects |
-| [Bun Server](./examples/bun-server) | Bun | Minimal Bun.serve() example |
-
-## Error Handling
-
-`preview()` throws synchronously for invalid input and blocked URLs:
-
-```typescript
-try {
-  const result = await preview(url);
-} catch (err) {
-  // "Invalid URL"
-  // "Only http and https URLs are supported"
-  // "URLs pointing to private/internal networks are not allowed"
-  console.error(err.message);
-}
-```
-
-## Full Result Example
-
-All 19 fields for a YouTube URL:
+All 19 fields extracted from a single URL:
 
 ```typescript
 {
@@ -111,13 +66,46 @@ All 19 fields for a YouTube URL:
 }
 ```
 
+## Presets
+
+```typescript
+import { preview, presets } from "linkpeek";
+
+// Default: fast (30 KB limit, head only, no meta-refresh)
+const result = await preview(url);
+
+// Quality: body JSON-LD + image fallback + meta-refresh
+const result = await preview(url, presets.quality);
+
+// Custom: spread a preset and override
+const result = await preview(url, { ...presets.quality, timeout: 3000 });
+```
+
+| Preset            | What it enables                             |
+| ----------------- | ------------------------------------------- |
+| `presets.fast`    | Default behavior — explicit version of `{}` |
+| `presets.quality` | Body JSON-LD, image fallback, meta-refresh  |
+
+## Error Handling
+
+`preview()` throws for invalid input and blocked URLs:
+
+```typescript
+try {
+  const result = await preview(url);
+} catch (err) {
+  // "Invalid URL"
+  // "Only http and https URLs are supported"
+  // "URLs pointing to private/internal networks are not allowed"
+  console.error(err.message);
+}
+```
+
 ## API
 
 ### `preview(url, options?)`
 
-Fetches a URL and extracts link preview metadata. Uses streaming download with a byte limit and SAX parsing for maximum speed. Handles HTTP redirects and meta-refresh redirects automatically.
-
-Returns `Promise<PreviewResult>`.
+Fetches a URL and extracts link preview metadata. Returns `Promise<PreviewResult>`.
 
 #### Options
 
@@ -158,7 +146,7 @@ Returns `Promise<PreviewResult>`.
 
 ### `parseHTML(html, baseUrl, options?)`
 
-Parses an HTML string and extracts preview metadata. Use this when you already have the HTML content and don't need to fetch it.
+Parses an HTML string directly. Use this when you already have the HTML.
 
 ```typescript
 import { parseHTML } from "linkpeek";
@@ -178,28 +166,6 @@ console.log(result.title); // "Hello"
 
 Returns `PreviewResult`.
 
-## Presets
-
-Two pre-built configs cover the common cases. Presets are plain objects — spread them to override any individual option.
-
-```typescript
-import { preview, presets } from "linkpeek";
-
-// Default: fast preset (30KB, no body scan, no meta-refresh)
-const result = await preview(url);
-
-// Quality: body JSON-LD + image fallback + meta-refresh support
-const result = await preview(url, presets.quality);
-
-// Custom: spread a preset and override individual options
-const result = await preview(url, { ...presets.quality, timeout: 3000 });
-```
-
-| Preset            | What it enables                             |
-| ----------------- | ------------------------------------------- |
-| `presets.fast`    | Default behavior — explicit version of `{}` |
-| `presets.quality` | Body JSON-LD, image fallback, meta-refresh  |
-
 ## How it works
 
 1. **Twitterbot User-Agent** — gets pre-rendered HTML from most platforms, skipping client-side rendering entirely
@@ -207,6 +173,17 @@ const result = await preview(url, { ...presets.quality, timeout: 3000 });
 3. **SAX parsing** — processes HTML as a character stream with no DOM construction. ~2 ms parse time
 4. **Head-first parsing** — all standard metadata is in `<head>`. Body scanning for JSON-LD and `<img>` fallbacks is opt-in via `includeBodyContent: true` (or `presets.quality`)
 5. **Zero extra HTTP calls** — no favicon fetching from Google APIs, no oEmbed resolution by default
+
+## Framework Examples
+
+| Example | Runtime | Description |
+| ------- | ------- | ----------- |
+| [Next.js API Route](./examples/nextjs-app-router) | Node | App Router route handler |
+| [Express](./examples/express-api) | Node | `/api/preview?url=` endpoint |
+| [Cloudflare Worker](./examples/cloudflare-worker) | Edge | Deploy link previews to the edge |
+| [React Component](./examples/react-preview-card) | Browser | `<LinkPreview>` card component |
+| [Supabase Edge Function](./examples/supabase-edge-function) | Deno | Edge function for Supabase projects |
+| [Bun Server](./examples/bun-server) | Bun | Minimal Bun.serve() example |
 
 ## License
 
