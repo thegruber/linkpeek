@@ -29,3 +29,20 @@
 - Fixtures in test/fixtures/ — static HTML for deterministic tests
 - Live URL tests are optional/slow — keep fixture tests fast
 - Run `npm test` before committing
+
+## CI/CD
+- GitHub Actions runs on every push/PR: lint + typecheck + test + build on Node 20 & 22, Bun, and Deno
+- Node 18 is not supported (vitest@4 requires Node 20.12+); `engines.node` is `>=20.0.0`
+- Deno smoke test: `test/deno-smoke.ts` (runs after build against `dist/index.js`)
+
+## Release workflow
+1. Bump version in `package.json`
+2. `npm run build` — confirm `dist/index.js` (ESM) and `dist/index.cjs` (CJS) are emitted
+3. `git tag vX.Y.Z && git push origin vX.Y.Z`
+4. Create GitHub release via `gh release create`
+5. `npm publish` — `prepublishOnly` runs `build` automatically
+
+## Exports gotcha
+`"type": "module"` in package.json means tsup outputs `dist/index.js` as the ESM file — NOT `dist/index.mjs`.
+The exports map must use `"import": "./dist/index.js"` and `"module": "./dist/index.js"`.
+Never change these back to `.mjs` — that file is never written.
