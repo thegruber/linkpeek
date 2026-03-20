@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>JSON-LD Graph Page</title>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "name": "Graph Site",
+        "url": "https://example.com"
+      },
+      {
+        "@type": "BlogPosting",
+        "headline": "Graph Blog Post Title",
+        "description": "Description from the graph blog posting.",
+        "image": "https://example.com/images/graph-post.jpg",
+        "author": {
+          "@type": "Person",
+          "name": "John Smith"
+        },
+        "datePublished": "2025-09-01T12:00:00Z"
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <h1>Graph Page</h1>
+</body>
+</html>

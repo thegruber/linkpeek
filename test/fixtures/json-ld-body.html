@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Fallback Title</title>
+</head>
+<body>
+	<h1>Article Content</h1>
+	<script type="application/ld+json">
+	{
+		"@context": "https://schema.org",
+		"@type": "NewsArticle",
+		"headline": "Breaking News From Body JSON-LD",
+		"image": {
+			"@type": "ImageObject",
+			"url": "https://example.com/images/body-jsonld.jpg"
+		},
+		"author": [
+			{"@type": "Person", "name": "Alice Johnson"},
+			{"@type": "Person", "name": "Bob Williams"}
+		],
+		"publisher": {
+			"@type": "Organization",
+			"name": "Daily News"
+		},
+		"datePublished": "2025-11-01T09:00:00Z"
+	}
+	</script>
+</body>
+</html>
