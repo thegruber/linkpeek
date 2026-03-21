@@ -40,14 +40,16 @@ Also works with `bun add linkpeek` and `import { preview } from "npm:linkpeek"` 
 
 ## Full Result
 
-All 19 fields extracted from a single URL:
+All 22 fields extracted from a single URL:
 
 ```typescript
 {
   url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  statusCode: 200,
   title: "Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)",
   description: "The official video for \"Never Gonna Give You Up\" by Rick Astley...",
   image: "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
+  imageAlt: null,
   imageWidth: 1280,
   imageHeight: 720,
   siteName: "YouTube",
@@ -60,6 +62,7 @@ All 19 fields extracted from a single URL:
   video: "https://www.youtube.com/embed/dQw4w9WgXcQ",
   twitterCard: "player",
   twitterSite: "@youtube",
+  twitterCreator: null,
   themeColor: null,
   keywords: ["rick astley", "Never Gonna Give You Up", "rick roll"],
   oEmbedUrl: "https://www.youtube.com/oembed?format=json&url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DdQw4w9WgXcQ"
@@ -122,27 +125,30 @@ Fetches a URL and extracts link preview metadata. Returns `Promise<PreviewResult
 
 #### Result Fields
 
-| Field           | Type               | Description                                                                                                                                             |
-| --------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `url`           | `string`           | Final resolved URL                                                                                                                                      |
-| `title`         | `string \| null`   | Page title (`og:title` → `twitter:title` → JSON-LD → `<title>`)                                                                                         |
-| `description`   | `string \| null`   | Description (`og:description` → `twitter:description` → `meta[name=description]` → JSON-LD)                                                             |
-| `image`         | `string \| null`   | Preview image (`og:image` → `twitter:image` → JSON-LD → `itemprop=image` → first `<img>`)                                                               |
-| `imageWidth`    | `number \| null`   | Image width from `og:image:width`                                                                                                                       |
-| `imageHeight`   | `number \| null`   | Image height from `og:image:height`                                                                                                                     |
-| `siteName`      | `string`           | Site name (`og:site_name` → JSON-LD publisher → hostname fallback)                                                                                      |
-| `favicon`       | `string \| null`   | Favicon URL (largest `apple-touch-icon` → `link[rel=icon]` → `/favicon.ico`)                                                                            |
-| `mediaType`     | `string`           | Content type from `og:type`, defaults to `"website"`                                                                                                    |
-| `author`        | `string \| null`   | Author name (JSON-LD author → `meta[name=author]` → Dublin Core)                                                                                        |
-| `canonicalUrl`  | `string`           | Canonical URL (`link[rel=canonical]` → `og:url` → request URL)                                                                                          |
-| `locale`        | `string \| null`   | Locale from `og:locale`                                                                                                                                 |
-| `publishedDate` | `string \| null`   | Published date (`article:published_time` → JSON-LD `datePublished` → Dublin Core)                                                                       |
-| `video`         | `string \| null`   | Video URL from `og:video`                                                                                                                               |
-| `twitterCard`   | `string \| null`   | Twitter card type (`summary`, `player`, `summary_large_image`)                                                                                          |
-| `twitterSite`   | `string \| null`   | Twitter @handle from `twitter:site`                                                                                                                     |
-| `themeColor`    | `string \| null`   | Theme color from `meta[name=theme-color]`                                                                                                               |
-| `keywords`      | `string[] \| null` | Keywords from `meta[name=keywords]`                                                                                                                     |
-| `oEmbedUrl`     | `string \| null`   | Discovered oEmbed endpoint URL from `<link rel="alternate" type="application/json+oembed">`. Not fetched — returned for the caller to resolve if needed |
+| Field            | Type               | Description                                                                                                                                             |
+| ---------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `url`            | `string`           | Final resolved URL                                                                                                                                      |
+| `statusCode`     | `number`           | HTTP status code (200, 301, 404, etc.). Returns `0` when using `parseHTML()` directly                                                                   |
+| `title`          | `string \| null`   | Page title (`og:title` → `twitter:title` → JSON-LD → `<title>`)                                                                                         |
+| `description`    | `string \| null`   | Description (`og:description` → `twitter:description` → `meta[name=description]` → JSON-LD)                                                             |
+| `image`          | `string \| null`   | Preview image (`og:image` → `twitter:image` → JSON-LD → `itemprop=image` → first `<img>`)                                                               |
+| `imageAlt`       | `string \| null`   | Image alt text (`og:image:alt` → `twitter:image:alt`)                                                                                                   |
+| `imageWidth`     | `number \| null`   | Image width from `og:image:width`                                                                                                                       |
+| `imageHeight`    | `number \| null`   | Image height from `og:image:height`                                                                                                                     |
+| `siteName`       | `string`           | Site name (`og:site_name` → JSON-LD publisher → hostname fallback)                                                                                      |
+| `favicon`        | `string \| null`   | Favicon URL (largest `apple-touch-icon` → `link[rel=icon]` → `/favicon.ico`)                                                                            |
+| `mediaType`      | `string`           | Content type from `og:type`, defaults to `"website"`                                                                                                    |
+| `author`         | `string \| null`   | Author name (JSON-LD author → `meta[name=author]` → Dublin Core)                                                                                        |
+| `canonicalUrl`   | `string`           | Canonical URL (`link[rel=canonical]` → `og:url` → request URL)                                                                                          |
+| `locale`         | `string \| null`   | Locale from `og:locale`                                                                                                                                 |
+| `publishedDate`  | `string \| null`   | Published date (`article:published_time` → JSON-LD `datePublished` → Dublin Core)                                                                       |
+| `video`          | `string \| null`   | Video URL from `og:video`                                                                                                                               |
+| `twitterCard`    | `string \| null`   | Twitter card type (`summary`, `player`, `summary_large_image`)                                                                                          |
+| `twitterSite`    | `string \| null`   | Twitter @handle from `twitter:site`                                                                                                                     |
+| `twitterCreator` | `string \| null`   | Author's Twitter @handle from `twitter:creator`                                                                                                         |
+| `themeColor`     | `string \| null`   | Theme color from `meta[name=theme-color]`                                                                                                               |
+| `keywords`       | `string[] \| null` | Keywords from `meta[name=keywords]`                                                                                                                     |
+| `oEmbedUrl`      | `string \| null`   | Discovered oEmbed endpoint URL from `<link rel="alternate" type="application/json+oembed">`. Not fetched — returned for the caller to resolve if needed |
 
 ### `parseHTML(html, baseUrl, options?)`
 

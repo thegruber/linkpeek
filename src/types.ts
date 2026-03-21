@@ -27,9 +27,11 @@ export interface PreviewOptions {
 
 export interface PreviewResult {
 	url: string;
+	statusCode: number;
 	title: string | null;
 	description: string | null;
 	image: string | null;
+	imageAlt: string | null;
 	imageWidth: number | null;
 	imageHeight: number | null;
 	siteName: string;
@@ -42,6 +44,7 @@ export interface PreviewResult {
 	video: string | null;
 	twitterCard: string | null;
 	twitterSite: string | null;
+	twitterCreator: string | null;
 	themeColor: string | null;
 	keywords: string[] | null;
 	oEmbedUrl: string | null;

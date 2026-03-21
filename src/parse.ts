@@ -324,6 +324,8 @@ export function parseHTML(
 
 	const twitterCard = get("twitter:card") || null;
 	const twitterSite = get("twitter:site") || null;
+	const twitterCreator = get("twitter:creator") || null;
+	const imageAlt = get("og:image:alt", "twitter:image:alt") || null;
 	const themeColor = get("theme-color") || null;
 
 	const keywordsRaw = get("keywords");
@@ -336,9 +338,11 @@ export function parseHTML(
 
 	const result: PreviewResult = {
 		url: canonicalUrl,
+		statusCode: 0,
 		title,
 		description,
 		image,
+		imageAlt,
 		imageWidth: Number.isNaN(imageWidth) ? null : imageWidth,
 		imageHeight: Number.isNaN(imageHeight) ? null : imageHeight,
 		siteName,
@@ -351,6 +355,7 @@ export function parseHTML(
 		video,
 		twitterCard,
 		twitterSite,
+		twitterCreator,
 		themeColor,
 		keywords,
 		oEmbedUrl: resolveUrl(oEmbedUrl, baseUrl),

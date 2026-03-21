@@ -255,6 +255,18 @@ describe("parseHTML", () => {
 			// JSON-LD author is checked first in the code
 			expect(result.author).toBe("JSON-LD Author");
 		});
+
+		it("has imageAlt from og:image:alt", () => {
+			expect(result.imageAlt).toBe("OG image alt text");
+		});
+
+		it("has twitterCreator", () => {
+			expect(result.twitterCreator).toBe("@fieldauthor");
+		});
+
+		it("defaults statusCode to 0 for parseHTML", () => {
+			expect(result.statusCode).toBe(0);
+		});
 	});
 
 	describe("empty.html", () => {
@@ -659,5 +671,40 @@ describe("edge cases", () => {
 		expect(result.image).toBe("https://example.com/img.jpg");
 		expect(result.imageWidth).toBeNull();
 		expect(result.imageHeight).toBeNull();
+	});
+
+	it("prefers og:image:alt over twitter:image:alt", () => {
+		const html = `<head>
+			<meta property="og:image:alt" content="OG alt">
+			<meta name="twitter:image:alt" content="Twitter alt">
+		</head>`;
+		const r = parseHTML(html, BASE);
+		expect(r.imageAlt).toBe("OG alt");
+	});
+
+	it("falls back to twitter:image:alt when og:image:alt missing", () => {
+		const html = `<head>
+			<meta name="twitter:image:alt" content="Twitter alt fallback">
+		</head>`;
+		const r = parseHTML(html, BASE);
+		expect(r.imageAlt).toBe("Twitter alt fallback");
+	});
+
+	it("returns null for imageAlt when absent", () => {
+		const r = parseHTML(loadFixture("minimal.html"), BASE);
+		expect(r.imageAlt).toBeNull();
+	});
+
+	it("returns null for twitterCreator when absent", () => {
+		const r = parseHTML(loadFixture("minimal.html"), BASE);
+		expect(r.twitterCreator).toBeNull();
+	});
+
+	it("extracts twitter:creator handle", () => {
+		const html = `<head>
+			<meta name="twitter:creator" content="@johndoe">
+		</head>`;
+		const r = parseHTML(html, BASE);
+		expect(r.twitterCreator).toBe("@johndoe");
 	});
 });

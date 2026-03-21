@@ -1,6 +1,6 @@
 {
 	"name": "linkpeek",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"description": "Lightweight link preview and Open Graph metadata extractor for Node.js, Bun, and Deno. Extracts og tags, Twitter Cards, and JSON-LD from any URL.",
 	"type": "module",
 	"exports": {

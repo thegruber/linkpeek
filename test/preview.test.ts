@@ -10,6 +10,7 @@ describe("preview()", () => {
 		expect(result.title).toBeTruthy();
 		expect(result.siteName).toBeTruthy();
 		expect(result.image).toBeTruthy();
+		expect(result.statusCode).toBe(200);
 	});
 
 	it("returns image field for a direct image URL", {
@@ -20,6 +21,7 @@ describe("preview()", () => {
 		const result = await preview(imageUrl);
 		expect(result.image).toBe(imageUrl);
 		expect(result.title).toBeNull();
+		expect(result.statusCode).toBe(200);
 	});
 
 	it("throws on invalid URL", async () => {

@@ -57,6 +57,7 @@ export interface FetchResult {
 	finalUrl: string;
 	contentType: string;
 	isHtml: boolean;
+	statusCode: number;
 }
 
 /**
@@ -89,12 +90,13 @@ export async function fetchUrl(
 		});
 
 		const finalUrl = response.url || url;
+		const statusCode = response.status;
 		const contentType = response.headers.get("content-type") || "";
 		const isHtml =
 			contentType.includes("text/html") || contentType.includes("xhtml");
 
 		if (!isHtml || !response.body) {
-			return { html: "", finalUrl, contentType, isHtml };
+			return { html: "", finalUrl, contentType, isHtml, statusCode };
 		}
 
 		// Stream body with byte limit
@@ -130,7 +132,7 @@ export async function fetchUrl(
 			html = new TextDecoder("utf-8", { fatal: false }).decode(combined);
 		}
 
-		return { html, finalUrl, contentType, isHtml };
+		return { html, finalUrl, contentType, isHtml, statusCode };
 	} finally {
 		clearTimeout(timer);
 	}

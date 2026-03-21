@@ -35,16 +35,21 @@ export async function preview(
 	url: string,
 	options: PreviewOptions = {},
 ): Promise<PreviewResult> {
-	const { html, finalUrl, contentType, isHtml } = await fetchUrl(url, options);
+	const { html, finalUrl, contentType, isHtml, statusCode } = await fetchUrl(
+		url,
+		options,
+	);
 
 	// Non-HTML response
 	if (!isHtml) {
 		const hostname = safeHostname(finalUrl);
 		return {
 			url: finalUrl,
+			statusCode,
 			title: null,
 			description: null,
 			image: contentType.startsWith("image/") ? finalUrl : null,
+			imageAlt: null,
 			imageWidth: null,
 			imageHeight: null,
 			siteName: hostname,
@@ -57,6 +62,7 @@ export async function preview(
 			video: contentType.startsWith("video/") ? finalUrl : null,
 			twitterCard: null,
 			twitterSite: null,
+			twitterCreator: null,
 			themeColor: null,
 			keywords: null,
 			oEmbedUrl: null,
@@ -65,6 +71,7 @@ export async function preview(
 
 	let result = parseHTML(html, finalUrl, options);
 	result.url = finalUrl;
+	result.statusCode = statusCode;
 
 	// Handle meta-refresh redirects (e.g. Cloudflare challenge pages)
 	// Wrapped in try/catch so a failed redirect doesn't discard partial results
@@ -77,6 +84,7 @@ export async function preview(
 				if (refreshed.isHtml) {
 					result = parseHTML(refreshed.html, refreshed.finalUrl, options);
 					result.url = refreshed.finalUrl;
+					result.statusCode = refreshed.statusCode;
 				}
 			} catch {
 				// Meta-refresh target unreachable or blocked — return what we have
