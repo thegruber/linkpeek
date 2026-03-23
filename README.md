@@ -8,6 +8,19 @@
 [![types](https://img.shields.io/npm/types/linkpeek)](https://www.npmjs.com/package/linkpeek)
 [![license](https://img.shields.io/npm/l/linkpeek)](LICENSE)
 
+<p align="center">
+  <img src="./assets/preview.png" alt="linkpeek in action" width="820" />
+</p>
+
+<p align="center">
+  <a href="https://github.com/thegruber">
+    <img src="https://img.shields.io/github/followers/thegruber?label=Follow%20%40thegruber&style=social" />
+  </a>
+  <a href="https://twitter.com/adrgruber">
+    <img src="https://img.shields.io/twitter/follow/adrgruber?style=social" />
+  </a>
+</p>
+
 ```typescript
 import { preview } from "linkpeek";
 
