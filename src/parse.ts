@@ -41,6 +41,7 @@ export function parseHTML(
 	let imageSrcHref: string | null = null;
 	let itempropImage: string | null = null;
 	let oEmbedUrl: string | null = null;
+	let htmlLang: string | null = null;
 	let metaRefreshUrl: string | null = null;
 	let firstBodyImage: string | null = null;
 	let inTitle = false;
@@ -79,6 +80,10 @@ export function parseHTML(
 					return;
 				}
 				if (headClosed) return;
+
+				if (name === "html" && attrs.lang && !htmlLang) {
+					htmlLang = attrs.lang;
+				}
 
 				if (name === "meta") {
 					const prop =
@@ -321,6 +326,9 @@ export function parseHTML(
 		null;
 
 	const video = get("og:video", "og:video:url", "og:video:secure_url") || null;
+	const audio = get("og:audio", "og:audio:url", "og:audio:secure_url") || null;
+	const lang =
+		htmlLang || get("content-language") || (locale ? locale.split("_")[0] : null);
 
 	const twitterCard = get("twitter:card") || null;
 	const twitterSite = get("twitter:site") || null;
@@ -348,16 +356,18 @@ export function parseHTML(
 		siteName,
 		favicon,
 		mediaType,
-		author,
 		canonicalUrl,
+		author,
 		locale,
+		lang,
 		publishedDate,
+		keywords,
 		video,
+		audio,
 		twitterCard,
 		twitterSite,
 		twitterCreator,
 		themeColor,
-		keywords,
 		oEmbedUrl: resolveUrl(oEmbedUrl, baseUrl),
 	};
 

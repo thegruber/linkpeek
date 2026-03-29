@@ -1,4 +1,4 @@
-# Contributing to link-preview-fast
+# Contributing to linkpeek
 
 Thanks for your interest in contributing.
 

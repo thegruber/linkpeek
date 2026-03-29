@@ -46,6 +46,10 @@ describe("parseHTML", () => {
 		it("extracts og:locale", () => {
 			expect(result.locale).toBe("en_US");
 		});
+
+		it("extracts lang from html element", () => {
+			expect(result.lang).toBe("en");
+		});
 	});
 
 	describe("twitter-card.html", () => {
@@ -706,5 +710,64 @@ describe("edge cases", () => {
 		</head>`;
 		const r = parseHTML(html, BASE);
 		expect(r.twitterCreator).toBe("@johndoe");
+	});
+});
+
+describe("audio-lang.html — og:audio and lang", () => {
+	const result = parseHTML(loadFixture("audio-lang.html"), BASE);
+
+	it("extracts og:audio", () => {
+		expect(result.audio).toBe("https://example.com/podcast/ep42.mp3");
+	});
+
+	it("extracts lang from html element", () => {
+		expect(result.lang).toBe("de");
+	});
+});
+
+describe("lang fallback chain", () => {
+	it("prefers html lang over content-language", () => {
+		const html = `<html lang="fr"><head>
+			<meta http-equiv="content-language" content="en">
+		</head></html>`;
+		const r = parseHTML(html, BASE);
+		expect(r.lang).toBe("fr");
+	});
+
+	it("falls back to content-language meta tag", () => {
+		const html = `<html><head>
+			<meta http-equiv="content-language" content="ja">
+		</head></html>`;
+		const r = parseHTML(html, BASE);
+		expect(r.lang).toBe("ja");
+	});
+
+	it("falls back to locale prefix when no lang or content-language", () => {
+		const html = `<html><head>
+			<meta property="og:locale" content="pt_BR">
+		</head></html>`;
+		const r = parseHTML(html, BASE);
+		expect(r.lang).toBe("pt");
+	});
+
+	it("returns null when no lang info is available", () => {
+		const html = "<html><head><title>No lang</title></head></html>";
+		const r = parseHTML(html, BASE);
+		expect(r.lang).toBeNull();
+	});
+});
+
+describe("audio edge cases", () => {
+	it("returns null when no og:audio exists", () => {
+		const r = parseHTML(loadFixture("og-standard.html"), BASE);
+		expect(r.audio).toBeNull();
+	});
+
+	it("extracts og:audio:secure_url", () => {
+		const html = `<html><head>
+			<meta property="og:audio:secure_url" content="https://example.com/audio.mp3">
+		</head></html>`;
+		const r = parseHTML(html, BASE);
+		expect(r.audio).toBe("https://example.com/audio.mp3");
 	});
 });

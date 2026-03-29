@@ -1,6 +1,6 @@
 {
 	"name": "linkpeek",
-	"version": "1.0.4",
+	"version": "1.1.0",
 	"description": "Lightweight link preview and Open Graph metadata extractor for Node.js, Bun, and Deno. Extracts og tags, Twitter Cards, and JSON-LD from any URL.",
 	"type": "module",
 	"exports": {
@@ -57,7 +57,7 @@
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/thegruber/linkpeek"
+		"url": "git+https://github.com/thegruber/linkpeek.git"
 	},
 	"homepage": "https://github.com/thegruber/linkpeek#readme",
 	"bugs": {
@@ -67,7 +67,7 @@
 		"node": ">=20.0.0"
 	},
 	"dependencies": {
-		"htmlparser2": "^11.0.0"
+		"htmlparser2": "^12.0.0"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.4.8",

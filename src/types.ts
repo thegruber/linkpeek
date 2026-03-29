@@ -37,15 +37,17 @@ export interface PreviewResult {
 	siteName: string;
 	favicon: string | null;
 	mediaType: string;
-	author: string | null;
 	canonicalUrl: string;
+	author: string | null;
 	locale: string | null;
+	lang: string | null;
 	publishedDate: string | null;
+	keywords: string[] | null;
 	video: string | null;
+	audio: string | null;
 	twitterCard: string | null;
 	twitterSite: string | null;
 	twitterCreator: string | null;
 	themeColor: string | null;
-	keywords: string[] | null;
 	oEmbedUrl: string | null;
 }

@@ -12,15 +12,6 @@
   <img src="./assets/preview.png" alt="linkpeek in action" width="820" />
 </p>
 
-<p align="center">
-  <a href="https://github.com/thegruber">
-    <img src="https://img.shields.io/github/followers/thegruber?label=Follow%20%40thegruber&style=social" />
-  </a>
-  <a href="https://twitter.com/adrgruber">
-    <img src="https://img.shields.io/twitter/follow/adrgruber?style=social" />
-  </a>
-</p>
-
 ```typescript
 import { preview } from "linkpeek";
 
@@ -43,46 +34,15 @@ Also works with `bun add linkpeek` and `import { preview } from "npm:linkpeek"` 
 
 ## Why linkpeek
 
+Most link preview libraries depend on Cheerio, build a full DOM, download the entire page, and only run on Node. linkpeek takes a different approach:
+
 - **1 dependency** (htmlparser2) — not 4, not a plugin tree
-- **Stops at `</head>`** — downloads 30 KB, not the full 2 MB page
+- **Stops at `</head>`** — streams 30 KB, not the full 2 MB page
 - **SAX streaming** — no DOM construction, ~2 ms parse time
 - **SSRF protection** — private/internal IPs blocked by default
-- **Runs on Node.js 20+, Bun, and Deno** (tested in CI) — uses only Web Standard APIs
+- **Runs everywhere** — Node.js 20+, Bun, Deno, and edge runtimes (tested in CI)
 
 > **Note:** linkpeek should be used server-side only. Use it in an API route and return the result to the client.
-
----
-
-## Full Result
-
-All 22 fields extracted from a single URL:
-
-```typescript
-{
-  url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-  statusCode: 200,
-  title: "Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)",
-  description: "The official video for \"Never Gonna Give You Up\" by Rick Astley...",
-  image: "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
-  imageAlt: null,
-  imageWidth: 1280,
-  imageHeight: 720,
-  siteName: "YouTube",
-  favicon: "https://www.youtube.com/favicon.ico",
-  mediaType: "video.other",
-  author: null,
-  canonicalUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-  locale: null,
-  publishedDate: null,
-  video: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-  twitterCard: "player",
-  twitterSite: "@youtube",
-  twitterCreator: null,
-  themeColor: null,
-  keywords: ["rick astley", "Never Gonna Give You Up", "rick roll"],
-  oEmbedUrl: "https://www.youtube.com/oembed?format=json&url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DdQw4w9WgXcQ"
-}
-```
 
 ## Presets
 
@@ -104,7 +64,7 @@ const result = await preview(url, { ...presets.quality, timeout: 3000 });
 | `presets.fast`    | Default behavior — explicit version of `{}` |
 | `presets.quality` | Body JSON-LD, image fallback, meta-refresh  |
 
-## Error Handling
+## Error handling
 
 `preview()` throws for invalid input and blocked URLs:
 
@@ -153,16 +113,18 @@ Fetches a URL and extracts link preview metadata. Returns `Promise<PreviewResult
 | `siteName`       | `string`           | Site name (`og:site_name` → JSON-LD publisher → hostname fallback)                                                                                      |
 | `favicon`        | `string \| null`   | Favicon URL (largest `apple-touch-icon` → `link[rel=icon]` → `/favicon.ico`)                                                                            |
 | `mediaType`      | `string`           | Content type from `og:type`, defaults to `"website"`                                                                                                    |
-| `author`         | `string \| null`   | Author name (JSON-LD author → `meta[name=author]` → Dublin Core)                                                                                        |
 | `canonicalUrl`   | `string`           | Canonical URL (`link[rel=canonical]` → `og:url` → request URL)                                                                                          |
+| `author`         | `string \| null`   | Author name (JSON-LD author → `meta[name=author]` → Dublin Core)                                                                                        |
 | `locale`         | `string \| null`   | Locale from `og:locale`                                                                                                                                 |
+| `lang`           | `string \| null`   | Language code (`<html lang>` → `<meta http-equiv="content-language">` → `og:locale` prefix)                                                             |
 | `publishedDate`  | `string \| null`   | Published date (`article:published_time` → JSON-LD `datePublished` → Dublin Core)                                                                       |
+| `keywords`       | `string[] \| null` | Keywords from `meta[name=keywords]`                                                                                                                     |
 | `video`          | `string \| null`   | Video URL from `og:video`                                                                                                                               |
+| `audio`          | `string \| null`   | Audio URL from `og:audio`                                                                                                                               |
 | `twitterCard`    | `string \| null`   | Twitter card type (`summary`, `player`, `summary_large_image`)                                                                                          |
 | `twitterSite`    | `string \| null`   | Twitter @handle from `twitter:site`                                                                                                                     |
 | `twitterCreator` | `string \| null`   | Author's Twitter @handle from `twitter:creator`                                                                                                         |
 | `themeColor`     | `string \| null`   | Theme color from `meta[name=theme-color]`                                                                                                               |
-| `keywords`       | `string[] \| null` | Keywords from `meta[name=keywords]`                                                                                                                     |
 | `oEmbedUrl`      | `string \| null`   | Discovered oEmbed endpoint URL from `<link rel="alternate" type="application/json+oembed">`. Not fetched — returned for the caller to resolve if needed |
 
 ### `parseHTML(html, baseUrl, options?)`
@@ -187,41 +149,6 @@ console.log(result.title); // "Hello"
 
 Returns `PreviewResult`.
 
----
+## Examples
 
-## How it works
-
-1. **Twitterbot User-Agent** — gets pre-rendered HTML from most platforms, skipping client-side rendering entirely
-
-2. **Streaming download with byte limit** — aborts after 30 KB (default). OG tags live in the first 10-30 KB; YouTube pages are 2 MB+ but we never download more than needed
-
-3. **SAX parsing** — processes HTML as a character stream with no DOM construction. ~2 ms parse time
-
-4. **Head-first parsing** — all standard metadata is in `<head>`. Body scanning for JSON-LD and `<img>` fallbacks is opt-in via `includeBodyContent: true` (or `presets.quality`)
-
-5. **Zero extra HTTP calls** — no favicon fetching from Google APIs, no oEmbed resolution by default
-
----
-
-## Framework Examples
-
-| Example | Runtime | Description |
-| ------- | ------- | ----------- |
-| [Next.js API Route](./examples/nextjs-app-router) | Node | App Router route handler |
-| [Express](./examples/express-api) | Node | `/api/preview?url=` endpoint |
-| [Cloudflare Worker](./examples/cloudflare-worker) | Edge | Deploy link previews to the edge |
-| [React Component](./examples/react-preview-card) | Browser | `<LinkPreview>` card component |
-| [Supabase Edge Function](./examples/supabase-edge-function) | Deno | Edge function for Supabase projects |
-| [Bun Server](./examples/bun-server) | Bun | Minimal Bun.serve() example |
-
-## License
-
-MIT
-
-## Contributing
-
-Contributions are welcome. Please read `CONTRIBUTING.md` before opening a pull request.
-
-## Security
-
-If you discover a vulnerability, please follow the reporting process in `SECURITY.md`.
+Framework examples for [Next.js, Express, Cloudflare Workers, React, Supabase, and Bun](./examples).
