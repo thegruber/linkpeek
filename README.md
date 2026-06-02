@@ -55,13 +55,29 @@ linkpeek focuses on server-side preview cards: fetch a URL, read only enough HTM
 
 > linkpeek is intended for server-side use. Put it behind an API route and return only the metadata your client needs.
 
+## Use cases
+
+- Chat and messaging apps that need Slack-style link cards
+- Social feeds, bookmarking tools, and link-curation products
+- Newsletter and CMS workflows that preview outbound links
+- AI agents or RAG tools that unfurl URLs before summarizing or ranking them
+
 ## When to use linkpeek
 
 Use linkpeek when you already have a URL and need a small, safe preview-card result for a server-side or edge-runtime app. It is designed for Open Graph, Twitter Card, JSON-LD, canonical URL, favicon, media URL, and oEmbed discovery.
 
 Use a broader scraper package when you need article text extraction, provider-specific scraping rules, text-to-first-URL parsing, or automatic fetching of oEmbed payloads.
 
-See [docs/comparison.md](https://github.com/thegruber/linkpeek/blob/main/docs/comparison.md) for short tradeoffs against broader scraper packages.
+Quick comparison:
+
+| Package | Good fit | Tradeoff vs linkpeek |
+| --- | --- | --- |
+| `link-preview-js` | Extracting previews from a URL or first URL in text | Broader text-input API; less focused on edge-runtime and safe-by-default fetching |
+| `open-graph-scraper` | Node Open Graph/Twitter Card scraping with broader options | Node-oriented and larger dependency surface |
+| `metascraper` | Rule-based article metadata extraction | More powerful framework; more setup and dependencies |
+| `unfurl.js` | Rich nested metadata with fetched oEmbed support | Richer output; not focused on small edge-runtime preview cards |
+
+See [docs/comparison.md](https://github.com/thegruber/linkpeek/blob/main/docs/comparison.md) for positioning and claim policy.
 
 ## Presets
 
@@ -83,16 +99,94 @@ const custom = await preview(url, { ...presets.quality, timeout: 3000 });
 | `presets.fast` | Default behavior: 30 KB, head-only, no meta-refresh |
 | `presets.quality` | 200 KB, body JSON-LD, body image fallback, meta-refresh |
 
+## Framework recipes
+
+Full examples are in [examples](./examples). These are the shortest versions.
+
+### Next.js App Router
+
+```typescript
+// app/api/preview/route.ts
+import { preview } from "linkpeek";
+import { type NextRequest, NextResponse } from "next/server";
+
+export async function GET(req: NextRequest) {
+  const url = req.nextUrl.searchParams.get("url");
+  if (!url) return NextResponse.json({ error: "Missing url" }, { status: 400 });
+
+  try {
+    return NextResponse.json(await preview(url));
+  } catch (err) {
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Preview failed" },
+      { status: 422 },
+    );
+  }
+}
+```
+
+### Express
+
+```typescript
+import express from "express";
+import { preview } from "linkpeek";
+
+const app = express();
+
+app.get("/api/preview", async (req, res) => {
+  const url = typeof req.query.url === "string" ? req.query.url : "";
+  if (!url) return res.status(400).json({ error: "Missing url" });
+
+  try {
+    res.json(await preview(url));
+  } catch (err) {
+    res.status(422).json({
+      error: err instanceof Error ? err.message : "Preview failed",
+    });
+  }
+});
+```
+
+### Cloudflare Workers
+
+```typescript
+import { preview } from "linkpeek";
+
+export default {
+  async fetch(request: Request): Promise<Response> {
+    const url = new URL(request.url).searchParams.get("url");
+    if (!url) return Response.json({ error: "Missing url" }, { status: 400 });
+
+    try {
+      const result = await preview(url);
+      return Response.json(result, {
+        headers: { "Cache-Control": "public, max-age=3600" },
+      });
+    } catch (err) {
+      return Response.json(
+        { error: err instanceof Error ? err.message : "Preview failed" },
+        { status: 422 },
+      );
+    }
+  },
+};
+```
+
+Use [examples/react-preview-card](./examples/react-preview-card) for a browser component that renders the API response into a preview card.
+
 ## Security Defaults
 
 `preview()` validates the initial URL and every HTTP redirect before fetching the next target. By default it blocks localhost, private networks, link-local/cloud metadata ranges, multicast/reserved IP ranges, and IPv6 address forms that embed private IPv4 targets.
 
-Keep these rules for production:
+## Production checklist
 
 - Do not forward user cookies, authorization headers, or internal service tokens to arbitrary preview URLs. `headers` rejects common credential-bearing header names.
 - Keep `allowPrivateIPs` set to `false` unless the caller is trusted and the network path is intentionally internal.
 - Treat returned metadata as untrusted text and URLs. linkpeek filters extracted media/canonical/oEmbed URLs to `http:` and `https:`.
 - Runtime `fetch` implementations still own DNS resolution. DNS rebinding protection can vary by platform.
+- Cache successful previews by normalized URL so repeated page views do not refetch the same target.
+- Tune `timeout` and `maxBytes` for your infrastructure. The default preset favors fast preview cards; `presets.quality` trades more bytes for body fallbacks.
+- Handle `statusCode` and thrown errors with a generic broken-link card instead of blocking the whole page.
 
 ## Error Handling
 
