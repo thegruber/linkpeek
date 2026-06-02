@@ -1,6 +1,8 @@
 import { Parser } from "htmlparser2";
-import { decodeEntities, resolveUrl } from "./resolve.js";
+import { decodeEntities, resolveHttpUrl } from "./resolve.js";
 import type { PreviewOptions, PreviewResult } from "./types.js";
+
+const FALLBACK_BASE_URL = "https://example.com/";
 
 interface JsonLdData {
 	title: string | null;
@@ -23,6 +25,10 @@ function strProp(obj: unknown, key: string): string | null {
 	return str((obj as Record<string, unknown>)[key]);
 }
 
+function relTokens(rel: string | undefined): Set<string> {
+	return new Set((rel || "").toLowerCase().split(/\s+/).filter(Boolean));
+}
+
 /**
  * Parse HTML string and extract link preview metadata.
  * Uses SAX streaming for maximum speed — stops at </head>.
@@ -42,16 +48,22 @@ export function parseHTML(
 	let itempropImage: string | null = null;
 	let oEmbedUrl: string | null = null;
 	let htmlLang: string | null = null;
-	let metaRefreshUrl: string | null = null;
 	let firstBodyImage: string | null = null;
 	let inTitle = false;
 	let inJsonLd = false;
 	let jsonLdBuf = "";
 	let headClosed = false;
+	const safeBaseUrl =
+		resolveHttpUrl(baseUrl, FALLBACK_BASE_URL) || FALLBACK_BASE_URL;
 
 	const parser = new Parser(
 		{
 			onopentag(name, attrs) {
+				if (name === "body") {
+					headClosed = true;
+					return;
+				}
+
 				// JSON-LD: capture in head AND body (body only when includeBodyContent is enabled)
 				if (name === "script" && (attrs.type || "").includes("ld+json")) {
 					if (!headClosed || options?.includeBodyContent === true) {
@@ -91,14 +103,7 @@ export function parseHTML(
 					const content = attrs.content;
 					if (content && prop) {
 						const key = prop.toLowerCase();
-						meta[key] = content;
-						// Detect meta-refresh during SAX pass (avoids re-scanning)
-						if (key === "refresh" && !metaRefreshUrl) {
-							const m = content.match(
-								/^\s*\d+\s*;\s*url\s*=\s*['"]?([^'">\s]+)/i,
-							);
-							if (m?.[1]) metaRefreshUrl = m[1];
-						}
+						if (meta[key] === undefined) meta[key] = content;
 					}
 					// itemprop="image" fallback (Schema.org microdata)
 					if (attrs.itemprop === "image" && attrs.content && !itempropImage) {
@@ -107,21 +112,16 @@ export function parseHTML(
 				}
 
 				if (name === "link") {
-					const rel = (attrs.rel || "").toLowerCase();
+					const rel = relTokens(attrs.rel);
 					const href = attrs.href;
 
 					// Favicon
-					if (
-						href &&
-						(rel === "icon" ||
-							rel === "shortcut icon" ||
-							rel === "apple-touch-icon")
-					) {
+					if (href && (rel.has("icon") || rel.has("apple-touch-icon"))) {
 						const sizes = attrs.sizes || "";
 						const sizeMatch = sizes.match(/(\d+)x(\d+)/);
 						const size = sizeMatch
 							? Number.parseInt(sizeMatch[1], 10)
-							: rel === "apple-touch-icon"
+							: rel.has("apple-touch-icon")
 								? 180
 								: 0;
 						if (size >= faviconSize) {
@@ -131,19 +131,19 @@ export function parseHTML(
 					}
 
 					// Canonical URL
-					if (href && rel === "canonical") {
+					if (href && rel.has("canonical")) {
 						canonicalHref = href;
 					}
 
 					// Legacy image_src (old Facebook protocol)
-					if (href && rel === "image_src") {
+					if (href && rel.has("image_src")) {
 						imageSrcHref = href;
 					}
 
 					// oEmbed discovery
 					if (
 						href &&
-						rel === "alternate" &&
+						rel.has("alternate") &&
 						(attrs.type || "").toLowerCase().includes("oembed") &&
 						!oEmbedUrl
 					) {
@@ -251,9 +251,9 @@ export function parseHTML(
 
 	let parsedUrl: URL;
 	try {
-		parsedUrl = new URL(baseUrl);
+		parsedUrl = new URL(safeBaseUrl);
 	} catch {
-		parsedUrl = new URL("https://example.com");
+		parsedUrl = new URL(FALLBACK_BASE_URL);
 	}
 
 	const title =
@@ -283,7 +283,7 @@ export function parseHTML(
 		(itempropImage ? decodeEntities(itempropImage) : null) ||
 		(firstBodyImage ? decodeEntities(firstBodyImage) : null) ||
 		null;
-	const image = resolveUrl(rawImage, baseUrl);
+	const image = resolveHttpUrl(rawImage, safeBaseUrl);
 
 	const imageWidthRaw = get("og:image:width");
 	const imageHeightRaw = get("og:image:height");
@@ -298,7 +298,8 @@ export function parseHTML(
 		parsedUrl.hostname.replace(/^www\./, "");
 
 	const favicon =
-		resolveUrl(faviconHref, baseUrl) || resolveUrl("/favicon.ico", baseUrl);
+		resolveHttpUrl(faviconHref, safeBaseUrl) ||
+		resolveHttpUrl("/favicon.ico", safeBaseUrl);
 
 	const mediaType = get("og:type") || "website";
 
@@ -315,7 +316,9 @@ export function parseHTML(
 		null;
 
 	const canonicalUrl =
-		resolveUrl(canonicalHref, baseUrl) || get("og:url") || baseUrl;
+		resolveHttpUrl(canonicalHref, safeBaseUrl) ||
+		resolveHttpUrl(get("og:url"), safeBaseUrl) ||
+		safeBaseUrl;
 
 	const locale = get("og:locale") || null;
 
@@ -325,8 +328,14 @@ export function parseHTML(
 		get("dc.date", "dcterms.date") ||
 		null;
 
-	const video = get("og:video", "og:video:url", "og:video:secure_url") || null;
-	const audio = get("og:audio", "og:audio:url", "og:audio:secure_url") || null;
+	const video = resolveHttpUrl(
+		get("og:video", "og:video:url", "og:video:secure_url"),
+		safeBaseUrl,
+	);
+	const audio = resolveHttpUrl(
+		get("og:audio", "og:audio:url", "og:audio:secure_url"),
+		safeBaseUrl,
+	);
 	const lang =
 		htmlLang ||
 		get("content-language") ||
@@ -370,24 +379,49 @@ export function parseHTML(
 		twitterSite,
 		twitterCreator,
 		themeColor,
-		oEmbedUrl: resolveUrl(oEmbedUrl, baseUrl),
+		oEmbedUrl: resolveHttpUrl(oEmbedUrl, safeBaseUrl),
 	};
 
 	return result;
 }
 
 /**
- * Extract meta-refresh redirect URL detected during SAX parsing.
- * Exported separately so index.ts can use SAX-detected value first,
- * falling back to regex only if needed.
+ * Extract meta-refresh redirect URLs without depending on attribute order.
  */
 export function extractMetaRefreshUrl(
 	html: string,
 	baseUrl: string,
 ): string | null {
-	const match = html.match(
-		/<meta[^>]+http-equiv\s*=\s*["']?refresh["']?[^>]+content\s*=\s*["']?\d+\s*;\s*url\s*=\s*['"]?([^'">\s]+)/i,
+	let refreshUrl: string | null = null;
+	const parser = new Parser(
+		{
+			onopentag(name, attrs) {
+				if (refreshUrl || name !== "meta") return;
+				if ((attrs["http-equiv"] || "").toLowerCase() !== "refresh") return;
+				refreshUrl = parseMetaRefreshContent(attrs.content, baseUrl);
+			},
+		},
+		{
+			decodeEntities: true,
+			lowerCaseTags: true,
+			lowerCaseAttributeNames: true,
+		},
 	);
-	if (!match?.[1]) return null;
-	return resolveUrl(match[1], baseUrl);
+
+	parser.write(html);
+	parser.end();
+
+	return refreshUrl;
+}
+
+function parseMetaRefreshContent(
+	content: string | undefined,
+	baseUrl: string,
+): string | null {
+	if (!content) return null;
+	const match = content.match(
+		/^\s*\d+(?:\.\d+)?\s*;\s*url\s*=\s*(?:"([^"]+)"|'([^']+)'|([^'">\s]+))/i,
+	);
+	const target = match?.[1] ?? match?.[2] ?? match?.[3];
+	return resolveHttpUrl(target?.trim(), baseUrl);
 }

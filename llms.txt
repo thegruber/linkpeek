@@ -1,0 +1,24 @@
+# linkpeek
+
+> Lightweight, secure TypeScript link preview and URL metadata extractor for Open Graph, Twitter Cards, JSON-LD, oEmbed discovery, Node.js, Bun, Deno, and edge runtimes.
+
+linkpeek is best for server-side preview cards when an application already has a URL. It is not an article text extractor, browser automation scraper, or oEmbed payload fetcher. Use `preview()` to fetch and extract metadata, or `parseHTML()` when HTML is already available. Private/internal IP targets are blocked by default.
+
+## Core Documentation
+
+- [README](https://github.com/thegruber/linkpeek#readme): Install, API, presets, security defaults, and examples.
+- [Comparison notes](https://github.com/thegruber/linkpeek/blob/main/docs/comparison.md): Short tradeoffs against broader scraper packages.
+- [Security policy](https://github.com/thegruber/linkpeek/blob/main/SECURITY.md): Security model and vulnerability reporting.
+- [Examples](https://github.com/thegruber/linkpeek/tree/main/examples): Next.js, Express, Cloudflare Workers, React, Supabase Edge Functions, and Bun examples.
+
+## Source
+
+- [Public API](https://github.com/thegruber/linkpeek/blob/main/src/index.ts): `preview`, `parseHTML`, and presets.
+- [Types](https://github.com/thegruber/linkpeek/blob/main/src/types.ts): Options and result interfaces.
+- [Fetch security](https://github.com/thegruber/linkpeek/blob/main/src/fetch.ts): Redirect validation, byte limits, and private IP blocking.
+- [Parser](https://github.com/thegruber/linkpeek/blob/main/src/parse.ts): Open Graph, Twitter Card, JSON-LD, favicon, canonical, media, and oEmbed extraction.
+
+## Package
+
+- [npm package](https://www.npmjs.com/package/linkpeek): Published package.
+- [GitHub repository](https://github.com/thegruber/linkpeek): Source, issues, and releases.

@@ -7,7 +7,7 @@ export interface PreviewOptions {
 	userAgent?: string;
 	/** Follow HTTP redirects (default: true) */
 	followRedirects?: boolean;
-	/** Extra request headers */
+	/** Extra non-sensitive request headers. Common credential-bearing headers are rejected. */
 	headers?: Record<string, string>;
 	/** Allow fetching private/internal IPs (default: false) */
 	allowPrivateIPs?: boolean;

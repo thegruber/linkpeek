@@ -2,8 +2,9 @@ import { describe, expect, it } from "vitest";
 import { preview } from "../src/index.js";
 
 const TIMEOUT = 20_000;
+const liveTestsEnabled = process.env.LINKPEEK_LIVE_TESTS === "1";
 
-describe.skipIf(!!process.env.CI)("live URL extraction quality", () => {
+describe.skipIf(!liveTestsEnabled)("live URL extraction quality", () => {
 	it(
 		"YouTube video",
 		async () => {

@@ -4,10 +4,10 @@ Thanks for your interest in contributing.
 
 ## Development setup
 
-1. Install dependencies:
+1. Install dependencies from the committed npm lockfile:
 
 ```bash
-npm install
+npm ci
 ```
 
 2. Run quality checks:
@@ -16,12 +16,15 @@ npm install
 npm run lint
 npm run typecheck
 npm test
+npm run build
+npm run package:check
+npm run benchmark
 ```
 
-3. Build package output:
+3. Run live URL tests only when intentionally checking network extraction quality:
 
 ```bash
-npm run build
+LINKPEEK_LIVE_TESTS=1 npm run test
 ```
 
 ## Development guidelines
@@ -33,7 +36,11 @@ npm run build
   - early exits where possible
 - Add tests for every behavior change.
 - Prefer fixture-based tests for determinism.
+- Keep live URL tests opt-in; CI should not depend on third-party websites.
 - Keep public API changes backward compatible unless a major release is intended.
+- Keep npm as the source of truth for installs and publishing.
+- Do not commit generated tarballs or non-npm lockfiles.
+- Keep benchmark and competitor claims tied to reproducible commands in `docs/comparison.md`.
 
 ## Pull request checklist
 
@@ -41,8 +48,12 @@ npm run build
 - [ ] `npm run lint` passes
 - [ ] `npm run typecheck` passes
 - [ ] `npm test` passes
+- [ ] `npm run build` passes
+- [ ] `npm run package:check` passes
+- [ ] `npm audit` passes
+- [ ] `npm run benchmark` passes (if performance, package-size, or comparison docs changed)
 - [ ] README updated (if behavior/API changed)
-- [ ] Changelog entry added (if you maintain one)
+- [ ] Changelog entry added
 
 ## Commit style
 
@@ -62,4 +73,3 @@ Please include:
 - expected metadata vs actual metadata
 - Node.js version
 - minimal reproducible snippet
-

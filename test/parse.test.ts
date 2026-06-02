@@ -330,6 +330,13 @@ describe("extractMetaRefreshUrl", () => {
 			"https://example.com/new-page",
 		);
 	});
+
+	it("extracts meta refresh URLs regardless of attribute order", () => {
+		const html = '<meta content="0; url=/new-page" http-equiv="refresh">';
+		expect(extractMetaRefreshUrl(html, BASE)).toBe(
+			"https://example.com/new-page",
+		);
+	});
 });
 
 describe("fallback chain", () => {
@@ -367,6 +374,75 @@ describe("fallback chain", () => {
 		</head><body></body></html>`;
 		const result = parseHTML(html, BASE);
 		expect(result.title).toBe("HTML Title");
+	});
+});
+
+describe("duplicate metadata precedence", () => {
+	it("keeps the first Open Graph value for duplicate tags", () => {
+		const html = `<!DOCTYPE html><html><head>
+			<meta property="og:title" content="First Title">
+			<meta property="og:title" content="Second Title">
+			<meta property="og:image" content="https://example.com/first.jpg">
+			<meta property="og:image" content="https://example.com/second.jpg">
+		</head></html>`;
+		const result = parseHTML(html, BASE);
+		expect(result.title).toBe("First Title");
+		expect(result.image).toBe("https://example.com/first.jpg");
+	});
+});
+
+describe("safe metadata URL resolution", () => {
+	it("drops unsafe URL schemes from extracted media fields", () => {
+		const html = `<!DOCTYPE html><html><head>
+			<meta property="og:image" content="javascript:alert(1)">
+			<meta property="og:video" content="data:text/html,unsafe">
+			<meta property="og:audio" content="file:///tmp/audio.mp3">
+			<link rel="icon" href="javascript:alert(2)">
+			<link rel="alternate" type="application/json+oembed" href="data:application/json,{}">
+		</head></html>`;
+		const result = parseHTML(html, BASE);
+		expect(result.image).toBeNull();
+		expect(result.video).toBeNull();
+		expect(result.audio).toBeNull();
+		expect(result.favicon).toBe("https://example.com/favicon.ico");
+		expect(result.oEmbedUrl).toBeNull();
+	});
+
+	it("falls back when canonical URLs use unsafe schemes", () => {
+		const html = `<!DOCTYPE html><html><head>
+			<link rel="canonical" href="javascript:alert(1)">
+			<meta property="og:url" content="/safe-canonical">
+		</head></html>`;
+		const result = parseHTML(html, BASE);
+		expect(result.canonicalUrl).toBe("https://example.com/safe-canonical");
+	});
+
+	it("does not return unsafe base URLs from the public parser", () => {
+		const result = parseHTML(
+			"<html><head><title>Unsafe Base</title></head></html>",
+			"javascript:alert(1)",
+		);
+
+		expect(result.url).toBe("https://example.com/");
+		expect(result.canonicalUrl).toBe("https://example.com/");
+	});
+
+	it("uses the safe fallback base for relative metadata URLs", () => {
+		const html = `<!DOCTYPE html><html><head>
+			<meta property="og:image" content="/image.jpg">
+			<meta property="og:video" content="/video.mp4">
+			<meta property="og:audio" content="/audio.mp3">
+			<link rel="icon" href="/favicon.ico">
+			<link rel="alternate" type="application/json+oembed" href="/oembed.json">
+		</head></html>`;
+
+		const result = parseHTML(html, "javascript:alert(1)");
+
+		expect(result.image).toBe("https://example.com/image.jpg");
+		expect(result.video).toBe("https://example.com/video.mp4");
+		expect(result.audio).toBe("https://example.com/audio.mp3");
+		expect(result.favicon).toBe("https://example.com/favicon.ico");
+		expect(result.oEmbedUrl).toBe("https://example.com/oembed.json");
 	});
 });
 
@@ -471,6 +547,22 @@ describe("oEmbed discovery", () => {
 		</head></html>`;
 		const result = parseHTML(html, BASE);
 		expect(result.oEmbedUrl).toBe("https://example.com/oembed?url=test");
+	});
+});
+
+describe("link rel token parsing", () => {
+	it("handles multi-token rel values for canonical, icon, and oEmbed", () => {
+		const html = `<html><head>
+			<link rel="alternate canonical" href="/canonical-token">
+			<link rel="icon shortcut" href="/favicon-token.ico">
+			<link rel="alternate something" type="application/json+oembed" href="/oembed-token">
+		</head></html>`;
+
+		const result = parseHTML(html, BASE);
+
+		expect(result.canonicalUrl).toBe("https://example.com/canonical-token");
+		expect(result.favicon).toBe("https://example.com/favicon-token.ico");
+		expect(result.oEmbedUrl).toBe("https://example.com/oembed-token");
 	});
 });
 
@@ -645,13 +737,13 @@ describe("edge cases", () => {
 		expect(result.title).toBe("Still Works");
 	});
 
-	it("handles duplicate meta tags (last wins)", () => {
+	it("handles duplicate meta tags (first wins)", () => {
 		const html = `<html><head>
 			<meta property="og:title" content="First">
 			<meta property="og:title" content="Second">
 		</head></html>`;
 		const result = parseHTML(html, BASE);
-		expect(result.title).toBe("Second");
+		expect(result.title).toBe("First");
 	});
 
 	it("ignores meta tags after </head>", () => {
@@ -662,6 +754,18 @@ describe("edge cases", () => {
 		</body></html>`;
 		const result = parseHTML(html, BASE);
 		expect(result.title).toBe("In Head");
+		expect(result.description).toBeNull();
+	});
+
+	it("does not treat body metadata as head metadata when </head> is omitted", () => {
+		const html = `<html><body>
+			<meta property="og:title" content="Body Title">
+			<meta name="description" content="Body description">
+		</body></html>`;
+
+		const result = parseHTML(html, BASE);
+
+		expect(result.title).toBeNull();
 		expect(result.description).toBeNull();
 	});
 

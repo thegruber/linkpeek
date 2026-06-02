@@ -68,3 +68,21 @@ export function resolveUrl(
 		return null;
 	}
 }
+
+/**
+ * Resolve a URL and only return browser-safe network URLs.
+ */
+export function resolveHttpUrl(
+	path: string | null | undefined,
+	base: string,
+): string | null {
+	const resolved = resolveUrl(path, base);
+	if (!resolved) return null;
+
+	try {
+		const protocol = new URL(resolved).protocol;
+		return protocol === "http:" || protocol === "https:" ? resolved : null;
+	} catch {
+		return null;
+	}
+}

@@ -1,0 +1,41 @@
+name: Metadata mismatch
+description: Report incorrect or missing preview metadata for a URL.
+title: "metadata: "
+labels: ["metadata"]
+body:
+  - type: input
+    id: url
+    attributes:
+      label: URL
+      description: The public URL being previewed. Do not include private URLs or credentials.
+      placeholder: "https://example.com/article"
+    validations:
+      required: true
+  - type: textarea
+    id: code
+    attributes:
+      label: Minimal code
+      render: typescript
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected metadata
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual metadata
+    validations:
+      required: true
+  - type: dropdown
+    id: live-tested
+    attributes:
+      label: Live test enabled?
+      options:
+        - "Yes, reproduced with LINKPEEK_LIVE_TESTS=1"
+        - "No"
+    validations:
+      required: true

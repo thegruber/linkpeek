@@ -6,3 +6,8 @@ coverage
 *.tsbuildinfo
 .claude/
 .DS_Store
+*.tgz
+pnpm-lock.yaml
+bun.lock
+bun.lockb
+yarn.lock

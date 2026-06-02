@@ -88,6 +88,38 @@ describe("validateUrl", () => {
 		expect(() => validateUrl("http://[fe80::1]")).toThrow("private");
 	});
 
+	it("blocks IPv4-mapped IPv6 loopback", () => {
+		expect(() => validateUrl("http://[::ffff:127.0.0.1]")).toThrow("private");
+	});
+
+	it("blocks IPv4-mapped IPv6 private networks", () => {
+		expect(() => validateUrl("http://[::ffff:10.0.0.1]")).toThrow("private");
+	});
+
+	it("blocks IPv6 translation prefixes embedding private IPv4 addresses", () => {
+		expect(() => validateUrl("http://[64:ff9b::a9fe:a9fe]")).toThrow("private");
+		expect(() => validateUrl("http://[2002:a9fe:a9fe::1]")).toThrow("private");
+	});
+
+	it("blocks IPv4-translated IPv6 literals embedding private IPv4 addresses", () => {
+		expect(() => validateUrl("http://[::ffff:0:10.0.0.1]")).toThrow("private");
+		expect(() => validateUrl("http://[::ffff:0:127.0.0.1]")).toThrow("private");
+		expect(() => validateUrl("http://[::ffff:0:169.254.169.254]")).toThrow(
+			"private",
+		);
+	});
+
+	it("blocks multicast and reserved IPv4 ranges", () => {
+		expect(() => validateUrl("http://224.0.0.1")).toThrow("private");
+		expect(() => validateUrl("http://240.0.0.1")).toThrow("private");
+		expect(() => validateUrl("http://255.255.255.255")).toThrow("private");
+	});
+
+	it("blocks carrier-grade NAT and benchmarking ranges", () => {
+		expect(() => validateUrl("http://100.64.0.1")).toThrow("private");
+		expect(() => validateUrl("http://198.18.0.1")).toThrow("private");
+	});
+
 	it("allows public IPs when allowPrivateIPs is false", () => {
 		expect(() => validateUrl("http://8.8.8.8")).not.toThrow();
 		expect(() => validateUrl("http://93.184.216.34")).not.toThrow();
@@ -110,5 +142,6 @@ describe("isPrivateHost", () => {
 	it("returns false for public hostnames", () => {
 		expect(isPrivateHost("example.com")).toBe(false);
 		expect(isPrivateHost("google.com")).toBe(false);
+		expect(isPrivateHost("2001:4860:4860::8888")).toBe(false);
 	});
 });

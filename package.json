@@ -1,30 +1,43 @@
 {
 	"name": "linkpeek",
-	"version": "1.1.0",
-	"description": "Lightweight link preview and Open Graph metadata extractor for Node.js, Bun, and Deno. Extracts og tags, Twitter Cards, and JSON-LD from any URL.",
+	"version": "2.0.0",
+	"description": "Lightweight, secure link preview and URL metadata extractor for Open Graph, Twitter Cards, JSON-LD, and edge runtimes.",
 	"type": "module",
 	"exports": {
 		".": {
-			"types": "./dist/index.d.ts",
-			"import": "./dist/index.js",
-			"require": "./dist/index.cjs"
+			"import": {
+				"types": "./dist/index.d.ts",
+				"default": "./dist/index.js"
+			},
+			"require": {
+				"types": "./dist/index.d.cts",
+				"default": "./dist/index.cjs"
+			}
 		}
 	},
 	"main": "./dist/index.cjs",
 	"module": "./dist/index.js",
 	"types": "./dist/index.d.ts",
 	"files": [
-		"dist"
+		"dist",
+		"llms.txt"
 	],
+	"packageManager": "npm@11.12.1",
 	"sideEffects": false,
 	"scripts": {
 		"build": "tsup",
+		"benchmark": "npm run build --silent && node scripts/benchmark.mjs",
+		"benchmark:live": "npm run build --silent && LINKPEEK_LIVE_TESTS=1 node scripts/benchmark.mjs --live",
 		"test": "vitest run",
+		"test:live": "LINKPEEK_LIVE_TESTS=1 vitest run",
 		"test:watch": "vitest",
 		"lint": "biome check .",
 		"lint:fix": "biome check --write .",
+		"package:check": "npm run build --silent && publint && attw --pack . && npm pack --dry-run",
+		"publish:check": "npm run lint && npm run typecheck && npm run test && npm audit && npm run build --silent",
+		"quality": "npm run lint && npm run typecheck && npm run test && npm audit && npm run package:check",
 		"typecheck": "tsc --noEmit",
-		"prepublishOnly": "npm run build"
+		"prepublishOnly": "npm run publish:check"
 	},
 	"keywords": [
 		"link-preview",
@@ -41,17 +54,34 @@
 		"jsonld",
 		"metadata",
 		"meta tags",
-		"meta",
 		"unfurl",
 		"url metadata",
-		"url",
 		"scraper",
 		"parser",
 		"extractor",
-		"preview",
 		"oembed",
-		"lightweight",
-		"html"
+		"html",
+		"metadata extraction",
+		"metadata extractor",
+		"metadata-extractor",
+		"extract-metadata",
+		"meta-tags",
+		"open graph scraper",
+		"og scraper",
+		"node",
+		"nodejs",
+		"bun",
+		"deno",
+		"typescript",
+		"cloudflare-workers",
+		"ssrf",
+		"security",
+		"link unfurl",
+		"url unfurl",
+		"preview card",
+		"social preview",
+		"edge runtime",
+		"cloudflare worker"
 	],
 	"author": "Adrian Gruber",
 	"license": "MIT",
@@ -64,15 +94,17 @@
 		"url": "https://github.com/thegruber/linkpeek/issues"
 	},
 	"engines": {
-		"node": ">=20.0.0"
+		"node": ">=22.0.0"
 	},
 	"dependencies": {
 		"htmlparser2": "^12.0.0"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^2.4.8",
-		"tsup": "^8.0.0",
-		"typescript": "^5.5.0",
-		"vitest": "^4.1.0"
+		"@arethetypeswrong/cli": "^0.18.3",
+		"@biomejs/biome": "^2.4.16",
+		"publint": "^0.3.21",
+		"tsup": "^8.5.1",
+		"typescript": "^6.0.3",
+		"vitest": "^4.1.8"
 	}
 }

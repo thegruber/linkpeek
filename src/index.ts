@@ -9,7 +9,7 @@ import type { PreviewOptions, PreviewResult } from "./types.js";
 export const presets = {
 	/**
 	 * Maximum speed — default behavior.
-	 * 30KB limit, no body scan, no meta-refresh. 687ms avg, 69% quality.
+	 * 30KB limit, no body scan, no meta-refresh.
 	 */
 	fast: {
 		followMetaRefresh: false,
@@ -18,7 +18,7 @@ export const presets = {
 	} satisfies PreviewOptions,
 	/**
 	 * Best quality — opt-in.
-	 * 200KB limit, body JSON-LD + image fallback, meta-refresh support. 792ms avg, 75% quality.
+	 * 200KB limit, body JSON-LD + image fallback, meta-refresh support.
 	 */
 	quality: {
 		followMetaRefresh: true,
@@ -43,26 +43,27 @@ export async function preview(
 	// Non-HTML response
 	if (!isHtml) {
 		const hostname = safeHostname(finalUrl);
+		const mediaTypeHeader = contentType.toLowerCase().split(";", 1)[0].trim();
 		return {
 			url: finalUrl,
 			statusCode,
 			title: null,
 			description: null,
-			image: contentType.startsWith("image/") ? finalUrl : null,
+			image: mediaTypeHeader.startsWith("image/") ? finalUrl : null,
 			imageAlt: null,
 			imageWidth: null,
 			imageHeight: null,
 			siteName: hostname,
 			favicon: null,
-			mediaType: contentType.split("/")[0] || "website",
+			mediaType: mediaTypeHeader.split("/")[0] || "website",
 			canonicalUrl: finalUrl,
 			author: null,
 			locale: null,
 			lang: null,
 			publishedDate: null,
 			keywords: null,
-			video: contentType.startsWith("video/") ? finalUrl : null,
-			audio: contentType.startsWith("audio/") ? finalUrl : null,
+			video: mediaTypeHeader.startsWith("video/") ? finalUrl : null,
+			audio: mediaTypeHeader.startsWith("audio/") ? finalUrl : null,
 			twitterCard: null,
 			twitterSite: null,
 			twitterCreator: null,
