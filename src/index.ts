@@ -1,3 +1,6 @@
+export type { LinkpeekErrorCode } from "./errors.js";
+export { LinkpeekError } from "./errors.js";
+export { isPrivateHost, validateUrl } from "./fetch.js";
 export { parseHTML } from "./parse.js";
 export type { PreviewOptions, PreviewResult } from "./types.js";
 
@@ -40,45 +43,25 @@ export async function preview(
 		options,
 	);
 
-	// Non-HTML response
+	// Non-HTML response: synthesize a minimal result from the content type
 	if (!isHtml) {
-		const hostname = safeHostname(finalUrl);
+		const result = emptyResult(finalUrl, statusCode, safeHostname(finalUrl));
 		const mediaTypeHeader = contentType.toLowerCase().split(";", 1)[0].trim();
-		return {
-			url: finalUrl,
-			statusCode,
-			title: null,
-			description: null,
-			image: mediaTypeHeader.startsWith("image/") ? finalUrl : null,
-			imageAlt: null,
-			imageWidth: null,
-			imageHeight: null,
-			siteName: hostname,
-			favicon: null,
-			mediaType: mediaTypeHeader.split("/")[0] || "website",
-			canonicalUrl: finalUrl,
-			author: null,
-			locale: null,
-			lang: null,
-			publishedDate: null,
-			keywords: null,
-			video: mediaTypeHeader.startsWith("video/") ? finalUrl : null,
-			audio: mediaTypeHeader.startsWith("audio/") ? finalUrl : null,
-			twitterCard: null,
-			twitterSite: null,
-			twitterCreator: null,
-			themeColor: null,
-			oEmbedUrl: null,
-		};
+		result.mediaType = mediaTypeHeader.split("/")[0] || "website";
+		if (mediaTypeHeader.startsWith("image/")) result.image = finalUrl;
+		if (mediaTypeHeader.startsWith("video/")) result.video = finalUrl;
+		if (mediaTypeHeader.startsWith("audio/")) result.audio = finalUrl;
+		return result;
 	}
 
 	let result = parseHTML(html, finalUrl, options);
 	result.url = finalUrl;
 	result.statusCode = statusCode;
 
-	// Handle meta-refresh redirects (e.g. Cloudflare challenge pages)
+	// Handle meta-refresh redirects (e.g. interstitial or challenge pages).
+	// Only fast refreshes (<= 10s) count as redirects; slow ones are reloads.
 	// Wrapped in try/catch so a failed redirect doesn't discard partial results
-	if (!result.title && options.followMetaRefresh === true) {
+	if (options.followMetaRefresh === true) {
 		const refreshUrl = extractMetaRefreshUrl(html, finalUrl);
 		if (refreshUrl && refreshUrl !== finalUrl) {
 			try {
@@ -96,6 +79,39 @@ export async function preview(
 	}
 
 	return result;
+}
+
+function emptyResult(
+	url: string,
+	statusCode: number,
+	siteName: string,
+): PreviewResult {
+	return {
+		url,
+		statusCode,
+		title: null,
+		description: null,
+		image: null,
+		imageAlt: null,
+		imageWidth: null,
+		imageHeight: null,
+		siteName,
+		favicon: null,
+		mediaType: "website",
+		canonicalUrl: url,
+		author: null,
+		locale: null,
+		lang: null,
+		publishedDate: null,
+		keywords: null,
+		video: null,
+		audio: null,
+		twitterCard: null,
+		twitterSite: null,
+		twitterCreator: null,
+		themeColor: null,
+		oEmbedUrl: null,
+	};
 }
 
 function safeHostname(url: string): string {

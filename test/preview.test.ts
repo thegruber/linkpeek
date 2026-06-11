@@ -53,4 +53,77 @@ describe("preview()", () => {
 		expect(result.image).toBe("https://example.com/image.png");
 		expect(result.mediaType).toBe("image");
 	});
+
+	it("follows meta-refresh interstitials even when they have a title", async () => {
+		const interstitial = `<html><head>
+			<title>Just a moment...</title>
+			<meta http-equiv="refresh" content="0; url=https://example.com/real">
+		</head></html>`;
+		const destination = `<html><head>
+			<title>Real Title</title>
+		</head></html>`;
+		const fetchMock = vi
+			.fn()
+			.mockResolvedValueOnce(
+				new Response(interstitial, {
+					status: 200,
+					headers: { "content-type": "text/html" },
+				}),
+			)
+			.mockResolvedValueOnce(
+				new Response(destination, {
+					status: 200,
+					headers: { "content-type": "text/html" },
+				}),
+			);
+		vi.stubGlobal("fetch", fetchMock);
+
+		const result = await preview("https://example.com/start", {
+			followMetaRefresh: true,
+		});
+
+		expect(fetchMock).toHaveBeenCalledTimes(2);
+		expect(result.title).toBe("Real Title");
+		expect(result.url).toBe("https://example.com/real");
+	});
+
+	it("does not refetch slow meta refreshes", async () => {
+		const page = `<html><head>
+			<title>Liveblog</title>
+			<meta http-equiv="refresh" content="60; url=https://example.com/reload">
+		</head></html>`;
+		const fetchMock = vi.fn(
+			async () =>
+				new Response(page, {
+					status: 200,
+					headers: { "content-type": "text/html" },
+				}),
+		);
+		vi.stubGlobal("fetch", fetchMock);
+
+		const result = await preview("https://example.com/start", {
+			followMetaRefresh: true,
+		});
+
+		expect(fetchMock).toHaveBeenCalledTimes(1);
+		expect(result.title).toBe("Liveblog");
+	});
+
+	it("returns the HTTP status code for non-2xx HTML responses", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(
+				async () =>
+					new Response("<html><head><title>Not Found</title></head></html>", {
+						status: 404,
+						headers: { "content-type": "text/html" },
+					}),
+			),
+		);
+
+		const result = await preview("https://example.com/missing");
+
+		expect(result.statusCode).toBe(404);
+		expect(result.title).toBe("Not Found");
+	});
 });

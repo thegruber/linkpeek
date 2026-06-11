@@ -31,6 +31,18 @@ describe("decodeEntities", () => {
 		expect(decodeEntities("&unknownentity;")).toBe("&unknownentity;");
 	});
 
+	it("replaces out-of-range numeric entities instead of throwing", () => {
+		expect(decodeEntities("&#x110000;")).toBe("�");
+		expect(decodeEntities("&#1114112;")).toBe("�");
+		expect(decodeEntities("&#x7FFFFFFF;")).toBe("�");
+	});
+
+	it("replaces surrogate code points instead of producing lone surrogates", () => {
+		expect(decodeEntities("&#xD800;")).toBe("�");
+		expect(decodeEntities("&#xDFFF;")).toBe("�");
+		expect(decodeEntities("&#55296;")).toBe("�");
+	});
+
 	it("decodes common named entities", () => {
 		expect(decodeEntities("&nbsp;")).toBe("\u00A0");
 		expect(decodeEntities("&copy;")).toBe("\u00A9");

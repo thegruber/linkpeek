@@ -337,6 +337,81 @@ describe("extractMetaRefreshUrl", () => {
 			"https://example.com/new-page",
 		);
 	});
+
+	it("ignores slow refreshes that are not redirects", () => {
+		const html = '<meta http-equiv="refresh" content="30; url=/slow-reload">';
+		expect(extractMetaRefreshUrl(html, BASE)).toBeNull();
+		const daily = '<meta http-equiv="refresh" content="86400;url=/daily">';
+		expect(extractMetaRefreshUrl(daily, BASE)).toBeNull();
+	});
+
+	it("accepts comma-separated refresh content", () => {
+		const html = '<meta http-equiv="refresh" content="0, url=/comma-page">';
+		expect(extractMetaRefreshUrl(html, BASE)).toBe(
+			"https://example.com/comma-page",
+		);
+	});
+});
+
+describe("entity handling (single decode)", () => {
+	it("does not decode entities twice", () => {
+		const html = `<html><head>
+			<meta property="og:title" content="X &amp;amp; Y">
+		</head></html>`;
+		const result = parseHTML(html, BASE);
+		expect(result.title).toBe("X &amp; Y");
+	});
+
+	it("does not crash on resurrected out-of-range numeric entities", () => {
+		const html = `<html><head>
+			<meta property="og:title" content="&amp;#x110000;">
+		</head></html>`;
+		const result = parseHTML(html, BASE);
+		expect(result.title).toBe("&#x110000;");
+	});
+
+	it("decodes normally-encoded entities exactly once", () => {
+		const html = `<html><head>
+			<meta property="og:title" content="Tom &amp; Jerry">
+			<title>A &lt; B</title>
+		</head></html>`;
+		const result = parseHTML(html, BASE);
+		expect(result.title).toBe("Tom & Jerry");
+	});
+});
+
+describe("JSON-LD @graph robustness", () => {
+	it("extracts from an object-valued @graph without dropping the script", () => {
+		const html = `<html><head>
+			<script type="application/ld+json">{"@graph": {"name": "Solo Node", "description": "From graph object"}}</script>
+		</head></html>`;
+		const result = parseHTML(html, BASE);
+		expect(result.title).toBe("Solo Node");
+		expect(result.description).toBe("From graph object");
+	});
+
+	it("inspects root-level properties alongside @graph items", () => {
+		const html = `<html><head>
+			<script type="application/ld+json">{"name": "Root Name", "@graph": [{"description": "Graph description"}]}</script>
+		</head></html>`;
+		const result = parseHTML(html, BASE);
+		expect(result.title).toBe("Root Name");
+		expect(result.description).toBe("Graph description");
+	});
+});
+
+describe("implicit body detection", () => {
+	it("treats the first flow-content element as the start of the body", () => {
+		const html = `<html><title>T</title><p>text</p><img src="/hero.jpg" width="800" height="600">`;
+		const result = parseHTML(html, BASE, { includeBodyContent: true });
+		expect(result.image).toBe("https://example.com/hero.jpg");
+	});
+
+	it("ignores meta tags after the first flow-content element", () => {
+		const html = `<html><p>content</p><meta property="og:title" content="Late Title">`;
+		const result = parseHTML(html, BASE);
+		expect(result.title).toBeNull();
+	});
 });
 
 describe("fallback chain", () => {

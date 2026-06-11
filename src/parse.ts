@@ -1,8 +1,30 @@
 import { Parser } from "htmlparser2";
-import { decodeEntities, resolveHttpUrl } from "./resolve.js";
+import { resolveHttpUrl } from "./resolve.js";
 import type { PreviewOptions, PreviewResult } from "./types.js";
 
 const FALLBACK_BASE_URL = "https://example.com/";
+
+// Elements allowed inside <head>. The first tag outside this set marks the
+// implicit start of <body> for documents that omit <head>/<body> tags.
+const HEAD_TAGS = new Set([
+	"html",
+	"head",
+	"title",
+	"base",
+	"link",
+	"meta",
+	"style",
+	"script",
+	"noscript",
+	"template",
+]);
+
+// Body <img> fallback skips icons and trackers below this pixel size.
+const MIN_BODY_IMAGE_DIMENSION = 50;
+// apple-touch-icon defaults to 180x180 when no sizes attribute is present.
+const APPLE_TOUCH_ICON_DEFAULT_SIZE = 180;
+// Meta refreshes above this delay are page reloads, not redirects.
+const MAX_META_REFRESH_DELAY_SECONDS = 10;
 
 interface JsonLdData {
 	title: string | null;
@@ -64,6 +86,12 @@ export function parseHTML(
 					return;
 				}
 
+				// Implicit body: HTML5 allows omitting <head>/<body>, so the first
+				// flow-content element ends the head scope.
+				if (!headClosed && !HEAD_TAGS.has(name)) {
+					headClosed = true;
+				}
+
 				// JSON-LD: capture in head AND body (body only when includeBodyContent is enabled)
 				if (name === "script" && (attrs.type || "").includes("ld+json")) {
 					if (!headClosed || options?.includeBodyContent === true) {
@@ -83,8 +111,8 @@ export function parseHTML(
 					const w = attrs.width ? Number.parseInt(attrs.width, 10) : 0;
 					const h = attrs.height ? Number.parseInt(attrs.height, 10) : 0;
 					if (
-						!(w > 0 && w < 50) &&
-						!(h > 0 && h < 50) &&
+						!(w > 0 && w < MIN_BODY_IMAGE_DIMENSION) &&
+						!(h > 0 && h < MIN_BODY_IMAGE_DIMENSION) &&
 						!attrs.src.startsWith("data:")
 					) {
 						firstBodyImage = attrs.src;
@@ -122,7 +150,7 @@ export function parseHTML(
 						const size = sizeMatch
 							? Number.parseInt(sizeMatch[1], 10)
 							: rel.has("apple-touch-icon")
-								? 180
+								? APPLE_TOUCH_ICON_DEFAULT_SIZE
 								: 0;
 						if (size >= faviconSize) {
 							faviconSize = size;
@@ -183,91 +211,31 @@ export function parseHTML(
 	parser.write(html);
 	parser.end();
 
-	// ── Parse JSON-LD ──
-	const jsonLd: JsonLdData = {
-		title: null,
-		description: null,
-		image: null,
-		author: null,
-		publisher: null,
-		datePublished: null,
-		thumbnailUrl: null,
-	};
-
-	for (const raw of jsonLdRaw) {
-		try {
-			const data = JSON.parse(raw);
-			const items: unknown[] = Array.isArray(data)
-				? data
-				: (data?.["@graph"] as unknown[]) || [data];
-			for (const item of items) {
-				if (!item || typeof item !== "object") continue;
-				const obj = item as Record<string, unknown>;
-				if (!jsonLd.title) jsonLd.title = str(obj.name) || str(obj.headline);
-				if (!jsonLd.description) jsonLd.description = str(obj.description);
-				if (!jsonLd.image) {
-					const img = obj.image;
-					if (typeof img === "string") jsonLd.image = img;
-					else if (Array.isArray(img) && img[0])
-						jsonLd.image =
-							typeof img[0] === "string"
-								? img[0]
-								: strProp(img[0], "url") || strProp(img[0], "contentUrl");
-					else if (img && typeof img === "object")
-						jsonLd.image = strProp(img, "url") || strProp(img, "contentUrl");
-				}
-				if (!jsonLd.thumbnailUrl) jsonLd.thumbnailUrl = str(obj.thumbnailUrl);
-				if (!jsonLd.author) {
-					const author = obj.author || obj.creator;
-					if (typeof author === "string") jsonLd.author = author;
-					else if (Array.isArray(author) && author[0])
-						jsonLd.author =
-							typeof author[0] === "string"
-								? author[0]
-								: strProp(author[0], "name");
-					else jsonLd.author = strProp(author, "name");
-				}
-				if (!jsonLd.publisher) {
-					const pub = obj.publisher;
-					if (typeof pub === "string") jsonLd.publisher = pub;
-					else jsonLd.publisher = strProp(pub, "name");
-				}
-				if (!jsonLd.datePublished)
-					jsonLd.datePublished = str(obj.datePublished) || str(obj.dateCreated);
-			}
-		} catch {
-			// Invalid JSON-LD, skip
-		}
-	}
+	const jsonLd = extractJsonLd(jsonLdRaw);
 
 	// ── Build result with fallback chain ──
+	// htmlparser2 already decoded entities, so values are used as-is.
 	const get = (...keys: string[]): string | null => {
 		for (const k of keys) {
 			const v = meta[k];
-			if (v) return decodeEntities(v);
+			if (v) return v;
 		}
 		return null;
 	};
 
-	let parsedUrl: URL;
-	try {
-		parsedUrl = new URL(safeBaseUrl);
-	} catch {
-		parsedUrl = new URL(FALLBACK_BASE_URL);
-	}
+	const parsedUrl = new URL(safeBaseUrl);
 
 	const title =
 		get("og:title", "twitter:title") ||
 		jsonLd.title ||
 		get("dc.title", "dcterms.title") ||
-		decodeEntities(titleText.trim()) ||
+		titleText.trim() ||
 		null;
 
 	const description =
 		get("og:description", "twitter:description", "description") ||
 		jsonLd.description ||
-		get("dc.description", "dcterms.description") ||
-		null;
+		get("dc.description", "dcterms.description");
 
 	const rawImage =
 		get(
@@ -279,10 +247,9 @@ export function parseHTML(
 		) ||
 		jsonLd.image ||
 		jsonLd.thumbnailUrl ||
-		(imageSrcHref ? decodeEntities(imageSrcHref) : null) ||
-		(itempropImage ? decodeEntities(itempropImage) : null) ||
-		(firstBodyImage ? decodeEntities(firstBodyImage) : null) ||
-		null;
+		imageSrcHref ||
+		itempropImage ||
+		firstBodyImage;
 	const image = resolveHttpUrl(rawImage, safeBaseUrl);
 
 	const imageWidthRaw = get("og:image:width");
@@ -312,21 +279,19 @@ export function parseHTML(
 			"dcterms.creator",
 			"sailthru.author",
 			"parsely-author",
-		) ||
-		null;
+		);
 
 	const canonicalUrl =
 		resolveHttpUrl(canonicalHref, safeBaseUrl) ||
 		resolveHttpUrl(get("og:url"), safeBaseUrl) ||
 		safeBaseUrl;
 
-	const locale = get("og:locale") || null;
+	const locale = get("og:locale");
 
 	const publishedDate =
 		get("article:published_time") ||
 		jsonLd.datePublished ||
-		get("dc.date", "dcterms.date") ||
-		null;
+		get("dc.date", "dcterms.date");
 
 	const video = resolveHttpUrl(
 		get("og:video", "og:video:url", "og:video:secure_url"),
@@ -341,11 +306,11 @@ export function parseHTML(
 		get("content-language") ||
 		(locale ? locale.split("_")[0] : null);
 
-	const twitterCard = get("twitter:card") || null;
-	const twitterSite = get("twitter:site") || null;
-	const twitterCreator = get("twitter:creator") || null;
-	const imageAlt = get("og:image:alt", "twitter:image:alt") || null;
-	const themeColor = get("theme-color") || null;
+	const twitterCard = get("twitter:card");
+	const twitterSite = get("twitter:site");
+	const twitterCreator = get("twitter:creator");
+	const imageAlt = get("og:image:alt", "twitter:image:alt");
+	const themeColor = get("theme-color");
 
 	const keywordsRaw = get("keywords");
 	const keywords = keywordsRaw
@@ -385,8 +350,79 @@ export function parseHTML(
 	return result;
 }
 
+/** Flatten a JSON-LD payload into the items worth inspecting. */
+function jsonLdItems(data: unknown): unknown[] {
+	if (Array.isArray(data)) return data;
+	if (!data || typeof data !== "object") return [data];
+	const graph = (data as Record<string, unknown>)["@graph"];
+	if (Array.isArray(graph)) return [data, ...graph];
+	if (graph && typeof graph === "object") return [data, graph];
+	return [data];
+}
+
+function extractJsonLd(jsonLdRaw: string[]): JsonLdData {
+	const jsonLd: JsonLdData = {
+		title: null,
+		description: null,
+		image: null,
+		author: null,
+		publisher: null,
+		datePublished: null,
+		thumbnailUrl: null,
+	};
+
+	for (const raw of jsonLdRaw) {
+		let data: unknown;
+		try {
+			data = JSON.parse(raw);
+		} catch {
+			// Invalid JSON-LD, skip
+			continue;
+		}
+		for (const item of jsonLdItems(data)) {
+			if (!item || typeof item !== "object") continue;
+			const obj = item as Record<string, unknown>;
+			if (!jsonLd.title) jsonLd.title = str(obj.name) || str(obj.headline);
+			if (!jsonLd.description) jsonLd.description = str(obj.description);
+			if (!jsonLd.image) {
+				const img = obj.image;
+				if (typeof img === "string") jsonLd.image = img;
+				else if (Array.isArray(img) && img[0])
+					jsonLd.image =
+						typeof img[0] === "string"
+							? img[0]
+							: strProp(img[0], "url") || strProp(img[0], "contentUrl");
+				else if (img && typeof img === "object")
+					jsonLd.image = strProp(img, "url") || strProp(img, "contentUrl");
+			}
+			if (!jsonLd.thumbnailUrl) jsonLd.thumbnailUrl = str(obj.thumbnailUrl);
+			if (!jsonLd.author) {
+				const author = obj.author || obj.creator;
+				if (typeof author === "string") jsonLd.author = author;
+				else if (Array.isArray(author) && author[0])
+					jsonLd.author =
+						typeof author[0] === "string"
+							? author[0]
+							: strProp(author[0], "name");
+				else jsonLd.author = strProp(author, "name");
+			}
+			if (!jsonLd.publisher) {
+				const pub = obj.publisher;
+				if (typeof pub === "string") jsonLd.publisher = pub;
+				else jsonLd.publisher = strProp(pub, "name");
+			}
+			if (!jsonLd.datePublished)
+				jsonLd.datePublished = str(obj.datePublished) || str(obj.dateCreated);
+		}
+	}
+
+	return jsonLd;
+}
+
 /**
  * Extract meta-refresh redirect URLs without depending on attribute order.
+ * Refreshes slower than {@link MAX_META_REFRESH_DELAY_SECONDS} are treated as
+ * page reloads rather than redirects and return null.
  */
 export function extractMetaRefreshUrl(
 	html: string,
@@ -420,8 +456,10 @@ function parseMetaRefreshContent(
 ): string | null {
 	if (!content) return null;
 	const match = content.match(
-		/^\s*\d+(?:\.\d+)?\s*;\s*url\s*=\s*(?:"([^"]+)"|'([^']+)'|([^'">\s]+))/i,
+		/^\s*(\d+(?:\.\d+)?)\s*[;,]\s*url\s*=\s*(?:"([^"]+)"|'([^']+)'|([^'">\s]+))/i,
 	);
-	const target = match?.[1] ?? match?.[2] ?? match?.[3];
+	if (!match) return null;
+	if (Number.parseFloat(match[1]) > MAX_META_REFRESH_DELAY_SECONDS) return null;
+	const target = match[2] ?? match[3] ?? match[4];
 	return resolveHttpUrl(target?.trim(), baseUrl);
 }

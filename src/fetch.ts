@@ -1,3 +1,4 @@
+import { LinkpeekError } from "./errors.js";
 import type { PreviewOptions } from "./types.js";
 
 const ALLOWED_PROTOCOLS = new Set(["http:", "https:"]);
@@ -26,14 +27,18 @@ export function validateUrl(url: string, allowPrivateIPs = false): void {
 	try {
 		parsed = new URL(url);
 	} catch {
-		throw new Error("Invalid URL");
+		throw new LinkpeekError("INVALID_URL", "Invalid URL");
 	}
 
 	if (!ALLOWED_PROTOCOLS.has(parsed.protocol))
-		throw new Error("Only http and https URLs are supported");
+		throw new LinkpeekError(
+			"UNSUPPORTED_PROTOCOL",
+			"Only http and https URLs are supported",
+		);
 
 	if (!allowPrivateIPs && isPrivateHost(parsed.hostname))
-		throw new Error(
+		throw new LinkpeekError(
+			"PRIVATE_NETWORK_BLOCKED",
 			"URLs pointing to private/internal networks are not allowed",
 		);
 }
@@ -196,19 +201,41 @@ export async function fetchUrl(
 	validateUrl(url, options.allowPrivateIPs);
 	const timeout = options.timeout ?? DEFAULT_TIMEOUT;
 	const maxBytes = normalizeMaxBytes(options.maxBytes ?? DEFAULT_MAX_BYTES);
+	const maxRedirects = options.maxRedirects ?? DEFAULT_MAX_REDIRECTS;
 	const userAgent = options.userAgent ?? DEFAULT_USER_AGENT;
+	const fetchImpl = options.fetch ?? fetch;
 	const headers = buildRequestHeaders(userAgent, options.headers);
+	// Custom headers stay on the starting origin; cross-origin redirects get
+	// defaults only so per-site headers cannot leak to arbitrary hosts.
+	const crossOriginHeaders = options.headers
+		? buildRequestHeaders(userAgent, undefined)
+		: headers;
+	const startOrigin = new URL(url).origin;
+
+	if (options.signal?.aborted) {
+		throw (
+			options.signal.reason ??
+			new DOMException("This operation was aborted", "AbortError")
+		);
+	}
 
 	const controller = new AbortController();
-	const timer = setTimeout(() => controller.abort(), timeout);
+	let timedOut = false;
+	const timer = setTimeout(() => {
+		timedOut = true;
+		controller.abort();
+	}, timeout);
+	const onExternalAbort = () => controller.abort(options.signal?.reason);
+	options.signal?.addEventListener("abort", onExternalAbort, { once: true });
 
 	try {
 		let currentUrl = url;
 		let redirectCount = 0;
 
 		while (true) {
-			const response = await fetch(currentUrl, {
-				headers,
+			const sameOrigin = new URL(currentUrl).origin === startOrigin;
+			const response = await fetchImpl(currentUrl, {
+				headers: sameOrigin ? headers : crossOriginHeaders,
 				redirect: "manual",
 				signal: controller.signal,
 			});
@@ -219,10 +246,15 @@ export async function fetchUrl(
 			) {
 				const location = response.headers.get("location");
 				if (location) {
-					if (redirectCount >= DEFAULT_MAX_REDIRECTS)
-						throw new Error("Too many redirects");
-					const nextUrl = new URL(location, currentUrl).href;
 					await response.body?.cancel().catch(() => {});
+					if (redirectCount >= maxRedirects)
+						throw new LinkpeekError("TOO_MANY_REDIRECTS", "Too many redirects");
+					let nextUrl: string;
+					try {
+						nextUrl = new URL(location, currentUrl).href;
+					} catch {
+						throw new LinkpeekError("INVALID_URL", "Invalid URL");
+					}
 					validateUrl(nextUrl, options.allowPrivateIPs);
 					currentUrl = nextUrl;
 					redirectCount++;
@@ -230,20 +262,29 @@ export async function fetchUrl(
 				}
 			}
 
-			return await readFetchResponse(
-				response,
-				currentUrl,
-				Math.max(0, maxBytes),
-			);
+			return await readFetchResponse(response, currentUrl, maxBytes);
 		}
+	} catch (err) {
+		if (err instanceof LinkpeekError) throw err;
+		if (timedOut)
+			throw new LinkpeekError(
+				"TIMEOUT",
+				`Request timed out after ${timeout}ms`,
+				{ cause: err },
+			);
+		throw err;
 	} finally {
 		clearTimeout(timer);
+		options.signal?.removeEventListener("abort", onExternalAbort);
 	}
 }
 
 function normalizeMaxBytes(maxBytes: number): number {
 	if (!Number.isFinite(maxBytes)) {
-		throw new Error("maxBytes must be a finite number");
+		throw new LinkpeekError(
+			"INVALID_OPTIONS",
+			"maxBytes must be a finite number",
+		);
 	}
 	return Math.max(0, Math.floor(maxBytes));
 }
@@ -261,7 +302,17 @@ function buildRequestHeaders(
 	for (const [name, value] of Object.entries(headers ?? {})) {
 		const headerName = name.trim();
 		if (isSensitiveRequestHeader(headerName)) {
-			throw new Error("Sensitive request headers are not allowed");
+			throw new LinkpeekError(
+				"SENSITIVE_HEADER",
+				"Sensitive request headers are not allowed",
+			);
+		}
+		// Replace defaults case-insensitively so e.g. "user-agent" overrides
+		// "User-Agent" instead of fetch merging both into one header.
+		const normalized = headerName.toLowerCase();
+		for (const existing of Object.keys(requestHeaders)) {
+			if (existing.toLowerCase() === normalized)
+				delete requestHeaders[existing];
 		}
 		requestHeaders[headerName] = value;
 	}
@@ -291,6 +342,8 @@ async function readFetchResponse(
 		normalizedContentType.includes("xhtml");
 
 	if (!isHtml || !response.body) {
+		// Drain unused bodies so the connection is released immediately.
+		response.body?.cancel().catch(() => {});
 		return { html: "", finalUrl, contentType, isHtml, statusCode };
 	}
 
@@ -311,16 +364,14 @@ async function readFetchResponse(
 	}
 	reader.cancel().catch(() => {});
 
-	// Detect charset from content-type header (strip quotes if present)
-	const charsetMatch = contentType.match(/charset=["']?([^"'\s;]+)/i);
-	const charset = charsetMatch?.[1] || "utf-8";
-
 	const combined = new Uint8Array(totalBytes);
 	let offset = 0;
 	for (const chunk of chunks) {
 		combined.set(chunk, offset);
 		offset += chunk.length;
 	}
+
+	const charset = detectCharset(contentType, combined);
 
 	let html: string;
 	try {
@@ -331,4 +382,38 @@ async function readFetchResponse(
 	}
 
 	return { html, finalUrl, contentType, isHtml, statusCode };
+}
+
+// How many leading bytes to scan for a <meta charset> declaration when the
+// Content-Type header does not specify one (mirrors browser prescan behavior).
+const CHARSET_PRESCAN_BYTES = 1024;
+
+function detectCharset(contentType: string, bytes: Uint8Array): string {
+	// Content-Type header wins (strip quotes if present)
+	const headerCharset = contentType.match(/charset=["']?([^"'\s;]+)/i)?.[1];
+	if (headerCharset) return headerCharset;
+
+	// Byte order marks
+	if (
+		bytes.length >= 3 &&
+		bytes[0] === 0xef &&
+		bytes[1] === 0xbb &&
+		bytes[2] === 0xbf
+	)
+		return "utf-8";
+	if (bytes.length >= 2 && bytes[0] === 0xff && bytes[1] === 0xfe)
+		return "utf-16le";
+	if (bytes.length >= 2 && bytes[0] === 0xfe && bytes[1] === 0xff)
+		return "utf-16be";
+
+	// Prescan for <meta charset="..."> or http-equiv content-type charset
+	const head = new TextDecoder("latin1").decode(
+		bytes.subarray(0, CHARSET_PRESCAN_BYTES),
+	);
+	const metaCharset = head.match(
+		/<meta[^>]+charset\s*=\s*["']?([^"'\s/>;]+)/i,
+	)?.[1];
+	if (metaCharset) return metaCharset;
+
+	return "utf-8";
 }

@@ -30,8 +30,14 @@ const HTML_ENTITIES: Record<string, string> = {
 	"&deg;": "\u00B0",
 };
 
+const MAX_CODE_POINT = 0x10ffff;
+const SURROGATE_START = 0xd800;
+const SURROGATE_END = 0xdfff;
+const REPLACEMENT_CHAR = "�";
+
 /**
  * Decode HTML entities including named, decimal, and hex numeric entities.
+ * Out-of-range and surrogate code points become U+FFFD per the HTML spec.
  */
 export function decodeEntities(str: string): string {
 	if (!str) return str;
@@ -41,16 +47,21 @@ export function decodeEntities(str: string): string {
 		if (known !== undefined) return known;
 		// Hex numeric: &#xHH;
 		if (match.startsWith("&#x") || match.startsWith("&#X")) {
-			const code = Number.parseInt(match.slice(3, -1), 16);
-			return Number.isNaN(code) ? match : String.fromCodePoint(code);
+			return numericEntity(Number.parseInt(match.slice(3, -1), 16), match);
 		}
 		// Decimal numeric: &#DD;
 		if (match.startsWith("&#")) {
-			const code = Number.parseInt(match.slice(2, -1), 10);
-			return Number.isNaN(code) ? match : String.fromCodePoint(code);
+			return numericEntity(Number.parseInt(match.slice(2, -1), 10), match);
 		}
 		return match;
 	});
+}
+
+function numericEntity(code: number, original: string): string {
+	if (Number.isNaN(code)) return original;
+	if (code > MAX_CODE_POINT) return REPLACEMENT_CHAR;
+	if (code >= SURROGATE_START && code <= SURROGATE_END) return REPLACEMENT_CHAR;
+	return String.fromCodePoint(code);
 }
 
 /**

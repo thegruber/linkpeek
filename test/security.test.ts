@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { LinkpeekError } from "../src/errors.js";
 import { isPrivateHost, validateUrl } from "../src/fetch.js";
+import * as linkpeek from "../src/index.js";
 
 describe("validateUrl", () => {
 	it("allows http URLs", () => {
@@ -131,6 +133,53 @@ describe("validateUrl", () => {
 		expect(() => validateUrl("http://10.0.0.1", true)).not.toThrow();
 		expect(() => validateUrl("http://192.168.1.1", true)).not.toThrow();
 		expect(() => validateUrl("http://169.254.169.254", true)).not.toThrow();
+	});
+
+	it("blocks non-dotted-decimal IPv4 encodings normalized by the URL parser", () => {
+		// WHATWG URL canonicalizes these host forms to dotted-quad IPv4 before
+		// validation runs — pin that assumption so a runtime regression is caught.
+		expect(() => validateUrl("http://2130706433/")).toThrow("private");
+		expect(() => validateUrl("http://0x7f.0.0.1/")).toThrow("private");
+		expect(() => validateUrl("http://017700000001/")).toThrow("private");
+		expect(() => validateUrl("http://127.1/")).toThrow("private");
+		expect(() => validateUrl("http://0xA9.0xFE.0xA9.0xFE/")).toThrow("private");
+	});
+
+	it("blocks hosts with trailing dots", () => {
+		expect(() => validateUrl("http://localhost./")).toThrow("private");
+	});
+
+	it("throws typed LinkpeekError codes", () => {
+		try {
+			validateUrl("http://127.0.0.1");
+			expect.unreachable();
+		} catch (err) {
+			expect(err).toBeInstanceOf(LinkpeekError);
+			expect(err).toBeInstanceOf(Error);
+			expect((err as LinkpeekError).code).toBe("PRIVATE_NETWORK_BLOCKED");
+		}
+
+		try {
+			validateUrl("ftp://example.com");
+			expect.unreachable();
+		} catch (err) {
+			expect((err as LinkpeekError).code).toBe("UNSUPPORTED_PROTOCOL");
+		}
+
+		try {
+			validateUrl("not a url");
+			expect.unreachable();
+		} catch (err) {
+			expect((err as LinkpeekError).code).toBe("INVALID_URL");
+		}
+	});
+});
+
+describe("public exports", () => {
+	it("exposes validation helpers and the error class", () => {
+		expect(linkpeek.validateUrl).toBe(validateUrl);
+		expect(linkpeek.isPrivateHost).toBe(isPrivateHost);
+		expect(linkpeek.LinkpeekError).toBe(LinkpeekError);
 	});
 });
 
