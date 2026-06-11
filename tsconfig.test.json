@@ -1,0 +1,14 @@
+{
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"noEmit": true,
+		"declaration": false,
+		"declarationMap": false,
+		"sourceMap": false,
+		"outDir": null,
+		"rootDir": ".",
+		"types": ["node"]
+	},
+	"include": ["src", "test"],
+	"exclude": ["node_modules", "dist", "test/bun-smoke.ts", "test/deno-smoke.ts"]
+}

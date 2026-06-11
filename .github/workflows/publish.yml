@@ -3,6 +3,9 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: read
+
 jobs:
   ci:
     uses: ./.github/workflows/ci.yml
@@ -14,8 +17,8 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org
@@ -27,6 +30,14 @@ jobs:
           TAG="${GITHUB_REF_NAME}"
           if [ "$PKG_VERSION" != "$TAG" ]; then
             echo "::error::package.json version ($PKG_VERSION) does not match release tag ($TAG)"
+            exit 1
+          fi
+
+      - name: Verify CHANGELOG entry exists
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          if ! grep -q "^## ${VERSION} " CHANGELOG.md; then
+            echo "::error::No CHANGELOG.md entry for ${VERSION}"
             exit 1
           fi
 

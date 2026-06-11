@@ -4,12 +4,10 @@
 
 ## Verification
 
-- [ ] `npm run lint`
-- [ ] `npm run typecheck`
-- [ ] `npm run test`
-- [ ] `npm run build`
-- [ ] `npm audit`
-- [ ] `npm run package:check`
+- [ ] Tests added or updated for every behavior change
+- [ ] `npm run quality` passes (lint, typecheck, tests, audit, build, package checks)
+- [ ] `npm run benchmark` run (if performance, package-size, or comparison docs changed)
+- [ ] README and CHANGELOG updated (if behavior or public API changed)
 
 ## Notes
 

@@ -16,8 +16,8 @@ jobs:
       matrix:
         node-version: [22, 24, 26]
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
@@ -28,29 +28,37 @@ jobs:
         env:
           CI: true
       - run: npm run build
-      - run: npm audit
+      # Gate on the runtime tree only; dev-tool advisories surface via
+      # Dependabot instead of blocking releases.
+      - run: npm audit --omit=dev
+      - run: npm audit --audit-level=high
+        continue-on-error: true
       - run: npm run package:check
 
   test-bun:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: oven-sh/setup-bun@v2
-      - run: bun install
-      - run: bun run lint
-      - run: bun run typecheck
-      - run: bun run test
-      - run: bun run build
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: 24
+          cache: npm
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+      # npm ci keeps the committed lockfile authoritative; the smoke test then
+      # exercises the built dist under the actual Bun runtime.
+      - run: npm ci
+      - run: npm run build
+      - run: bun test/bun-smoke.ts
 
   test-deno:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: 24
           cache: npm
-      - uses: denoland/setup-deno@v2
+      - uses: denoland/setup-deno@667a34cdef165d8d2b2e98dde39547c9daac7282 # v2
         with:
           deno-version: v2.x
       - run: npm ci
