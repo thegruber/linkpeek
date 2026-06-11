@@ -5,7 +5,7 @@ A minimal Express server that exposes a `/api/preview?url=` endpoint.
 ## Setup
 
 ```bash
-npm install express linkpeek
+npm install express linkpeek tsx
 npx tsx index.ts
 ```
 

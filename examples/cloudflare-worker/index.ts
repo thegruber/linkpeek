@@ -14,8 +14,14 @@ export default {
 
 		try {
 			const result = await preview(url);
+			// Only cache successful previews — 4xx/5xx pages return a result
+			// with their statusCode instead of throwing.
+			const cacheControl =
+				result.statusCode >= 200 && result.statusCode < 300
+					? "public, max-age=3600"
+					: "no-store";
 			return Response.json(result, {
-				headers: { "Cache-Control": "public, max-age=3600" },
+				headers: { "Cache-Control": cacheControl },
 			});
 		} catch (err) {
 			return Response.json(

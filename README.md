@@ -2,7 +2,7 @@
 
 **Lightweight, safe-by-default link preview and URL metadata extraction for Node.js, Bun, Deno, and fetch-based edge runtimes. One runtime dependency.**
 
-Use linkpeek as a lightweight `link-preview-js` alternative, modern `open-graph-scraper` alternative, or TypeScript URL unfurl utility when you need Open Graph, Twitter Card, JSON-LD, and URL metadata for preview cards.
+A modern, lightweight alternative to `link-preview-js` and `open-graph-scraper`: one focused TypeScript API that turns any URL into Open Graph, Twitter Card, and JSON-LD preview metadata — with SSRF-safe fetching built in.
 
 [![npm](https://img.shields.io/npm/v/linkpeek)](https://www.npmjs.com/package/linkpeek)
 [![bundle size](https://img.shields.io/bundlephobia/minzip/linkpeek)](https://bundlephobia.com/package/linkpeek)
@@ -77,7 +77,37 @@ Quick comparison:
 | `metascraper` | Rule-based article metadata extraction | More powerful framework; more setup and dependencies |
 | `unfurl.js` | Rich nested metadata with fetched oEmbed support | Richer output; not focused on small edge-runtime preview cards |
 
-See [docs/comparison.md](https://github.com/thegruber/linkpeek/blob/main/docs/comparison.md) for positioning and claim policy.
+### Measured install footprint
+
+Measured 2026-06-11 via `npm install --ignore-scripts` of each package's latest version into a clean directory, counting `package-lock.json` entries and `du -sk node_modules`:
+
+| Package | Installed packages | `node_modules` size |
+| --- | ---: | ---: |
+| **linkpeek** | **7** | **1.1 MB** |
+| `unfurl.js` 6.4.0 | 16 | 3.0 MB |
+| `link-preview-js` 4.0.3 | 17 | 5.5 MB |
+| `open-graph-scraper` 6.11.0 | 27 | 10.3 MB |
+| `url-metadata` 5.4.4 | 30 | 9.7 MB |
+| `metascraper` 5.50.6 | 122 | 72.6 MB |
+
+linkpeek's runtime tree contains no HTTP client, no DOM implementation, and no native modules — the structural reason it runs on fetch-based edge runtimes. The ESM bundle is ~7 KB gzipped.
+
+### Measured speed (same corpus, local server)
+
+From the [same-corpus benchmark harness](./benchmarks/competitive) (2026-06-11, Node 24, median ms per end-to-end preview). On small pages linkpeek is tied at the front with unfurl.js; on a realistic 489 kB page the byte cap and head-first parsing are decisive:
+
+| Package | 489 kB page |
+| --- | ---: |
+| **linkpeek** | **0.51 ms** |
+| `unfurl.js` | 2.38 ms |
+| `link-preview-js` (fetch+parse) | 14.70 ms |
+| `url-metadata` | 15.41 ms |
+| `metascraper` | 18.42 ms |
+| `open-graph-scraper` | 208.45 ms |
+
+On real networks the gap widens: linkpeek downloads at most `maxBytes` (30 KB by default) while the others pull the full page.
+
+See [docs/comparison.md](https://github.com/thegruber/linkpeek/blob/main/docs/comparison.md) for the full speed table, positioning, sourced security/runtime notes, the claim policy, and the commands to reproduce these numbers.
 
 ## Presets
 
@@ -159,8 +189,13 @@ export default {
 
     try {
       const result = await preview(url);
+      // Only cache successful previews — 4xx/5xx return a result, not an error
+      const cacheControl =
+        result.statusCode >= 200 && result.statusCode < 300
+          ? "public, max-age=3600"
+          : "no-store";
       return Response.json(result, {
-        headers: { "Cache-Control": "public, max-age=3600" },
+        headers: { "Cache-Control": cacheControl },
       });
     } catch (err) {
       return Response.json(
@@ -190,19 +225,43 @@ Use [examples/react-preview-card](./examples/react-preview-card) for a browser c
 
 ## Error Handling
 
-`preview()` throws for invalid input and blocked URLs:
+**HTTP error pages do not throw.** A 404 or 500 that returns HTML still resolves with whatever metadata the page has, plus its `statusCode` — check it before caching or rendering:
 
 ```typescript
+const result = await preview(url);
+if (result.statusCode >= 400) {
+  // render a broken-link card, skip caching
+}
+```
+
+`preview()` throws a typed `LinkpeekError` for invalid input, blocked targets, and timeouts. Branch on `code` instead of matching message strings:
+
+```typescript
+import { LinkpeekError, preview } from "linkpeek";
+
 try {
   const result = await preview(url);
 } catch (err) {
-  // "Invalid URL"
-  // "Only http and https URLs are supported"
-  // "URLs pointing to private/internal networks are not allowed"
-  // "Too many redirects"
-  console.error(err instanceof Error ? err.message : err);
+  if (err instanceof LinkpeekError) {
+    switch (err.code) {
+      case "INVALID_URL":              // not a parseable URL
+      case "UNSUPPORTED_PROTOCOL":     // not http/https
+      case "PRIVATE_NETWORK_BLOCKED":  // SSRF protection triggered
+      case "SENSITIVE_HEADER":         // credential-bearing custom header
+      case "TOO_MANY_REDIRECTS":
+      case "TIMEOUT":
+      case "INVALID_OPTIONS":
+        break;
+    }
+  }
+  // Aborts via your own `signal` are rethrown as-is (AbortError),
+  // and network failures propagate from fetch unchanged.
 }
 ```
+
+### Non-HTML responses
+
+Direct media URLs return a usable result instead of failing: an image URL fills `image`, a video URL fills `video`, an audio URL fills `audio`, and `mediaType` reflects the content-type group (`"image"`, `"video"`, ...). Other non-HTML content types resolve with null metadata and the response `statusCode`.
 
 ## API
 
@@ -214,13 +273,16 @@ Fetches a URL and extracts link preview metadata. Returns `Promise<PreviewResult
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
-| `timeout` | `number` | `8000` | Request timeout in milliseconds |
+| `timeout` | `number` | `8000` | Request timeout in milliseconds. Throws `LinkpeekError` code `TIMEOUT` |
 | `maxBytes` | `number` | `30_000` | Maximum bytes to stream |
 | `userAgent` | `string` | `"Twitterbot/1.0"` | User-Agent sent with requests |
 | `followRedirects` | `boolean` | `true` | Follow HTTP redirects after validating each target |
-| `headers` | `Record<string, string>` | `{}` | Extra non-sensitive request headers. Common credential-bearing headers are rejected |
+| `maxRedirects` | `number` | `10` | Maximum HTTP redirects to follow |
+| `headers` | `Record<string, string>` | `{}` | Extra non-sensitive request headers. Common credential-bearing headers are rejected; custom headers are not forwarded on cross-origin redirects |
 | `allowPrivateIPs` | `boolean` | `false` | Allow private/internal IP targets |
-| `followMetaRefresh` | `boolean` | `false` | Follow one `<meta http-equiv="refresh">` redirect when no title is found |
+| `signal` | `AbortSignal` | — | Cancel the request from the caller side |
+| `fetch` | `typeof fetch` | `globalThis.fetch` | Custom fetch implementation (proxies, caching, testing) |
+| `followMetaRefresh` | `boolean` | `false` | Follow one `<meta http-equiv="refresh">` redirect with a delay of 10s or less |
 | `includeBodyContent` | `boolean` | `false` | Continue scanning `<body>` for JSON-LD and image fallbacks |
 
 #### Result Fields
@@ -267,6 +329,26 @@ const result = parseHTML(
 
 console.log(result.title); // "Hello"
 ```
+
+### `validateUrl(url, allowPrivateIPs?)` and `isPrivateHost(hostname)`
+
+The SSRF validation helpers are exported for pre-validating URLs before queueing preview jobs. `validateUrl` throws a `LinkpeekError` (`INVALID_URL`, `UNSUPPORTED_PROTOCOL`, or `PRIVATE_NETWORK_BLOCKED`); `isPrivateHost` returns a boolean.
+
+```typescript
+import { validateUrl } from "linkpeek";
+
+validateUrl("http://169.254.169.254/"); // throws PRIVATE_NETWORK_BLOCKED
+```
+
+## FAQ & Troubleshooting
+
+**A site returns 403 or empty metadata.** Bot protection (Cloudflare challenges, user-agent sniffing) blocks every server-side preview library — this is the most common failure mode in this category and no package solves it. Mitigate: try a different `userAgent`, cache successful previews aggressively, and render a graceful fallback card from the hostname.
+
+**`title` is `null` for a single-page app.** The page renders its metadata with JavaScript; linkpeek deliberately does not run a browser. `presets.quality` catches body JSON-LD that many SPAs ship; beyond that you need a headless browser, which is out of scope.
+
+**Can I call it from the browser?** No — server-side only. Cross-origin pages are unreadable from browsers anyway (CORS), and your preview fetcher should never run on untrusted clients. Put `preview()` behind an API route (see the recipes above).
+
+**I got a preview card for a 404 page.** HTTP error pages that return HTML resolve normally with their `statusCode` set — check `result.statusCode` before caching or rendering (see [Error Handling](#error-handling)).
 
 ## Development
 

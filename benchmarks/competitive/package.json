@@ -1,0 +1,24 @@
+{
+	"name": "linkpeek-competitive-benchmark",
+	"private": true,
+	"type": "module",
+	"description": "Same-corpus, end-to-end benchmark of linkpeek against other link preview packages. Not published.",
+	"scripts": {
+		"bench": "node bench.mjs"
+	},
+	"dependencies": {
+		"link-preview-js": "4.0.3",
+		"linkpeek": "file:../..",
+		"metascraper": "5.50.6",
+		"metascraper-author": "5.50.6",
+		"metascraper-date": "5.50.6",
+		"metascraper-description": "5.50.6",
+		"metascraper-image": "5.50.6",
+		"metascraper-publisher": "5.50.6",
+		"metascraper-title": "5.50.6",
+		"metascraper-url": "5.50.6",
+		"open-graph-scraper": "6.11.0",
+		"unfurl.js": "6.4.0",
+		"url-metadata": "5.4.4"
+	}
+}

@@ -1,0 +1,6 @@
+name = "linkpeek-playground"
+main = "index.ts"
+compatibility_date = "2026-06-01"
+
+# Optional: route a custom domain, e.g.
+# routes = [{ pattern = "peek.example.com", custom_domain = true }]

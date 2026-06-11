@@ -2,7 +2,43 @@
 
 All notable changes to this project are documented here.
 
+## 2.1.0 - 2026-06-11
+
+### Added
+
+- `LinkpeekError` with machine-readable `code` values (`INVALID_URL`, `UNSUPPORTED_PROTOCOL`, `PRIVATE_NETWORK_BLOCKED`, `SENSITIVE_HEADER`, `INVALID_OPTIONS`, `TOO_MANY_REDIRECTS`, `TIMEOUT`) so callers can branch on failure categories instead of matching message strings. Timeouts now throw a typed `TIMEOUT` error instead of an opaque `AbortError`.
+- `signal` option: pass an `AbortSignal` to cancel an in-flight preview. Caller aborts are rethrown as-is and never wrapped as timeouts.
+- `fetch` option: inject a custom fetch implementation for proxies, caching layers, or testing.
+- `maxRedirects` option (default: 10).
+- Charset detection for pages that declare encoding only in `<meta charset>` or `http-equiv` tags (with BOM sniffing). Previously only the `Content-Type` header was honored, producing mojibake for many legacy/CJK/Cyrillic pages.
+- Public exports for `validateUrl` and `isPrivateHost` so URLs can be pre-validated before queueing.
+- Coverage tooling (`npm run test:coverage`).
+- A real Bun runtime smoke test in CI (`test/bun-smoke.ts`); the previous Bun job ran the toolchain under Node via shebangs.
+
+### Changed
+
+- `followMetaRefresh` now follows refreshes with a delay of 10 seconds or less regardless of whether the interstitial page has a title. Previously it only fired when no title was found, which skipped exactly the challenge/interstitial pages the option targets (they all have titles). Slower refreshes are treated as page reloads and ignored.
+- Custom request headers are no longer forwarded on cross-origin redirects; redirected origins receive default headers only.
+- Custom headers now override defaults case-insensitively (`{"user-agent": ...}` replaces the default instead of fetch merging both values).
+- JSON-LD `@graph` payloads: root-level properties are now inspected alongside graph items, and object-valued (non-array) `@graph` no longer discards the entire script.
+- Documents that legally omit `<head>`/`<body>` now treat the first flow-content element as the start of the body, enabling the body image fallback and keeping body metadata out of head scope.
+- `npm audit` gates (CI, `quality`, `publish:check`) now scope to the runtime dependency tree (`--omit=dev`); the full-tree audit runs non-blocking in CI.
+- Tarball now includes `CHANGELOG.md`, and the exports map exposes `./package.json`.
+- All GitHub Actions are pinned to commit SHAs (Dependabot keeps the pins fresh), the publish workflow gained a top-level read-only permission default and a CHANGELOG-entry gate, and `npm run typecheck` now also typechecks the test suite.
+- Added a same-corpus competitive benchmark harness (`benchmarks/competitive`) and measured footprint/speed comparison tables in the README and `docs/comparison.md`.
+
+### Fixed
+
+- Crash (uncaught `RangeError`) on pages containing escaped out-of-range numeric character references such as `&amp;#x110000;`. Entity decoding is now done exactly once by the HTML parser; the redundant second decode pass that both caused the crash and corrupted legitimate text (`X &amp;amp; Y` became `X & Y` instead of `X &amp; Y`) has been removed. `decodeEntities` itself now maps out-of-range and surrogate code points to U+FFFD per the HTML spec.
+- The redirect-limit error path now cancels the final response body before throwing, releasing the connection.
+- Non-HTML response bodies are canceled immediately instead of being left undrained.
+
 ## 2.0.0 - 2026-06-01
+
+### Breaking — migrating from 1.x
+
+- Node.js 22+ is required (1.x supported Node 20). No API signatures changed:
+  if you are on Node 22 or newer, upgrading from 1.x requires no code changes.
 
 ### Changed
 

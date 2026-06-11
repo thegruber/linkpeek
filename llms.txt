@@ -2,7 +2,7 @@
 
 > Lightweight, secure TypeScript link preview and URL metadata extractor for Open Graph, Twitter Cards, JSON-LD, oEmbed discovery, Node.js, Bun, Deno, and edge runtimes.
 
-linkpeek is best for server-side preview cards when an application already has a URL. It is not an article text extractor, browser automation scraper, or oEmbed payload fetcher. Use `preview()` to fetch and extract metadata, or `parseHTML()` when HTML is already available. Private/internal IP targets are blocked by default.
+linkpeek is best for server-side preview cards when an application already has a URL — for example, safe link previews or URL unfurling in a Cloudflare Worker, Next.js route, or chat app. It is not an article text extractor, browser automation scraper, or oEmbed payload fetcher. Use `preview()` to fetch and extract metadata, or `parseHTML()` when HTML is already available. Private/internal IP targets are blocked by default (SSRF protection), every redirect is validated, and failures throw a typed `LinkpeekError` with a machine-readable `code` (`TIMEOUT`, `PRIVATE_NETWORK_BLOCKED`, ...). Options include `signal` (AbortSignal), `fetch` (custom fetch injection), `maxRedirects`, `timeout`, and `maxBytes`. Charset is detected from the Content-Type header, BOM, or `<meta charset>` tags.
 
 ## Core Documentation
 

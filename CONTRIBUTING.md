@@ -10,16 +10,13 @@ Thanks for your interest in contributing.
 npm ci
 ```
 
-2. Run quality checks:
+2. Run the full quality gate (lint, typecheck, tests, audit, build, package checks):
 
 ```bash
-npm run lint
-npm run typecheck
-npm test
-npm run build
-npm run package:check
-npm run benchmark
+npm run quality
 ```
+
+Individual steps are also available: `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `npm run package:check`, `npm run benchmark`.
 
 3. Run live URL tests only when intentionally checking network extraction quality:
 
@@ -44,16 +41,10 @@ LINKPEEK_LIVE_TESTS=1 npm run test
 
 ## Pull request checklist
 
-- [ ] Tests added/updated
-- [ ] `npm run lint` passes
-- [ ] `npm run typecheck` passes
-- [ ] `npm test` passes
-- [ ] `npm run build` passes
-- [ ] `npm run package:check` passes
-- [ ] `npm audit` passes
-- [ ] `npm run benchmark` passes (if performance, package-size, or comparison docs changed)
-- [ ] README updated (if behavior/API changed)
-- [ ] Changelog entry added
+- [ ] Tests added or updated for every behavior change
+- [ ] `npm run quality` passes
+- [ ] `npm run benchmark` run (if performance, package-size, or comparison docs changed)
+- [ ] README and CHANGELOG updated (if behavior or public API changed)
 
 ## Commit style
 

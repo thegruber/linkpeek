@@ -15,10 +15,11 @@
 
 ## Architecture
 - `src/types.ts` — public TypeScript interfaces
+- `src/errors.ts` — `LinkpeekError` with machine-readable `code` values
 - `src/resolve.ts` — entity decoding and safe URL resolution helpers
-- `src/parse.ts` — SAX parser using `htmlparser2`
-- `src/fetch.ts` — streaming fetch, byte limit, redirect validation, SSRF host checks
-- `src/index.ts` — public API (`preview`, `parseHTML`, `presets`)
+- `src/parse.ts` — SAX parser using `htmlparser2` (entities are decoded exactly once, by htmlparser2 — never re-decode its output)
+- `src/fetch.ts` — streaming fetch, byte limit, redirect validation, SSRF host checks, charset detection
+- `src/index.ts` — public API (`preview`, `parseHTML`, `presets`, `validateUrl`, `isPrivateHost`, `LinkpeekError`)
 
 ## Design Rules
 - Runtime dependency policy: keep `htmlparser2` as the only runtime dependency.
