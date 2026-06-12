@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented here.
 
+## 2.1.1 - 2026-06-12
+
+### Changed
+
+- Documentation polish: tightened README wording, added the License section, and trimmed npm
+  keywords to a precise set. No runtime changes.
+
 ## 2.1.0 - 2026-06-11
 
 ### Added
