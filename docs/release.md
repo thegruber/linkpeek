@@ -1,24 +1,19 @@
 # Release Checklist
 
-1. Confirm `package.json` has the intended version.
-2. Confirm `CHANGELOG.md` has an entry for that version.
-3. Run the full local gate:
+1. Add a `CHANGELOG.md` entry for the new version. The publish workflow refuses to run
+   without one.
+2. From a clean `main`, run release-it with a `GITHUB_TOKEN` that can create releases:
 
 ```bash
-npm ci
-npm run quality
+npm run release -- patch --ci   # or minor / major
 ```
 
-4. Confirm the package emits both module formats and declaration files:
+This runs the full quality gate (`npm run quality`), bumps `package.json`, commits, tags
+`v<version>`, pushes, and creates the GitHub release.
 
-```bash
-test -f dist/index.js
-test -f dist/index.cjs
-test -f dist/index.d.ts
-test -f dist/index.d.cts
-```
+3. The GitHub release triggers `.github/workflows/publish.yml`, which re-runs CI, verifies the
+   tag matches `package.json` and the changelog entry exists, then publishes to npm through
+   trusted publishing with provenance under the `npm` deployment environment.
 
-5. Inspect the dry-run package contents from `npm run package:check`.
-6. Commit, merge to `main`, tag `v<version>`, and create a GitHub release.
-
-Publishing is handled by GitHub Actions trusted publishing. Do not add long-lived npm tokens.
+Publishing never uses long-lived npm tokens. If the publish job fails, fix the cause and re-run
+the workflow from the release; do not publish from a local machine.

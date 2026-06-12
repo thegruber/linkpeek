@@ -14,11 +14,12 @@
 - Full local gate: `npm run quality`
 
 ## Architecture
-- `src/types.ts` — public TypeScript interfaces
-- `src/resolve.ts` — entity decoding and safe URL resolution helpers
-- `src/parse.ts` — SAX parser using `htmlparser2`
-- `src/fetch.ts` — streaming fetch, byte limit, redirect validation, SSRF host checks
-- `src/index.ts` — public API (`preview`, `parseHTML`, `presets`)
+- `src/types.ts`: public TypeScript interfaces
+- `src/errors.ts`: `LinkpeekError` with machine-readable `code` values
+- `src/resolve.ts`: entity decoding and safe URL resolution helpers
+- `src/parse.ts`: SAX parser using `htmlparser2` (entities are decoded exactly once, by htmlparser2; never re-decode its output)
+- `src/fetch.ts`: streaming fetch, byte limit, redirect validation, SSRF host checks, charset detection
+- `src/index.ts`: public API (`preview`, `parseHTML`, `presets`, `validateUrl`, `isPrivateHost`, `LinkpeekError`)
 
 ## Design Rules
 - Runtime dependency policy: keep `htmlparser2` as the only runtime dependency.
@@ -51,9 +52,9 @@
 - Do not commit `pnpm-lock.yaml`, `bun.lockb`, or generated tarballs.
 
 ## Release Workflow
-1. Bump `package.json` version.
-2. Add a `CHANGELOG.md` entry.
-3. Run `npm run quality`.
-4. Confirm `dist/index.js` and `dist/index.cjs` are emitted.
-5. Tag and create a GitHub release.
-6. Publish through GitHub Actions trusted publishing. Do not add long-lived npm tokens.
+1. Add a `CHANGELOG.md` entry for the new version (the publish workflow verifies it exists).
+2. Run `npm run release -- <patch|minor|major> --ci` with a `GITHUB_TOKEN` that can create
+   releases. release-it runs the full quality gate, bumps the version, tags `v<version>`,
+   pushes, and creates the GitHub release.
+3. The GitHub release triggers `publish.yml`, which re-runs CI and publishes to npm through
+   trusted publishing with provenance. Do not add long-lived npm tokens.

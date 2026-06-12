@@ -40,7 +40,8 @@
 		"publish:check": "npm run lint && npm run typecheck && npm run test && npm audit --omit=dev && npm run build --silent",
 		"quality": "npm run lint && npm run typecheck && npm run test && npm audit --omit=dev && npm run package:check",
 		"typecheck": "tsc --noEmit && tsc -p tsconfig.test.json",
-		"prepublishOnly": "npm run publish:check"
+		"prepublishOnly": "npm run publish:check",
+		"release": "release-it"
 	},
 	"keywords": [
 		"link-preview",
@@ -75,9 +76,11 @@
 	"devDependencies": {
 		"@arethetypeswrong/cli": "^0.18.3",
 		"@biomejs/biome": "^2.4.16",
+		"@release-it/conventional-changelog": "^11.0.1",
 		"@types/node": "^25.9.3",
 		"@vitest/coverage-v8": "^4.1.8",
 		"publint": "^0.3.21",
+		"release-it": "^20.2.0",
 		"tsup": "^8.5.1",
 		"typescript": "^6.0.3",
 		"vitest": "^4.1.8"
