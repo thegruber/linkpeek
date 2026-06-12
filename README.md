@@ -2,7 +2,7 @@
 
 **Lightweight, safe-by-default link preview and URL metadata extraction for Node.js, Bun, Deno, and fetch-based edge runtimes. One runtime dependency.**
 
-A modern, lightweight alternative to `link-preview-js` and `open-graph-scraper`: one focused TypeScript API that turns any URL into Open Graph, Twitter Card, and JSON-LD preview metadata — with SSRF-safe fetching built in.
+A modern, lightweight alternative to `link-preview-js` and `open-graph-scraper`: one focused TypeScript API that turns any URL into Open Graph, Twitter Card, and JSON-LD preview metadata, with SSRF-safe fetching built in.
 
 [![npm](https://img.shields.io/npm/v/linkpeek)](https://www.npmjs.com/package/linkpeek)
 [![bundle size](https://img.shields.io/bundlephobia/minzip/linkpeek)](https://bundlephobia.com/package/linkpeek)
@@ -90,7 +90,7 @@ Measured 2026-06-11 via `npm install --ignore-scripts` of each package's latest 
 | `url-metadata` 5.4.4 | 30 | 9.7 MB |
 | `metascraper` 5.50.6 | 122 | 72.6 MB |
 
-linkpeek's runtime tree contains no HTTP client, no DOM implementation, and no native modules — the structural reason it runs on fetch-based edge runtimes. The ESM bundle is ~7 KB gzipped.
+linkpeek's runtime tree contains no HTTP client, no DOM implementation, and no native modules. That is the structural reason it runs on fetch-based edge runtimes. The ESM bundle is ~7 KB gzipped.
 
 ### Measured speed (same corpus, local server)
 
@@ -189,7 +189,7 @@ export default {
 
     try {
       const result = await preview(url);
-      // Only cache successful previews — 4xx/5xx return a result, not an error
+      // Only cache successful previews; 4xx/5xx return a result, not an error
       const cacheControl =
         result.statusCode >= 200 && result.statusCode < 300
           ? "public, max-age=3600"
@@ -225,7 +225,7 @@ Use [examples/react-preview-card](./examples/react-preview-card) for a browser c
 
 ## Error Handling
 
-**HTTP error pages do not throw.** A 404 or 500 that returns HTML still resolves with whatever metadata the page has, plus its `statusCode` — check it before caching or rendering:
+**HTTP error pages do not throw.** A 404 or 500 that returns HTML still resolves with whatever metadata the page has, plus its `statusCode`. Check it before caching or rendering:
 
 ```typescript
 const result = await preview(url);
@@ -280,7 +280,7 @@ Fetches a URL and extracts link preview metadata. Returns `Promise<PreviewResult
 | `maxRedirects` | `number` | `10` | Maximum HTTP redirects to follow |
 | `headers` | `Record<string, string>` | `{}` | Extra non-sensitive request headers. Common credential-bearing headers are rejected; custom headers are not forwarded on cross-origin redirects |
 | `allowPrivateIPs` | `boolean` | `false` | Allow private/internal IP targets |
-| `signal` | `AbortSignal` | — | Cancel the request from the caller side |
+| `signal` | `AbortSignal` | none | Cancel the request from the caller side |
 | `fetch` | `typeof fetch` | `globalThis.fetch` | Custom fetch implementation (proxies, caching, testing) |
 | `followMetaRefresh` | `boolean` | `false` | Follow one `<meta http-equiv="refresh">` redirect with a delay of 10s or less |
 | `includeBodyContent` | `boolean` | `false` | Continue scanning `<body>` for JSON-LD and image fallbacks |
@@ -342,13 +342,13 @@ validateUrl("http://169.254.169.254/"); // throws PRIVATE_NETWORK_BLOCKED
 
 ## FAQ & Troubleshooting
 
-**A site returns 403 or empty metadata.** Bot protection (Cloudflare challenges, user-agent sniffing) blocks every server-side preview library — this is the most common failure mode in this category and no package solves it. Mitigate: try a different `userAgent`, cache successful previews aggressively, and render a graceful fallback card from the hostname.
+**A site returns 403 or empty metadata.** Bot protection (Cloudflare challenges, user-agent sniffing) blocks every server-side preview library. This is the most common failure mode in this category and no package solves it. Mitigate: try a different `userAgent`, cache successful previews aggressively, and render a graceful fallback card from the hostname.
 
 **`title` is `null` for a single-page app.** The page renders its metadata with JavaScript; linkpeek deliberately does not run a browser. `presets.quality` catches body JSON-LD that many SPAs ship; beyond that you need a headless browser, which is out of scope.
 
-**Can I call it from the browser?** No — server-side only. Cross-origin pages are unreadable from browsers anyway (CORS), and your preview fetcher should never run on untrusted clients. Put `preview()` behind an API route (see the recipes above).
+**Can I call it from the browser?** No, server-side only. Cross-origin pages are unreadable from browsers anyway (CORS), and your preview fetcher should never run on untrusted clients. Put `preview()` behind an API route (see the recipes above).
 
-**I got a preview card for a 404 page.** HTTP error pages that return HTML resolve normally with their `statusCode` set — check `result.statusCode` before caching or rendering (see [Error Handling](#error-handling)).
+**I got a preview card for a 404 page.** HTTP error pages that return HTML resolve normally with their `statusCode` set. Check `result.statusCode` before caching or rendering (see [Error Handling](#error-handling)).
 
 ## Development
 
@@ -370,3 +370,7 @@ LINKPEEK_LIVE_TESTS=1 npm run test
 ```
 
 Framework examples are in [examples](./examples): Next.js, Express, Cloudflare Workers, React, Supabase Edge Functions, and Bun.
+
+## License
+
+MIT © Adrian Gruber

@@ -35,7 +35,7 @@ All notable changes to this project are documented here.
 
 ## 2.0.0 - 2026-06-01
 
-### Breaking — migrating from 1.x
+### Breaking: migrating from 1.x
 
 - Node.js 22+ is required (1.x supported Node 20). No API signatures changed:
   if you are on Node 22 or newer, upgrading from 1.x requires no code changes.
