@@ -76,13 +76,13 @@
 	"devDependencies": {
 		"@arethetypeswrong/cli": "^0.18.3",
 		"@biomejs/biome": "^2.4.16",
-		"@release-it/conventional-changelog": "^11.0.1",
-		"@types/node": "^25.9.3",
+		"@release-it/conventional-changelog": "^12.0.0",
+		"@types/node": "^26.1.2",
 		"@vitest/coverage-v8": "^4.1.8",
 		"publint": "^0.3.21",
-		"release-it": "^20.2.0",
+		"release-it": "^21.0.0",
 		"tsup": "^8.5.1",
-		"typescript": "^6.0.3",
+		"typescript": "^7.0.2",
 		"vitest": "^4.1.8"
 	}
 }
