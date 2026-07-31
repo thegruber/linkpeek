@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here.
 
+## Unreleased
+
+### Changed
+
+- Refreshed the private competitive benchmark dependencies and measured comparison tables, clearing its audit findings and adding Dependabot coverage for the benchmark lockfile.
+
 ## 2.1.2 - 2026-07-31
 
 ### Added
