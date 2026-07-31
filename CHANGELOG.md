@@ -6,7 +6,7 @@ All notable changes to this project are documented here.
 
 ### Changed
 
-- Refreshed the private competitive benchmark dependencies and measured comparison tables, clearing its audit findings and adding Dependabot coverage for the benchmark lockfile.
+- Refreshed the private competitive benchmark dependencies and measured comparison tables, clearing its audit findings, adding Dependabot coverage for the benchmark lockfile, and documenting the Node-floor policy for major development-tool upgrades.
 
 ## 2.1.2 - 2026-07-31
 
