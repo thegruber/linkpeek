@@ -23,14 +23,14 @@ If private advisory tooling is unavailable, open a public issue with minimal det
 
 By default, `preview()` blocks:
 
+- URLs containing embedded usernames or passwords
 - localhost and `.localhost` hosts
 - `.local` hosts
-- private IPv4 ranges
-- IPv4 link-local/cloud metadata ranges
-- IPv4 multicast and reserved ranges
-- IPv6 loopback, unique-local, link-local, multicast, documentation, discard, and IPv6 forms that embed private IPv4 addresses
+- private, link-local, cloud-metadata, multicast, documentation, benchmarking, reserved, and other non-global special-use IPv4 ranges
+- IPv6 loopback, unique-local, link-local, multicast, documentation, benchmarking, discard, dummy, deprecated, and other non-global special-use ranges
+- IPv6 forms that embed a blocked IPv4 address
 
-Extracted metadata URLs for image, favicon, canonical, video, audio, and oEmbed fields are filtered to `http:` and `https:`.
+Extracted metadata URLs for image, favicon, canonical, video, audio, and oEmbed fields are filtered to credential-free `http:` and `https:` URLs.
 
 Custom request `headers` reject common credential-bearing names, including cookies, authorization headers, API keys, and token headers.
 
@@ -38,12 +38,16 @@ Custom request `headers` reject common credential-bearing names, including cooki
 
 - Do not try to pass user cookies, authorization headers, internal API keys, or service tokens to arbitrary preview URLs.
 - Keep `allowPrivateIPs` set to `false` for public user input.
+- Custom `fetch` implementations must honor `RequestInit.redirect: "manual"` and the supplied abort `signal`.
 - Treat all returned metadata as untrusted content.
 - Apply your own rate limits and abuse controls around public preview endpoints.
+- Use network-level egress controls when previewing hostile public input so the runtime cannot reach internal services.
 
 ## Known Limits
 
-Runtime `fetch` implementations own DNS resolution and connection establishment. That means protection against DNS rebinding or platform-specific proxy behavior can vary by runtime. If your threat model includes hostile DNS or internal network segmentation requirements, run `linkpeek` in a network sandbox that cannot reach internal services.
+Runtime `fetch` implementations own DNS resolution and connection establishment. The built-in hostname checks do not pin a hostname to a validated DNS answer, so protection against DNS rebinding, DNS changes between checks and connections, or platform-specific proxy behavior varies by runtime. If your threat model includes hostile DNS or internal network segmentation requirements, run `linkpeek` in a network sandbox that cannot reach internal services.
+
+The special-use address blocklist follows current IANA registries, but network-level policy remains the stronger control and should not be replaced by an application-level blocklist alone.
 
 ## Response Targets
 

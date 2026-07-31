@@ -2,7 +2,7 @@
 
 **Lightweight, safe-by-default link preview and URL metadata extraction for Node.js, Bun, Deno, and fetch-based edge runtimes. One runtime dependency.**
 
-A modern, lightweight alternative to `link-preview-js` and `open-graph-scraper`: one focused TypeScript API that turns any URL into Open Graph, Twitter Card, and JSON-LD preview metadata, with SSRF-safe fetching built in.
+A modern, lightweight alternative to `link-preview-js` and `open-graph-scraper`: one focused TypeScript API that turns any URL into Open Graph, Twitter Card, and JSON-LD preview metadata, with SSRF-hardened fetching built in.
 
 [![npm](https://img.shields.io/npm/v/linkpeek)](https://www.npmjs.com/package/linkpeek)
 [![bundle size](https://img.shields.io/bundlephobia/minzip/linkpeek)](https://bundlephobia.com/package/linkpeek)
@@ -211,7 +211,7 @@ Use [examples/react-preview-card](./examples/react-preview-card) for a browser c
 
 ## Security Defaults
 
-`preview()` validates the initial URL and every HTTP redirect before fetching the next target. By default it blocks localhost, private networks, link-local/cloud metadata ranges, multicast/reserved IP ranges, and IPv6 address forms that embed private IPv4 targets.
+`preview()` rejects credential-bearing input URLs and validates the initial URL and every HTTP redirect before fetching the next target. By default it blocks localhost plus literal private, link-local, cloud-metadata, multicast, documentation, and other non-global special-use IP ranges, including IPv6 forms that embed blocked IPv4 targets.
 
 ## Production checklist
 
@@ -219,6 +219,8 @@ Use [examples/react-preview-card](./examples/react-preview-card) for a browser c
 - Keep `allowPrivateIPs` set to `false` unless the caller is trusted and the network path is intentionally internal.
 - Treat returned metadata as untrusted text and URLs. linkpeek filters extracted media/canonical/oEmbed URLs to `http:` and `https:`.
 - Runtime `fetch` implementations still own DNS resolution. DNS rebinding protection can vary by platform.
+- If you provide a custom `fetch`, it must honor `RequestInit.redirect: "manual"` and the supplied abort `signal`; otherwise redirects can occur outside linkpeek's validation loop.
+- For hostile public input, also enforce outbound network policy so the preview worker cannot reach internal services.
 - Cache successful previews by normalized URL so repeated page views do not refetch the same target.
 - Tune `timeout` and `maxBytes` for your infrastructure. The default preset favors fast preview cards; `presets.quality` trades more bytes for body fallbacks.
 - Handle `statusCode` and thrown errors with a generic broken-link card instead of blocking the whole page.
@@ -281,7 +283,7 @@ Fetches a URL and extracts link preview metadata. Returns `Promise<PreviewResult
 | `headers` | `Record<string, string>` | `{}` | Extra non-sensitive request headers. Common credential-bearing headers are rejected; custom headers are not forwarded on cross-origin redirects |
 | `allowPrivateIPs` | `boolean` | `false` | Allow private/internal IP targets |
 | `signal` | `AbortSignal` | none | Cancel the request from the caller side |
-| `fetch` | `typeof fetch` | `globalThis.fetch` | Custom fetch implementation (proxies, caching, testing) |
+| `fetch` | `typeof fetch` | `globalThis.fetch` | Custom fetch implementation. It must honor manual redirects and the supplied abort signal |
 | `followMetaRefresh` | `boolean` | `false` | Follow one `<meta http-equiv="refresh">` redirect with a delay of 10s or less |
 | `includeBodyContent` | `boolean` | `false` | Continue scanning `<body>` for JSON-LD and image fallbacks |
 
@@ -332,7 +334,7 @@ console.log(result.title); // "Hello"
 
 ### `validateUrl(url, allowPrivateIPs?)` and `isPrivateHost(hostname)`
 
-The SSRF validation helpers are exported for pre-validating URLs before queueing preview jobs. `validateUrl` throws a `LinkpeekError` (`INVALID_URL`, `UNSUPPORTED_PROTOCOL`, or `PRIVATE_NETWORK_BLOCKED`); `isPrivateHost` returns a boolean.
+The SSRF-hardening helpers are exported for pre-validating URLs before queueing preview jobs. `validateUrl` rejects embedded credentials and throws a `LinkpeekError` (`INVALID_URL`, `UNSUPPORTED_PROTOCOL`, or `PRIVATE_NETWORK_BLOCKED`); `isPrivateHost` returns a boolean for hostnames and literal IP addresses covered by linkpeek's blocklist.
 
 ```typescript
 import { validateUrl } from "linkpeek";

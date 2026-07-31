@@ -24,7 +24,7 @@
 		"llms.txt",
 		"CHANGELOG.md"
 	],
-	"packageManager": "npm@11.12.1",
+	"packageManager": "npm@11.19.0",
 	"sideEffects": false,
 	"scripts": {
 		"build": "tsup",
@@ -36,7 +36,7 @@
 		"test:watch": "vitest",
 		"lint": "biome check .",
 		"lint:fix": "biome check --write .",
-		"package:check": "npm run build --silent && publint && attw --pack . && npm pack --dry-run",
+		"package:check": "npm run build --silent && node test/package-smoke.mjs && publint && attw --pack . && npm pack --dry-run",
 		"publish:check": "npm run lint && npm run typecheck && npm run test && npm audit --omit=dev && npm run build --silent",
 		"quality": "npm run lint && npm run typecheck && npm run test && npm audit --omit=dev && npm run package:check",
 		"typecheck": "tsc --noEmit && tsc -p tsconfig.test.json",
@@ -70,19 +70,23 @@
 	"engines": {
 		"node": ">=22.0.0"
 	},
+	"allowScripts": {
+		"esbuild@0.27.2": true,
+		"fsevents@2.3.3": true
+	},
 	"dependencies": {
 		"htmlparser2": "^12.0.0"
 	},
 	"devDependencies": {
-		"@arethetypeswrong/cli": "^0.18.3",
-		"@biomejs/biome": "^2.4.16",
+		"@arethetypeswrong/cli": "^0.18.5",
+		"@biomejs/biome": "^2.5.6",
 		"@release-it/conventional-changelog": "^11.0.1",
-		"@types/node": "^25.9.3",
-		"@vitest/coverage-v8": "^4.1.8",
-		"publint": "^0.3.21",
-		"release-it": "^20.2.0",
+		"@types/node": "^22.20.1",
+		"@vitest/coverage-v8": "^4.1.10",
+		"publint": "^0.3.22",
+		"release-it": "^20.2.1",
 		"tsup": "^8.5.1",
 		"typescript": "^6.0.3",
-		"vitest": "^4.1.8"
+		"vitest": "^4.1.10"
 	}
 }

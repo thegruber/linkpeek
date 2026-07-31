@@ -21,6 +21,8 @@ export interface PreviewOptions {
 	signal?: AbortSignal;
 	/**
 	 * Custom fetch implementation, e.g. a proxy-aware or caching wrapper.
+	 * It must honor RequestInit.redirect ("manual") and the supplied abort signal
+	 * so redirects stay inside linkpeek's validation loop.
 	 * (default: globalThis.fetch)
 	 */
 	fetch?: typeof globalThis.fetch;

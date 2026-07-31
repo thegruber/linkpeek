@@ -2,6 +2,27 @@
 
 All notable changes to this project are documented here.
 
+## 2.1.2 - 2026-07-31
+
+### Added
+
+- A package smoke test that exercises both built ESM and CommonJS exports before packing.
+- Enforced test-coverage floors in CI.
+- Explicit npm lifecycle-script approvals for the build and optional file-watcher dependencies.
+
+### Changed
+
+- Refreshed compatible development tooling, aligned Node type declarations with the Node 22 support floor, tightened TypeScript library checks, and grouped Dependabot minor/patch updates.
+- Updated pinned GitHub Actions releases, disabled checkout credential persistence, and added registry-signature verification to publishing.
+- Clarified the SSRF threat model and the requirements placed on custom `fetch` implementations.
+
+### Security
+
+- Rejects input URLs containing embedded usernames or passwords.
+- Drops credential-bearing extracted metadata URLs.
+- Extends literal-IP blocking for current IANA non-global, documentation, benchmarking, dummy, and deprecated address ranges while preserving documented globally reachable protocol-assignment exceptions.
+- Updated the development dependency tree to resolve all currently reported npm audit findings.
+
 ## 2.1.1 - 2026-06-12
 
 ### Changed

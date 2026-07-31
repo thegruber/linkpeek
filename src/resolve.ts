@@ -91,8 +91,11 @@ export function resolveHttpUrl(
 	if (!resolved) return null;
 
 	try {
-		const protocol = new URL(resolved).protocol;
-		return protocol === "http:" || protocol === "https:" ? resolved : null;
+		const parsed = new URL(resolved);
+		if (parsed.username || parsed.password) return null;
+		return parsed.protocol === "http:" || parsed.protocol === "https:"
+			? resolved
+			: null;
 	} catch {
 		return null;
 	}

@@ -38,6 +38,15 @@ describe("validateUrl", () => {
 		expect(() => validateUrl("")).toThrow("Invalid URL");
 	});
 
+	it("rejects URLs with embedded credentials", () => {
+		expect(() => validateUrl("https://user@example.com/private")).toThrow(
+			"embedded credentials",
+		);
+		expect(() =>
+			validateUrl("https://user:password@example.com/private"),
+		).toThrow("embedded credentials");
+	});
+
 	it("blocks localhost", () => {
 		expect(() => validateUrl("http://localhost/admin")).toThrow("private");
 	});
@@ -122,9 +131,42 @@ describe("validateUrl", () => {
 		expect(() => validateUrl("http://198.18.0.1")).toThrow("private");
 	});
 
+	it("blocks current IANA non-global and reserved address ranges", () => {
+		const blockedUrls = [
+			"http://192.0.0.1",
+			"http://192.0.0.8",
+			"http://192.0.0.170",
+			"http://192.88.99.1",
+			"http://[100:0:0:1::1]",
+			"http://[2001:2::1]",
+			"http://[2001:5::1]",
+			"http://[2001:1::4]",
+			"http://[2001:10::1]",
+			"http://[3fff::1]",
+			"http://[5f00::1]",
+			"http://[4000::1]",
+		];
+
+		for (const url of blockedUrls) {
+			expect(() => validateUrl(url), url).toThrow("private");
+		}
+	});
+
 	it("allows public IPs when allowPrivateIPs is false", () => {
 		expect(() => validateUrl("http://8.8.8.8")).not.toThrow();
 		expect(() => validateUrl("http://93.184.216.34")).not.toThrow();
+	});
+
+	it("allows globally reachable IANA protocol-assignment addresses", () => {
+		expect(() => validateUrl("http://192.0.0.9")).not.toThrow();
+		expect(() => validateUrl("http://192.0.0.10")).not.toThrow();
+		expect(() => validateUrl("http://[2001:1::1]")).not.toThrow();
+		expect(() => validateUrl("http://[2001:1::2]")).not.toThrow();
+		expect(() => validateUrl("http://[2001:1::3]")).not.toThrow();
+		expect(() => validateUrl("http://[2001:3::1]")).not.toThrow();
+		expect(() => validateUrl("http://[2001:4:112::1]")).not.toThrow();
+		expect(() => validateUrl("http://[2001:20::1]")).not.toThrow();
+		expect(() => validateUrl("http://[2001:30::1]")).not.toThrow();
 	});
 
 	it("allows private IPs when allowPrivateIPs is true", () => {
