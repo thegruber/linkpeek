@@ -36,6 +36,12 @@ export function validateUrl(url: string, allowPrivateIPs = false): void {
 			"Only http and https URLs are supported",
 		);
 
+	if (parsed.username || parsed.password)
+		throw new LinkpeekError(
+			"INVALID_URL",
+			"URLs with embedded credentials are not allowed",
+		);
+
 	if (!allowPrivateIPs && isPrivateHost(parsed.hostname))
 		throw new LinkpeekError(
 			"PRIVATE_NETWORK_BLOCKED",
@@ -79,13 +85,15 @@ function parseIPv4(hostname: string): number[] | null {
 	return bytes.some(Number.isNaN) ? null : bytes;
 }
 
-function isPrivateIPv4([a, b, c]: number[]): boolean {
+function isPrivateIPv4([a, b, c, d]: number[]): boolean {
 	if (a === 0 || a === 10 || a === 127) return true;
 	if (a === 100 && b >= 64 && b <= 127) return true;
 	if (a === 169 && b === 254) return true;
 	if (a === 172 && b >= 16 && b <= 31) return true;
 	if (a === 192 && b === 168) return true;
-	if (a === 192 && b === 0 && (c === 0 || c === 2)) return true;
+	if (a === 192 && b === 0 && c === 0) return d !== 9 && d !== 10;
+	if (a === 192 && b === 0 && c === 2) return true;
+	if (a === 192 && b === 88 && c === 99) return true;
 	if (a === 198 && (b === 18 || b === 19)) return true;
 	if (a === 198 && b === 51 && c === 100) return true;
 	if (a === 203 && b === 0 && c === 113) return true;
@@ -142,9 +150,14 @@ function isPrivateIPv6(parts: number[]): boolean {
 	if ((first & 0xfe00) === 0xfc00) return true; // fc00::/7 unique local
 	if ((first & 0xffc0) === 0xfe80) return true; // fe80::/10 link-local
 	if ((first & 0xff00) === 0xff00) return true; // ff00::/8 multicast
+	if (first === 0x2001 && (second & 0xfe00) === 0)
+		return !isGlobalProtocolAssignment(parts); // 2001::/23
 	if (first === 0x2001 && second === 0x0db8) return true; // documentation
-	if (first === 0x2001 && second === 0) return true; // 2001::/32 Teredo
-	if (first === 0x0100 && second === 0) return true; // 100::/64 discard
+	if (first === 0x3fff && (second & 0xf000) === 0) return true; // 3fff::/20 documentation
+	if (first === 0x0100 && second === 0 && parts[2] === 0 && parts[3] === 0)
+		return true; // 100::/64 discard
+	if (first === 0x0100 && second === 0 && parts[2] === 0 && parts[3] === 1)
+		return true; // 100:0:0:1::/64 dummy prefix
 	if (first === 0x0064 && second === 0xff9b && parts[2] === 1) return true; // 64:ff9b:1::/48 local-use translation
 
 	const isIPv4Mapped =
@@ -171,6 +184,23 @@ function isPrivateIPv6(parts: number[]): boolean {
 	const is6to4 = first === 0x2002;
 	if (is6to4) return isPrivateIPv4(ipv4FromWords(parts[1], parts[2]));
 
+	// IANA currently allocates only 2000::/3 for ordinary global unicast.
+	// Special globally reachable translation/mapping forms return above.
+	if ((first & 0xe000) !== 0x2000) return true;
+
+	return false;
+}
+
+function isGlobalProtocolAssignment(parts: number[]): boolean {
+	const [, second, third] = parts;
+	if (second === 0x0001) {
+		const isSpecialAddress = parts.slice(2, 7).every((part) => part === 0);
+		return isSpecialAddress && parts[7] >= 1 && parts[7] <= 3;
+	}
+	if (second === 0x0003) return true; // 2001:3::/32
+	if (second === 0x0004 && third === 0x0112) return true; // 2001:4:112::/48
+	if ((second & 0xfff0) === 0x0020) return true; // 2001:20::/28
+	if ((second & 0xfff0) === 0x0030) return true; // 2001:30::/28
 	return false;
 }
 

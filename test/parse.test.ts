@@ -483,6 +483,18 @@ describe("safe metadata URL resolution", () => {
 		expect(result.oEmbedUrl).toBeNull();
 	});
 
+	it("drops extracted URLs with embedded credentials", () => {
+		const html = `<!DOCTYPE html><html><head>
+			<meta property="og:image" content="https://user:password@cdn.example.com/image.jpg">
+			<link rel="canonical" href="https://user:password@example.com/private">
+			<link rel="alternate" type="application/json+oembed" href="https://user:password@example.com/oembed">
+		</head></html>`;
+		const result = parseHTML(html, BASE);
+		expect(result.image).toBeNull();
+		expect(result.canonicalUrl).toBe(BASE);
+		expect(result.oEmbedUrl).toBeNull();
+	});
+
 	it("falls back when canonical URLs use unsafe schemes", () => {
 		const html = `<!DOCTYPE html><html><head>
 			<link rel="canonical" href="javascript:alert(1)">
