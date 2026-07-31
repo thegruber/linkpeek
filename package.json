@@ -1,6 +1,6 @@
 {
 	"name": "linkpeek",
-	"version": "2.1.1",
+	"version": "2.1.2",
 	"description": "Lightweight, secure link preview and URL metadata extractor for Open Graph, Twitter Cards, JSON-LD, and edge runtimes.",
 	"type": "module",
 	"exports": {
