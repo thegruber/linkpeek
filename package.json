@@ -81,7 +81,7 @@
 		"@arethetypeswrong/cli": "^0.18.5",
 		"@biomejs/biome": "^2.5.6",
 		"@release-it/conventional-changelog": "^11.0.1",
-		"@types/node": "^22.20.1",
+		"@types/node": "^26.1.2",
 		"@vitest/coverage-v8": "^4.1.10",
 		"publint": "^0.3.22",
 		"release-it": "^20.2.1",
