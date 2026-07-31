@@ -14,24 +14,24 @@ npm install
 npm run bench
 ```
 
-## Results (2026-06-11, Node v24.15.0, Apple Silicon, median ms per preview)
+## Results (2026-07-31, Node v24.15.0, Apple Silicon, median ms per preview)
 
 | Package | 0.6–2.3 kB pages | 489 kB page |
 | --- | ---: | ---: |
-| **linkpeek 2.1.0** | **0.11–0.21** | **0.51** |
-| unfurl.js 6.4.0 | 0.09–0.17 | 2.38 |
-| link-preview-js 4.0.3 (fetch+parse) | 0.26–0.39 | 14.70 |
-| url-metadata 5.4.4 | 0.40–0.56 | 15.41 |
-| metascraper 5.50.6 (+7 rules, native fetch) | 0.27–0.37 | 18.42 |
-| open-graph-scraper 6.11.0 | 0.31–0.52 | 208.45 |
+| **linkpeek 2.1.2** | **0.10–0.22** | **0.44** |
+| unfurl.js 6.4.0 | 0.08–0.15 | 2.29 |
+| link-preview-js 5.0.0 (fetch+parse) | 0.17–0.28 | 17.44 |
+| url-metadata 5.9.0 | 0.39–0.58 | 15.87 |
+| metascraper 5.53.0 (+7 rules, native fetch) | 0.26–0.35 | 18.23 |
+| open-graph-scraper 6.12.0 | 0.29–0.51 | 215.85 |
 
 ## Honest reading
 
 - **Small pages:** linkpeek and unfurl.js are tied at the front within noise
   (~0.1–0.2 ms); both stream with htmlparser2. The cheerio/DOM-based packages
-  are 2–4x slower. Differences this small are dwarfed by real network time.
+  are roughly 1.5–5x slower. Differences this small are dwarfed by real network time.
 - **Large pages (where real-world pages live):** linkpeek's 30 KB byte cap and
-  head-first early stop make it 4.7x faster than unfurl.js and 29–409x faster
+  head-first early stop make it 5.2x faster than unfurl.js and 36–491x faster
   than the rest. On a real network the gap widens further: linkpeek downloads
   at most `maxBytes` while the others pull the full page.
 - **link-preview-js end-to-end could not be measured**: since the
