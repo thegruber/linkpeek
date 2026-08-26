@@ -1,6 +1,6 @@
 {
 	"name": "linkpeek",
-	"version": "2.1.3",
+	"version": "2.1.4",
 	"description": "Secure TypeScript link preview and URL metadata extractor with Open Graph parsing for Node.js, Bun, Deno, and edge runtimes.",
 	"type": "module",
 	"exports": {
