@@ -6,7 +6,22 @@ All notable changes to this project are documented here.
 
 ### Changed
 
-- Refreshed the private competitive benchmark dependencies and measured comparison tables, clearing its audit findings, adding Dependabot coverage for the benchmark lockfile, and documenting the Node-floor policy for major development-tool upgrades.
+- Default head-only parsing now stops the tokenizer as soon as the head ends instead of scanning the remaining HTML; refreshed same-corpus benchmarks measure a representative 0.35 ms median on the 489 kB fixture.
+- Refreshed the private competitive benchmark dependencies and measured comparison tables, clearing its audit findings, adding Dependabot coverage for the benchmark lockfile, and documenting the Node and TypeScript major-version policy.
+- Updated Biome, Vitest, publint, release-it, and the conventional-changelog release plugin to their current compatible releases.
+
+### Fixed
+
+- Caller-triggered aborts during a meta-refresh request are rethrown instead of being mistaken for an unreachable refresh target and returning partial metadata.
+- Invalid `timeout` and `maxRedirects` values now fail before fetching with `LinkpeekError` code `INVALID_OPTIONS`, avoiding redirect-limit bypasses and Node timer overflow behavior.
+- JSON-LD MIME type matching is now case-insensitive.
+- Relative metadata and meta-refresh URLs now resolve against the document's first safe `<base href>`.
+
+### Security
+
+- Hardened metadata storage against inherited-object-property injection and replaced polynomial icon-size matching with a linear parser, resolving the actionable findings from the repository's first CodeQL scan.
+- Updated the release dependency tree to remove the reported `undici`, `ip-address`, and `nanoid` advisories; both root and benchmark dependency trees now report zero npm audit findings.
+- Restored the full development-tree high-severity audit as a blocking local, CI, and release gate, and added the benchmark lockfile audit to the same gate.
 
 ## 2.1.2 - 2026-07-31
 
