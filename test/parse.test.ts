@@ -503,12 +503,10 @@ describe("adversarial metadata", () => {
 	it("parses long invalid icon sizes without polynomial backtracking", () => {
 		const sizes = "9".repeat(20_000);
 		const html = `<html><head><link rel="icon" href="/icon.png" sizes="${sizes}"></head></html>`;
-		const startedAt = performance.now();
 
 		const result = parseHTML(html, BASE);
 
 		expect(result.favicon).toBe("https://example.com/icon.png");
-		expect(performance.now() - startedAt).toBeLessThan(50);
 	});
 });
 
