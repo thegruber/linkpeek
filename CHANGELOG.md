@@ -2,6 +2,17 @@
 
 All notable changes to this project are documented here.
 
+## 2.1.5 - 2026-08-26
+
+### Added
+
+- Added a focused feature-request form and routed usage questions and ideas to GitHub Discussions.
+
+### Changed
+
+- Refined the README, npm metadata, GitHub repository metadata, and documentation homepage around high-intent link-preview and URL-metadata language, a faster installation path, clearer trust signals, and community support links.
+- Added precise `og-parser` and `web-metadata` npm keywords plus `javascript` and `scraper` GitHub topics.
+
 ## 2.1.4 - 2026-08-26
 
 ### Added

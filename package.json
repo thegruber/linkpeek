@@ -1,7 +1,7 @@
 {
 	"name": "linkpeek",
 	"version": "2.1.4",
-	"description": "Secure TypeScript link preview and URL metadata extractor with Open Graph parsing for Node.js, Bun, Deno, and edge runtimes.",
+	"description": "Fast, safe TypeScript link preview library and URL metadata extractor for Open Graph, Twitter Cards, and JSON-LD on Node.js, Bun, Deno, and edge runtimes.",
 	"type": "module",
 	"exports": {
 		".": {
@@ -66,7 +66,9 @@
 		"metadata-parser",
 		"url-preview",
 		"preview-card",
-		"nodejs"
+		"nodejs",
+		"og-parser",
+		"web-metadata"
 	],
 	"author": "Adrian Gruber",
 	"license": "MIT",

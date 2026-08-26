@@ -2,8 +2,8 @@
 	{
 		"route": "",
 		"source": "home.html",
-		"title": "Secure TypeScript link previews",
-		"description": "Fast, safe-by-default link preview and Open Graph metadata extraction for Node.js, Bun, Deno, and edge runtimes.",
+		"title": "TypeScript link preview library",
+		"description": "Fast, safe TypeScript link preview library and URL metadata extractor for Open Graph, Twitter Cards, and JSON-LD on Node.js, Bun, Deno, and edge runtimes.",
 		"alternate": "https://raw.githubusercontent.com/thegruber/linkpeek/main/README.md",
 		"nav": null
 	},

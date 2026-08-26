@@ -1,7 +1,8 @@
 <article class="doc">
 		<p class="eyebrow">linkpeek</p>
-		<h1>Link preview metadata for TypeScript</h1>
-		<p class="doc-lede">Fetch a URL and extract typed Open Graph, Twitter Card, JSON-LD, favicon, and canonical metadata. Literal private and non-global addresses are blocked by default; platform fetch still owns final DNS resolution.</p>
+		<h1>Fast, safe link previews for TypeScript</h1>
+		<p class="doc-lede">Fetch a URL and extract typed Open Graph, Twitter Card, JSON-LD, favicon, and canonical metadata with one runtime dependency. Literal private and non-global addresses are blocked by default; platform fetch still owns final DNS resolution.</p>
+		<p><a class="button" href="https://www.npmjs.com/package/linkpeek">Install from npm</a> <a class="button" href="https://github.com/thegruber/linkpeek">View on GitHub</a></p>
 
 		<h2 id="install">Install</h2>
 		<pre><code>npm install linkpeek</code></pre>
@@ -15,6 +16,14 @@
 console.log(result.title);
 console.log(result.description);
 console.log(result.image);</code></pre>
+
+		<h2 id="why-linkpeek">Why linkpeek</h2>
+		<ul>
+			<li>One runtime dependency and no DOM implementation</li>
+			<li>A 30 KB fast default with early stream cancellation after the document head</li>
+			<li>Private and non-global address blocking before the initial request and every redirect</li>
+			<li>Typed ESM and CommonJS output for server and fetch-compatible edge runtimes</li>
+		</ul>
 
 		<h2 id="presets">Presets</h2>
 		<p>The default fast preset retains up to 30 KB, scans head metadata, and cancels the response stream after the head when possible. Use <code>presets.quality</code> when body JSON-LD, a body-image fallback, or one validated meta-refresh is worth the additional work.</p>

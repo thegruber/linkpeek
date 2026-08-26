@@ -1,8 +1,8 @@
 # linkpeek
 
-**Lightweight, safe-by-default link preview, link metadata, and URL preview extraction for Node.js, Bun, Deno, and fetch-based edge runtimes. One runtime dependency.**
+**A fast, safe-by-default link preview library for TypeScript, Node.js, Bun, Deno, and edge runtimes. One runtime dependency.**
 
-A modern Open Graph parser and link-unfurling alternative to `link-preview-js` and `open-graph-scraper`: one focused TypeScript API that turns any URL into Open Graph, Twitter Card, and JSON-LD preview metadata, with SSRF-hardened fetching built in.
+linkpeek turns a URL into typed Open Graph, Twitter Card, JSON-LD, and URL metadata. It is a lightweight link-unfurling alternative to `link-preview-js` and `open-graph-scraper`, with streaming extraction and SSRF-aware fetching built in.
 
 ```bash
 npm install linkpeek
@@ -21,12 +21,13 @@ result.canonicalUrl; // absolute final/canonical URL
 ```
 
 [![npm](https://img.shields.io/npm/v/linkpeek)](https://www.npmjs.com/package/linkpeek)
-[![bundle size](https://img.shields.io/bundlephobia/minzip/linkpeek)](https://bundlephobia.com/package/linkpeek)
+[![weekly downloads](https://img.shields.io/npm/dw/linkpeek)](https://www.npmjs.com/package/linkpeek)
 [![CI](https://github.com/thegruber/linkpeek/actions/workflows/ci.yml/badge.svg)](https://github.com/thegruber/linkpeek/actions/workflows/ci.yml)
+[![bundle size](https://img.shields.io/bundlephobia/minzip/linkpeek)](https://bundlephobia.com/package/linkpeek)
 [![types](https://img.shields.io/npm/types/linkpeek)](https://www.npmjs.com/package/linkpeek)
 [![license](https://img.shields.io/npm/l/linkpeek)](LICENSE)
 
-[Documentation](https://thegruber.github.io/linkpeek/) · [API](#api) · [Security](./SECURITY.md) · [Examples](./examples) · [Benchmarks](./docs/comparison.md)
+[Documentation](https://thegruber.github.io/linkpeek/) · [API](#api) · [Security](./SECURITY.md) · [Examples](./examples) · [Benchmarks](./docs/comparison.md) · [Changelog](./CHANGELOG.md)
 
 ## Runtime support
 
@@ -41,12 +42,12 @@ CI tests Node 22, Node 24, Node 26, Bun, and Deno.
 
 ## Why linkpeek
 
-linkpeek focuses on server-side preview cards: fetch a URL, read only enough HTML for useful metadata, and return a stable result shape without a DOM-heavy scraper stack. It is a small metadata extractor for applications that already have a URL and need a safe preview-card result.
+linkpeek focuses on server-side preview cards: fetch a URL, read only enough HTML for useful metadata, and return a stable result shape without a DOM-heavy scraper stack.
 
 - **1 runtime dependency**: `htmlparser2`
-- **Streaming fetch** with a strict byte limit and early cancellation after the head
+- **30 KB fast default** with a strict byte limit and early stream cancellation after the head
 - **Head-first SAX parsing** with no DOM construction
-- **Safe defaults**: private/internal IP targets blocked by default
+- **Safe network defaults**: private/internal IP targets and credential-bearing requests blocked by default
 - **Dual ESM/CJS package output** with TypeScript declarations for both module systems
 
 > linkpeek is intended for server-side use. Put it behind an API route and return only the metadata your client needs.
@@ -343,6 +344,15 @@ validateUrl("http://169.254.169.254/"); // throws PRIVATE_NETWORK_BLOCKED
 **Can I call it from the browser?** No, server-side only. Cross-origin pages are unreadable from browsers anyway (CORS), and your preview fetcher should never run on untrusted clients. Put `preview()` behind an API route (see the recipes above).
 
 **I got a preview card for a 404 page.** HTTP error pages that return HTML resolve normally with their `statusCode` set. Check `result.statusCode` before caching or rendering (see [Error Handling](#error-handling)).
+
+## Community and support
+
+- Ask usage questions and share ideas in [GitHub Discussions](https://github.com/thegruber/linkpeek/discussions).
+- Report reproducible bugs or metadata mismatches with the [issue templates](https://github.com/thegruber/linkpeek/issues/new/choose).
+- Read the [contribution guide](./CONTRIBUTING.md) before opening a pull request.
+- Report vulnerabilities privately through [GitHub Security Advisories](https://github.com/thegruber/linkpeek/security/advisories/new).
+
+If linkpeek saves you time, [star the repository](https://github.com/thegruber/linkpeek) so other developers can find it too.
 
 ## Development
 

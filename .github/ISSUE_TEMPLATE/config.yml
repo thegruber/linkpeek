@@ -1,5 +1,8 @@
 blank_issues_enabled: false
 contact_links:
+  - name: Questions and ideas
+    url: https://github.com/thegruber/linkpeek/discussions
+    about: Ask for help, propose an idea, or show how you use linkpeek.
   - name: Security vulnerability
     url: https://github.com/thegruber/linkpeek/security/advisories/new
     about: Please report security vulnerabilities privately.
