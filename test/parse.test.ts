@@ -363,6 +363,18 @@ describe("extractMetaRefreshUrl", () => {
 			"https://example.com/comma-page",
 		);
 	});
+
+	it("ignores meta refresh tags after the head boundary", () => {
+		const explicitBody = `<html><head><title>Article</title></head><body>
+			<meta http-equiv="refresh" content="0; url=/body-refresh">
+		</body></html>`;
+		const implicitBody = `<html><head><title>Article</title><main>
+			<meta http-equiv="refresh" content="0; url=/implicit-body-refresh">
+		</main></html>`;
+
+		expect(extractMetaRefreshUrl(explicitBody, BASE)).toBeNull();
+		expect(extractMetaRefreshUrl(implicitBody, BASE)).toBeNull();
+	});
 });
 
 describe("entity handling (single decode)", () => {

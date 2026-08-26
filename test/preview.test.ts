@@ -32,6 +32,135 @@ describe("preview()", () => {
 		vi.unstubAllGlobals();
 	});
 
+	it("stops reading the response after the head in fast mode", async () => {
+		const encoder = new TextEncoder();
+		const page = encoder.encode(
+			`<html><head><title>Early title</title></head><body>${"x".repeat(50_000)}</body></html>`,
+		);
+		let emittedBytes = 0;
+		let canceled = false;
+		const body = new ReadableStream<Uint8Array>({
+			pull(controller) {
+				if (emittedBytes >= page.length) {
+					controller.close();
+					return;
+				}
+				const end = Math.min(emittedBytes + 512, page.length);
+				controller.enqueue(page.slice(emittedBytes, end));
+				emittedBytes = end;
+			},
+			cancel() {
+				canceled = true;
+			},
+		});
+		const fetchMock = vi.fn(
+			async () =>
+				new Response(body, {
+					headers: { "content-type": "text/html; charset=utf-8" },
+				}),
+		);
+
+		const result = await preview("https://example.com/article", {
+			fetch: fetchMock,
+			maxBytes: 30_000,
+		});
+
+		expect(result.title).toBe("Early title");
+		expect(canceled).toBe(true);
+		expect(emittedBytes).toBeLessThan(30_000);
+	});
+
+	it("continues reading body metadata when body scanning is enabled", async () => {
+		const page = `<html><head><title>Head fallback</title></head><body>
+			${"padding ".repeat(300)}
+			<script type="application/ld+json">
+				{"headline":"Body JSON-LD title"}
+			</script>
+		</body></html>`;
+		const fetchMock = vi.fn(
+			async () =>
+				new Response(page, {
+					headers: { "content-type": "text/html; charset=utf-8" },
+				}),
+		);
+
+		const result = await preview("https://example.com/article", {
+			fetch: fetchMock,
+			includeBodyContent: true,
+			maxBytes: 10_000,
+		});
+
+		expect(result.title).toBe("Body JSON-LD title");
+	});
+
+	it("streams through a body image fallback when body scanning is enabled", async () => {
+		const encoder = new TextEncoder();
+		const page = encoder.encode(
+			`<html><head><title>Body image</title></head><body>${"padding ".repeat(300)}<img src="/fallback.jpg"></body></html>`,
+		);
+		let emittedBytes = 0;
+		let canceled = false;
+		const body = new ReadableStream<Uint8Array>({
+			pull(controller) {
+				if (emittedBytes >= page.length) {
+					controller.close();
+					return;
+				}
+				const end = Math.min(emittedBytes + 256, page.length);
+				controller.enqueue(page.slice(emittedBytes, end));
+				emittedBytes = end;
+			},
+			cancel() {
+				canceled = true;
+			},
+		});
+		const fetchMock = vi.fn(
+			async () =>
+				new Response(body, {
+					headers: { "content-type": "text/html; charset=utf-8" },
+				}),
+		);
+
+		const result = await preview("https://example.com/article", {
+			fetch: fetchMock,
+			includeBodyContent: true,
+			maxBytes: 10_000,
+		});
+
+		expect(result.image).toBe("https://example.com/fallback.jpg");
+		expect(emittedBytes).toBe(page.length);
+		expect(canceled).toBe(false);
+	});
+
+	it("does not make body meta refresh behavior depend on response chunking", async () => {
+		const head = "<html><head><title>Article</title></head><body>";
+		const bodyRefresh =
+			'<meta http-equiv="refresh" content="0; url=https://example.com/unexpected">';
+		const encoder = new TextEncoder();
+		const chunks = [encoder.encode(head), encoder.encode(bodyRefresh)];
+		const body = new ReadableStream<Uint8Array>({
+			pull(controller) {
+				const next = chunks.shift();
+				if (next) controller.enqueue(next);
+				else controller.close();
+			},
+		});
+		const fetchMock = vi.fn(
+			async () =>
+				new Response(body, {
+					headers: { "content-type": "text/html; charset=utf-8" },
+				}),
+		);
+
+		const result = await preview("https://example.com/article", {
+			fetch: fetchMock,
+			followMetaRefresh: true,
+		});
+
+		expect(fetchMock).toHaveBeenCalledTimes(1);
+		expect(result.title).toBe("Article");
+	});
+
 	it("throws on invalid URL", async () => {
 		await expect(preview("not-a-valid-url")).rejects.toThrow();
 	});
