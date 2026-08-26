@@ -17,15 +17,9 @@ updates:
           - minor
           - patch
     ignore:
-      # Keep development types and release tooling aligned with the declared
-      # Node 22.0 support floor. Revisit these when that floor changes.
+      # Keep development types aligned with the supported Node and TypeScript
+      # majors. Revisit these when those policies change.
       - dependency-name: "@types/node"
-        update-types:
-          - version-update:semver-major
-      - dependency-name: "@release-it/conventional-changelog"
-        update-types:
-          - version-update:semver-major
-      - dependency-name: release-it
         update-types:
           - version-update:semver-major
       - dependency-name: typescript

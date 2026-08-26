@@ -30,11 +30,7 @@ jobs:
         env:
           CI: true
       - run: npm run build
-      # Gate on the runtime tree only; dev-tool advisories surface via
-      # Dependabot instead of blocking releases.
-      - run: npm audit --omit=dev
-      - run: npm audit --audit-level=high
-        continue-on-error: true
+      - run: npm run audit
       - run: npm run package:check
 
   test-bun:

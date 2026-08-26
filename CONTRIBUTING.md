@@ -10,6 +10,10 @@ Thanks for your interest in contributing.
 npm ci
 ```
 
+The published library supports Node.js 22+. The current release-it toolchain
+requires Node.js 22.21+ or 24+, so use a current Node 22 patch release when
+running release commands locally.
+
 2. Run the full quality gate (lint, typecheck, tests, audit, build, package checks):
 
 ```bash
