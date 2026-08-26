@@ -79,7 +79,7 @@ Quick comparison:
 
 ### Measured install footprint
 
-Measured 2026-07-31 via `npm install --ignore-scripts` of each package's pinned benchmark version into a clean directory, counting `package-lock.json` entries and `du -sk node_modules`:
+Measured 2026-08-26 via `npm install --ignore-scripts` of each package's pinned benchmark version into a clean directory, counting `package-lock.json` entries and `du -sk node_modules`:
 
 | Package | Installed packages | `node_modules` size |
 | --- | ---: | ---: |
@@ -87,23 +87,23 @@ Measured 2026-07-31 via `npm install --ignore-scripts` of each package's pinned 
 | `unfurl.js` 6.4.0 | 16 | 3.0 MB |
 | `link-preview-js` 5.0.0 | 18 | 7.2 MB |
 | `open-graph-scraper` 6.12.0 | 27 | 10.3 MB |
-| `url-metadata` 5.9.0 | 30 | 9.8 MB |
-| `metascraper` 5.53.0 + 7 rules | 129 | 76.1 MB |
+| `url-metadata` 5.10.0 | 30 | 9.8 MB |
+| `metascraper` 5.56.2 + 7 rules | 129 | 76.2 MB |
 
 linkpeek's runtime tree contains no HTTP client, no DOM implementation, and no native modules. That is the structural reason it runs on fetch-based edge runtimes. The ESM bundle is ~7 KB gzipped.
 
 ### Measured speed (same corpus, local server)
 
-From the [same-corpus benchmark harness](./benchmarks/competitive) (2026-07-31, Node 24, median ms per end-to-end preview). On small pages linkpeek is tied at the front with unfurl.js; on a realistic 489 kB page the byte cap and head-first parsing are decisive:
+From the [same-corpus benchmark harness](./benchmarks/competitive) (2026-08-26, Node 24, representative median from three runs, ms per end-to-end preview). On small pages linkpeek is tied at the front with unfurl.js; on a realistic 489 kB page the byte cap and head-first parsing are decisive:
 
 | Package | 489 kB page |
 | --- | ---: |
-| **linkpeek** | **0.44 ms** |
-| `unfurl.js` | 2.29 ms |
-| `url-metadata` | 15.87 ms |
-| `link-preview-js` (fetch+parse) | 17.44 ms |
-| `metascraper` | 18.23 ms |
-| `open-graph-scraper` | 215.85 ms |
+| **linkpeek** | **0.35 ms** |
+| `unfurl.js` | 2.62 ms |
+| `url-metadata` | 17.35 ms |
+| `link-preview-js` (fetch+parse) | 17.45 ms |
+| `metascraper` | 19.16 ms |
+| `open-graph-scraper` | 217.50 ms |
 
 On real networks the gap widens: linkpeek downloads at most `maxBytes` (30 KB by default) while the others pull the full page.
 
@@ -275,11 +275,11 @@ Fetches a URL and extracts link preview metadata. Returns `Promise<PreviewResult
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
-| `timeout` | `number` | `8000` | Request timeout in milliseconds. Throws `LinkpeekError` code `TIMEOUT` |
+| `timeout` | `number` | `8000` | Request timeout in milliseconds, from 0 to 2,147,483,647. Throws `LinkpeekError` code `TIMEOUT` when elapsed; invalid values throw `INVALID_OPTIONS` |
 | `maxBytes` | `number` | `30_000` | Maximum bytes to stream |
 | `userAgent` | `string` | `"Twitterbot/1.0"` | User-Agent sent with requests |
 | `followRedirects` | `boolean` | `true` | Follow HTTP redirects after validating each target |
-| `maxRedirects` | `number` | `10` | Maximum HTTP redirects to follow |
+| `maxRedirects` | `number` | `10` | Maximum HTTP redirects to follow. Must be a non-negative integer; invalid values throw `INVALID_OPTIONS` |
 | `headers` | `Record<string, string>` | `{}` | Extra non-sensitive request headers. Common credential-bearing headers are rejected; custom headers are not forwarded on cross-origin redirects |
 | `allowPrivateIPs` | `boolean` | `false` | Allow private/internal IP targets |
 | `signal` | `AbortSignal` | none | Cancel the request from the caller side |
@@ -319,7 +319,7 @@ Fetches a URL and extracts link preview metadata. Returns `Promise<PreviewResult
 ### `parseHTML(html, baseUrl, options?)`
 
 Parses an HTML string directly. Use this when you already have the HTML.
-Pass `{ includeBodyContent: true }` to continue into `<body>` for JSON-LD and image fallbacks; by default it keeps the same head-first behavior as `preview()`.
+Pass `{ includeBodyContent: true }` to continue into `<body>` for JSON-LD and image fallbacks; by default parsing stops tokenizing when the head ends. Relative metadata and meta-refresh URLs honor the document's first safe `<base href>`.
 
 ```typescript
 import { parseHTML } from "linkpeek";
