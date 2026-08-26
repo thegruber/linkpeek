@@ -36,9 +36,10 @@
 		"test:watch": "vitest",
 		"lint": "biome check .",
 		"lint:fix": "biome check --write .",
+		"audit": "npm audit --omit=dev && npm audit --audit-level=high && npm audit --prefix benchmarks/competitive --package-lock-only",
 		"package:check": "npm run build --silent && node test/package-smoke.mjs && publint && attw --pack . && npm pack --dry-run",
-		"publish:check": "npm run lint && npm run typecheck && npm run test && npm audit --omit=dev && npm run build --silent",
-		"quality": "npm run lint && npm run typecheck && npm run test && npm audit --omit=dev && npm run package:check",
+		"publish:check": "npm run lint && npm run typecheck && npm run test && npm run audit && npm run build --silent",
+		"quality": "npm run lint && npm run typecheck && npm run test && npm run audit && npm run package:check",
 		"typecheck": "tsc --noEmit && tsc -p tsconfig.test.json",
 		"prepublishOnly": "npm run publish:check",
 		"release": "release-it"
@@ -79,14 +80,14 @@
 	},
 	"devDependencies": {
 		"@arethetypeswrong/cli": "^0.18.5",
-		"@biomejs/biome": "^2.5.6",
-		"@release-it/conventional-changelog": "^11.0.1",
+		"@biomejs/biome": "^2.5.10",
+		"@release-it/conventional-changelog": "^12.0.0",
 		"@types/node": "^22.20.1",
-		"@vitest/coverage-v8": "^4.1.10",
-		"publint": "^0.3.22",
-		"release-it": "^20.2.1",
+		"@vitest/coverage-v8": "^4.1.11",
+		"publint": "^0.3.24",
+		"release-it": "^21.0.2",
 		"tsup": "^8.5.1",
 		"typescript": "^6.0.3",
-		"vitest": "^4.1.10"
+		"vitest": "^4.1.11"
 	}
 }
