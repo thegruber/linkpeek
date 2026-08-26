@@ -3,6 +3,9 @@ dist
 .env
 .env.local
 coverage
+website/dist
+.playwright-cli/
+output/
 *.tsbuildinfo
 .claude/
 .DS_Store

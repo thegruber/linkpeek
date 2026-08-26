@@ -1,0 +1,27 @@
+<article class="doc">
+		<p class="eyebrow">linkpeek</p>
+		<h1>Link preview metadata for TypeScript</h1>
+		<p class="doc-lede">Fetch a URL and extract typed Open Graph, Twitter Card, JSON-LD, favicon, and canonical metadata. Literal private and non-global addresses are blocked by default; platform fetch still owns final DNS resolution.</p>
+
+		<h2 id="install">Install</h2>
+		<pre><code>npm install linkpeek</code></pre>
+		<p>Requires Node.js 22 or newer. CI also covers Bun and Deno; the fetch-native API is designed for compatible edge runtimes.</p>
+
+		<h2 id="example">Example</h2>
+		<pre><code><span class="code-keyword">import</span> { preview } <span class="code-keyword">from</span> <span class="code-value">"linkpeek"</span>;
+
+<span class="code-keyword">const</span> result = <span class="code-keyword">await</span> preview(<span class="code-value">"https://example.com/article"</span>);
+
+console.log(result.title);
+console.log(result.description);
+console.log(result.image);</code></pre>
+
+		<h2 id="presets">Presets</h2>
+		<p>The default fast preset retains up to 30 KB and scans head metadata. This unreleased worktree also cancels the response stream after the head when possible. Use <code>presets.quality</code> when body JSON-LD, a body-image fallback, or one validated meta-refresh is worth the additional work.</p>
+		<pre><code><span class="code-keyword">import</span> { preview, presets } <span class="code-keyword">from</span> <span class="code-value">"linkpeek"</span>;
+
+<span class="code-keyword">const</span> result = <span class="code-keyword">await</span> preview(url, presets.quality);</code></pre>
+
+		<h2 id="production">Server-side use</h2>
+		<p>Keep <code>preview()</code> behind a server or edge endpoint. Cache successful results, never forward caller credentials, and treat extracted metadata as untrusted content.</p>
+	</article>

@@ -1,0 +1,40 @@
+<article class="doc">
+		<p class="eyebrow">API reference</p>
+		<h1>One result shape across server runtimes.</h1>
+		<p class="doc-lede">The root export provides <code>preview</code>, <code>parseHTML</code>, <code>presets</code>, URL validation helpers, and typed errors in ESM and CommonJS.</p>
+
+		<h2 id="preview"><code>preview(url, options?)</code></h2>
+		<p>Fetch an HTTP(S) URL, validate redirects, enforce timeout and byte limits, then extract preview metadata. Network failures propagate; invalid input and policy failures throw <code>LinkpeekError</code>.</p>
+
+		<h2 id="options">Options</h2>
+		<div class="table-wrap"><table><thead><tr><th>Option</th><th>Default</th><th>Purpose</th></tr></thead><tbody>
+			<tr><td><code>timeout</code></td><td>8000</td><td>Whole-request deadline in milliseconds</td></tr>
+			<tr><td><code>maxBytes</code></td><td>30,000</td><td>Maximum decoded response-body bytes retained</td></tr>
+			<tr><td><code>userAgent</code></td><td>Twitterbot/1.0</td><td>User-Agent sent to the target</td></tr>
+			<tr><td><code>followRedirects</code></td><td>true</td><td>Validate and follow HTTP redirects</td></tr>
+			<tr><td><code>maxRedirects</code></td><td>10</td><td>Redirect ceiling</td></tr>
+			<tr><td><code>headers</code></td><td>{}</td><td>Extra non-sensitive request headers</td></tr>
+			<tr><td><code>allowPrivateIPs</code></td><td>false</td><td>Explicit private-network opt-in</td></tr>
+			<tr><td><code>includeBodyContent</code></td><td>false</td><td>Scan body JSON-LD and image fallback</td></tr>
+			<tr><td><code>followMetaRefresh</code></td><td>false</td><td>Follow one validated fast refresh declared in the head</td></tr>
+			<tr><td><code>signal</code></td><td>—</td><td>Caller cancellation</td></tr>
+			<tr><td><code>fetch</code></td><td>global fetch</td><td>Inject a compatible fetch implementation</td></tr>
+		</tbody></table></div>
+
+		<h2 id="result">Result fields</h2>
+		<p>The stable result includes <code>url</code>, <code>statusCode</code>, <code>title</code>, <code>description</code>, <code>image</code>, <code>siteName</code>, <code>favicon</code>, <code>canonicalUrl</code>, author/date/language fields, video/audio URLs, Twitter fields, theme color, and an optional discovered oEmbed endpoint.</p>
+		<p>Extracted resource URLs are resolved against the document base and limited to HTTP(S).</p>
+
+		<h2 id="parse"><code>parseHTML(html, baseUrl, options?)</code></h2>
+		<p>Use the parser directly when HTML is already available. Default parsing stops tokenizing at the end of the head. Set <code>includeBodyContent: true</code> only when body JSON-LD or image fallback is worth the extra work.</p>
+
+		<h2 id="errors">Typed errors</h2>
+		<pre><code><span class="code-keyword">try</span> {
+	<span class="code-keyword">await</span> preview(url);
+} <span class="code-keyword">catch</span> (error) {
+	<span class="code-keyword">if</span> (error <span class="code-keyword">instanceof</span> LinkpeekError) {
+		console.log(error.code); <span class="code-comment">// "TIMEOUT", "PRIVATE_NETWORK_BLOCKED", …</span>
+	}
+}</code></pre>
+		<p>Use <code>code</code>, never message matching, for program flow.</p>
+	</article>

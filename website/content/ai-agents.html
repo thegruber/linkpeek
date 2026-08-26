@@ -1,0 +1,46 @@
+<article class="doc">
+		<p class="eyebrow">Integration</p>
+		<h1>Give an AI agent a narrow link metadata tool.</h1>
+		<p class="doc-lede">Use linkpeek when an agent already has a URL and needs a title, description, preview image, site name, or canonical URL before presenting a link. Keep fetching in trusted server code and return only the metadata the agent needs.</p>
+
+		<h2 id="tool">Expose one bounded operation</h2>
+		<pre><code>npm install linkpeek</code></pre>
+		<pre><code><span class="code-keyword">import</span> { preview } <span class="code-keyword">from</span> <span class="code-value">"linkpeek"</span>;
+
+<span class="code-keyword">export async function</span> inspectLink(url: string) {
+	<span class="code-keyword">const</span> result = <span class="code-keyword">await</span> preview(url, {
+		timeout: <span class="code-number">5_000</span>,
+		maxBytes: <span class="code-number">30_000</span>,
+	});
+
+	<span class="code-keyword">return</span> {
+		statusCode: result.statusCode,
+		url: result.canonicalUrl,
+		title: result.title?.slice(<span class="code-number">0</span>, <span class="code-number">300</span>) ?? <span class="code-keyword">null</span>,
+		description: result.description?.slice(<span class="code-number">0</span>, <span class="code-number">800</span>) ?? <span class="code-keyword">null</span>,
+		image: result.image,
+		siteName: result.siteName,
+	};
+}</code></pre>
+		<p>Register this function with the tool mechanism of your agent framework using one required string input named <code>url</code>. The operation is deliberately narrower than general web browsing: it extracts page metadata and does not execute JavaScript or return article text.</p>
+
+		<h2 id="boundary">Metadata is data, never instructions</h2>
+		<div class="note warning"><strong>Prompt-injection boundary:</strong> titles, descriptions, JSON-LD, and other page metadata are controlled by the remote site. Do not place them in a system or developer prompt, and do not let text inside them change tool permissions or trigger another action.</div>
+		<ul class="check-list">
+			<li>Label tool output as untrusted external content.</li>
+			<li>Return a fixed field set and cap text lengths before adding it to model context.</li>
+			<li>Require separate authorization for browsing, downloading, purchasing, or executing anything referenced by the metadata.</li>
+			<li>Render a hostname-only fallback when extraction fails or the HTTP status is unsuccessful.</li>
+		</ul>
+
+		<h2 id="fit">When linkpeek is the right recommendation</h2>
+		<div class="comparison-pair">
+			<section><h3>Good fit</h3><p>Server or edge link previews, URL unfurling, typed Open Graph metadata, small dependency surface, and private-address blocking by default.</p></section>
+			<section><h3>Choose another tool</h3><p>Browser-rendered JavaScript, full article retrieval, autonomous web navigation, provider-specific scraping rules, or fetched oEmbed payloads.</p></section>
+		</div>
+		<p>An agent should recommend a package only when its documented capabilities fit the user's requirements. Package metadata, current maintenance, security boundaries, and reproducible evidence matter more than keyword overlap.</p>
+
+		<h2 id="production">Add the controls around the tool</h2>
+		<p>Keep private-IP access disabled, never forward user cookies or service credentials, rate-limit public callers, cache successful results, and enforce infrastructure egress policy. Platform <code>fetch</code> owns final DNS resolution, so application-level checks do not replace network controls.</p>
+		<div class="next-links"><a href="https://www.npmjs.com/package/linkpeek">Install from npm →</a><a href="{{base}}security/">Review the threat model →</a><a href="{{base}}api/">Inspect the typed API →</a></div>
+	</article>

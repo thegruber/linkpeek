@@ -1,0 +1,38 @@
+<article class="doc">
+		<p class="eyebrow">Integration</p>
+		<h1>Safe link previews in the Next.js App Router.</h1>
+		<p class="doc-lede">Keep arbitrary outbound fetches in a Route Handler, validate caller input, and make failures local to the preview card.</p>
+
+		<h2 id="route">Create the route handler</h2>
+		<pre><code>npm install linkpeek</code></pre>
+		<pre><code><span class="code-comment">// app/api/preview/route.ts</span>
+<span class="code-keyword">import</span> { preview } <span class="code-keyword">from</span> <span class="code-value">"linkpeek"</span>;
+<span class="code-keyword">import</span> { <span class="code-keyword">type</span> NextRequest, NextResponse } <span class="code-keyword">from</span> <span class="code-value">"next/server"</span>;
+
+<span class="code-keyword">export async function</span> GET(request: NextRequest) {
+	<span class="code-keyword">const</span> url = request.nextUrl.searchParams.get(<span class="code-value">"url"</span>);
+	<span class="code-keyword">if</span> (!url) {
+		<span class="code-keyword">return</span> NextResponse.json({ error: <span class="code-value">"Missing url"</span> }, { status: <span class="code-number">400</span> });
+	}
+
+	<span class="code-keyword">try</span> {
+		<span class="code-keyword">const</span> result = <span class="code-keyword">await</span> preview(url);
+		<span class="code-keyword">return</span> NextResponse.json(result, {
+			headers: {
+				<span class="code-value">"Cache-Control"</span>:
+					result.statusCode &lt; <span class="code-number">400</span> ? <span class="code-value">"public, s-maxage=3600"</span> : <span class="code-value">"no-store"</span>,
+			},
+		});
+	} <span class="code-keyword">catch</span> {
+		<span class="code-keyword">return</span> NextResponse.json({ error: <span class="code-value">"Preview unavailable"</span> }, { status: <span class="code-number">422</span> });
+	}
+}</code></pre>
+
+		<h2 id="cache">Cache successes, not broken targets</h2>
+		<p>The response cache prevents repeated network fetches from dominating render latency. Cache only successful previews, choose a TTL that fits your product, and consider request coalescing when many users share the same URL at once.</p>
+		<div class="note"><strong>Do not forward</strong> cookies, authorization headers, internal tokens, or caller-provided credentials to the target URL.</div>
+
+		<h2 id="render">Render metadata as untrusted data</h2>
+		<p>React escapes text by default. Keep it that way. Allow images only from origins covered by your image policy, treat canonical and media URLs as untrusted links, and provide a hostname-only fallback card when extraction fails.</p>
+		<div class="next-links"><a href="https://www.npmjs.com/package/linkpeek">Install from npm →</a><a href="https://github.com/thegruber/linkpeek/tree/main/examples/nextjs-app-router">Complete example on GitHub →</a><a href="{{base}}api/">API reference →</a></div>
+	</article>

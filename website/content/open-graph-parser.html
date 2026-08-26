@@ -1,0 +1,32 @@
+<article class="doc">
+		<p class="eyebrow">Guide</p>
+		<h1>Parse Open Graph metadata without a DOM.</h1>
+		<p class="doc-lede"><code>parseHTML()</code> extracts Open Graph, Twitter Card, JSON-LD, favicon, canonical, media, and oEmbed discovery fields from HTML you already have. It does not fetch a URL or execute page JavaScript.</p>
+
+		<h2 id="parse">Parse an HTML string</h2>
+		<pre><code><span class="code-keyword">import</span> { parseHTML } <span class="code-keyword">from</span> <span class="code-value">"linkpeek"</span>;
+
+<span class="code-keyword">const</span> html = <span class="code-value">`&lt;!doctype html&gt;
+&lt;meta property="og:title" content="A typed preview"&gt;
+&lt;meta property="og:description" content="Parsed without a DOM"&gt;
+&lt;meta property="og:image" content="/images/preview.jpg"&gt;`</span>;
+
+<span class="code-keyword">const</span> result = parseHTML(html, <span class="code-value">"https://example.com/posts/one"</span>);
+
+result.title; <span class="code-comment">// "A typed preview"</span>
+result.image; <span class="code-comment">// "https://example.com/images/preview.jpg"</span></code></pre>
+		<p>The parser uses a streaming SAX tokenizer rather than constructing a browser DOM. Title precedence starts with Open Graph, then Twitter Card, JSON-LD, Dublin Core, and the document title.</p>
+
+		<h2 id="relative">Give relative metadata a trustworthy base URL</h2>
+		<p>The second argument resolves relative image, favicon, canonical, video, audio, and oEmbed URLs. Extracted URLs are returned only when they resolve to <code>http:</code> or <code>https:</code>. Use the final response URL—not an untrusted caller-supplied substitute—as the base when parsing fetched HTML.</p>
+
+		<h2 id="body">Opt into body metadata when needed</h2>
+		<pre><code><span class="code-keyword">const</span> result = parseHTML(html, baseUrl, {
+	includeBodyContent: <span class="code-keyword">true</span>,
+});</code></pre>
+		<p>The default head-first mode stops tokenizing after the document head. Enable body content when a page places JSON-LD or its first useful image in the body and the additional work is worth it.</p>
+
+		<h2 id="fetch">Choose <code>preview()</code> for arbitrary URLs</h2>
+		<p>Use <code>parseHTML()</code> when your application already owns the HTML. Use <code>preview()</code> when linkpeek should fetch the URL with timeouts, byte ceilings, redirect checks, content decoding, and its safe-by-default network policy.</p>
+		<div class="next-links"><a href="{{base}}">Fetch a first preview →</a><a href="{{base}}api/">Full parser API →</a></div>
+	</article>

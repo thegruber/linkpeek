@@ -1,0 +1,82 @@
+[
+	{
+		"route": "",
+		"source": "home.html",
+		"title": "Secure TypeScript link previews",
+		"description": "Fast, safe-by-default link preview and Open Graph metadata extraction for Node.js, Bun, Deno, and edge runtimes.",
+		"alternate": "https://raw.githubusercontent.com/thegruber/linkpeek/main/README.md",
+		"nav": null
+	},
+	{
+		"route": "integrations/nextjs/",
+		"source": "nextjs.html",
+		"title": "Link previews in Next.js",
+		"description": "Build a safe server-side link preview endpoint with linkpeek and the Next.js App Router.",
+		"alternate": "https://raw.githubusercontent.com/thegruber/linkpeek/main/examples/nextjs-app-router/README.md",
+		"nav": "Next.js"
+	},
+	{
+		"route": "integrations/cloudflare-workers/",
+		"source": "cloudflare-workers.html",
+		"title": "Link previews in Cloudflare Workers",
+		"description": "Extract and cache URL metadata in a Cloudflare Worker with linkpeek's fetch-native API.",
+		"alternate": "https://raw.githubusercontent.com/thegruber/linkpeek/main/examples/cloudflare-worker/README.md",
+		"nav": "Cloudflare Workers"
+	},
+	{
+		"route": "integrations/node-express/",
+		"source": "node-express.html",
+		"title": "Link preview API with Node.js and Express",
+		"description": "Build a typed, cache-aware link preview and URL metadata API with linkpeek, Node.js, and Express.",
+		"alternate": "https://raw.githubusercontent.com/thegruber/linkpeek/main/examples/express-api/README.md",
+		"nav": "Node.js + Express"
+	},
+	{
+		"route": "integrations/ai-agents/",
+		"source": "ai-agents.html",
+		"title": "Link metadata tool for AI agents",
+		"description": "Give an AI agent a narrow TypeScript link metadata tool with safe URL fetching, typed output, caching guidance, and prompt-injection boundaries.",
+		"alternate": "https://raw.githubusercontent.com/thegruber/linkpeek/main/README.md",
+		"nav": "AI agents"
+	},
+	{
+		"route": "guides/open-graph-parser/",
+		"source": "open-graph-parser.html",
+		"title": "Open Graph parser for TypeScript",
+		"description": "Parse Open Graph, Twitter Card, JSON-LD, favicon, and canonical metadata from HTML with linkpeek and TypeScript.",
+		"alternate": "https://raw.githubusercontent.com/thegruber/linkpeek/main/README.md",
+		"nav": "Open Graph parser"
+	},
+	{
+		"route": "guides/link-preview-library-comparison/",
+		"source": "link-preview-library-comparison.html",
+		"title": "TypeScript link preview library comparison",
+		"description": "Compare linkpeek with link-preview-js, open-graph-scraper, metascraper, unfurl.js, and url-metadata by use case, API shape, security, and footprint.",
+		"alternate": "https://raw.githubusercontent.com/thegruber/linkpeek/main/docs/comparison.md",
+		"nav": "Library comparison"
+	},
+	{
+		"route": "api/",
+		"source": "api.html",
+		"title": "API reference",
+		"description": "Reference for linkpeek preview(), parseHTML(), presets, result fields, options, and typed error codes.",
+		"alternate": "https://raw.githubusercontent.com/thegruber/linkpeek/main/README.md",
+		"nav": "API"
+	},
+	{
+		"route": "security/",
+		"source": "security.html",
+		"title": "SSRF-resistant link preview architecture",
+		"description": "Understand linkpeek's redirect validation, private-address blocking, credential handling, and honest DNS-rebinding limits.",
+		"alternate": "https://raw.githubusercontent.com/thegruber/linkpeek/main/SECURITY.md",
+		"nav": "Security"
+	},
+	{
+		"route": "benchmarks/",
+		"source": "benchmarks.html",
+		"title": "Link preview library benchmarks",
+		"description": "Reproducible parser, stream, package-footprint, and same-corpus link preview benchmarks for linkpeek.",
+		"alternate": "https://raw.githubusercontent.com/thegruber/linkpeek/main/docs/comparison.md",
+		"nav": "Benchmarks"
+	}
+]

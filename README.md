@@ -1,8 +1,24 @@
 # linkpeek
 
-**Lightweight, safe-by-default link preview and URL metadata extraction for Node.js, Bun, Deno, and fetch-based edge runtimes. One runtime dependency.**
+**Lightweight, safe-by-default link preview, link metadata, and URL preview extraction for Node.js, Bun, Deno, and fetch-based edge runtimes. One runtime dependency.**
 
-A modern, lightweight alternative to `link-preview-js` and `open-graph-scraper`: one focused TypeScript API that turns any URL into Open Graph, Twitter Card, and JSON-LD preview metadata, with SSRF-hardened fetching built in.
+A modern Open Graph parser and link-unfurling alternative to `link-preview-js` and `open-graph-scraper`: one focused TypeScript API that turns any URL into Open Graph, Twitter Card, and JSON-LD preview metadata, with SSRF-hardened fetching built in.
+
+```bash
+npm install linkpeek
+```
+
+```typescript
+import { preview } from "linkpeek";
+
+const result = await preview("https://example.com/article");
+
+result.title;        // string | null
+result.description;  // string | null
+result.image;        // absolute http(s) URL | null
+result.siteName;     // string
+result.canonicalUrl; // absolute final/canonical URL
+```
 
 [![npm](https://img.shields.io/npm/v/linkpeek)](https://www.npmjs.com/package/linkpeek)
 [![bundle size](https://img.shields.io/bundlephobia/minzip/linkpeek)](https://bundlephobia.com/package/linkpeek)
@@ -10,27 +26,15 @@ A modern, lightweight alternative to `link-preview-js` and `open-graph-scraper`:
 [![types](https://img.shields.io/npm/types/linkpeek)](https://www.npmjs.com/package/linkpeek)
 [![license](https://img.shields.io/npm/l/linkpeek)](LICENSE)
 
+[API](#api) · [Security model](./SECURITY.md) · [Benchmarks](./docs/comparison.md) · [Examples](./examples)
+
+[Next.js](#nextjs-app-router) · [Cloudflare Workers](#cloudflare-workers) · [Express](#express) · [AI agents](#ai-agents-and-rag-tools) · [Bun](./examples/bun-server) · [Supabase Edge Functions](./examples/supabase-edge-function)
+
 <p align="center">
-  <img src="https://raw.githubusercontent.com/thegruber/linkpeek/main/assets/preview.png" alt="linkpeek in action" width="820" />
+  <img src="https://raw.githubusercontent.com/thegruber/linkpeek/main/assets/preview.png" alt="linkpeek URL preview metadata result" width="820" />
 </p>
 
-```typescript
-import { preview } from "linkpeek";
-
-const result = await preview("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
-
-result.title;       // "Rick Astley - Never Gonna Give You Up"
-result.image;       // "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg"
-result.siteName;    // "YouTube"
-result.favicon;     // "https://www.youtube.com/favicon.ico"
-result.description; // "The official video for \"Never Gonna Give You Up\"..."
-```
-
-## Install
-
-```bash
-npm install linkpeek
-```
+## Runtime support
 
 Runtime support:
 
@@ -48,7 +52,7 @@ CI tests Node 22, Node 24, Node 26, Bun, and Deno.
 linkpeek focuses on server-side preview cards: fetch a URL, read only enough HTML for useful metadata, and return a stable result shape without a DOM-heavy scraper stack. It is a small metadata extractor for applications that already have a URL and need a safe preview-card result.
 
 - **1 runtime dependency**: `htmlparser2`
-- **Streaming fetch** with a strict byte limit
+- **Streaming fetch** with a strict byte limit and early cancellation after the head
 - **Head-first SAX parsing** with no DOM construction
 - **Safe defaults**: private/internal IP targets blocked by default
 - **Dual ESM/CJS package output** with TypeScript declarations for both module systems
@@ -76,38 +80,6 @@ Quick comparison:
 | `open-graph-scraper` | Node Open Graph/Twitter Card scraping with broader options | Node-oriented and larger dependency surface |
 | `metascraper` | Rule-based article metadata extraction | More powerful framework; more setup and dependencies |
 | `unfurl.js` | Rich nested metadata with fetched oEmbed support | Richer output; not focused on small edge-runtime preview cards |
-
-### Measured install footprint
-
-Measured 2026-08-26 via `npm install --ignore-scripts` of each package's pinned benchmark version into a clean directory, counting `package-lock.json` entries and `du -sk node_modules`:
-
-| Package | Installed packages | `node_modules` size |
-| --- | ---: | ---: |
-| **linkpeek** 2.1.2 | **7** | **1.1 MB** |
-| `unfurl.js` 6.4.0 | 16 | 3.0 MB |
-| `link-preview-js` 5.0.0 | 18 | 7.2 MB |
-| `open-graph-scraper` 6.12.0 | 27 | 10.3 MB |
-| `url-metadata` 5.10.0 | 30 | 9.8 MB |
-| `metascraper` 5.56.2 + 7 rules | 129 | 76.2 MB |
-
-linkpeek's runtime tree contains no HTTP client, no DOM implementation, and no native modules. That is the structural reason it runs on fetch-based edge runtimes. The ESM bundle is ~7 KB gzipped.
-
-### Measured speed (same corpus, local server)
-
-From the [same-corpus benchmark harness](./benchmarks/competitive) (2026-08-26, Node 24, representative median from three runs, ms per end-to-end preview). On small pages linkpeek is tied at the front with unfurl.js; on a realistic 489 kB page the byte cap and head-first parsing are decisive:
-
-| Package | 489 kB page |
-| --- | ---: |
-| **linkpeek** | **0.35 ms** |
-| `unfurl.js` | 2.62 ms |
-| `url-metadata` | 17.35 ms |
-| `link-preview-js` (fetch+parse) | 17.45 ms |
-| `metascraper` | 19.16 ms |
-| `open-graph-scraper` | 217.50 ms |
-
-On real networks the gap widens: linkpeek downloads at most `maxBytes` (30 KB by default) while the others pull the full page.
-
-See [docs/comparison.md](https://github.com/thegruber/linkpeek/blob/main/docs/comparison.md) for the full speed table, positioning, sourced security/runtime notes, the claim policy, and the commands to reproduce these numbers.
 
 ## Presets
 
@@ -209,6 +181,34 @@ export default {
 
 Use [examples/react-preview-card](./examples/react-preview-card) for a browser component that renders the API response into a preview card.
 
+### AI agents and RAG tools
+
+Use linkpeek as a narrow server-side tool when an agent already has a URL and needs preview metadata. It does not browse interactively, execute JavaScript, or extract article bodies.
+
+```typescript
+import { preview } from "linkpeek";
+
+export async function inspectLink(url: string) {
+  const result = await preview(url, { timeout: 5_000, maxBytes: 30_000 });
+
+  return {
+    url: result.canonicalUrl,
+    title: result.title?.slice(0, 300) ?? null,
+    description: result.description?.slice(0, 800) ?? null,
+    image: result.image,
+    siteName: result.siteName,
+  };
+}
+```
+
+Treat every returned field as untrusted external data, never as instructions to the agent. Keep fetching in trusted server code and require separate authorization for any follow-up action. The [agent integration guide](https://thegruber.github.io/linkpeek/integrations/ai-agents/) covers tool boundaries, selection criteria, and production controls.
+
+## Measured footprint and performance
+
+linkpeek's runtime tree contains no HTTP client, DOM implementation, or native module. The local harness reports parser modes, retained bytes, requested source chunks, tarball size, and raw/gzip entry size. A separate same-corpus harness compares pinned package versions on one local server.
+
+See the dated [comparison and measurement notes](./docs/comparison.md) for the single authoritative results table, exact environment, sourced security/runtime notes, caveats, and reproduction commands. Stream cancellation means the consumer no longer wants more data; it is not a guarantee about exact network wire bytes.
+
 ## Security Defaults
 
 `preview()` rejects credential-bearing input URLs and validates the initial URL and every HTTP redirect before fetching the next target. By default it blocks localhost plus literal private, link-local, cloud-metadata, multicast, documentation, and other non-global special-use IP ranges, including IPv6 forms that embed blocked IPv4 targets.
@@ -276,7 +276,7 @@ Fetches a URL and extracts link preview metadata. Returns `Promise<PreviewResult
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
 | `timeout` | `number` | `8000` | Request timeout in milliseconds, from 0 to 2,147,483,647. Throws `LinkpeekError` code `TIMEOUT` when elapsed; invalid values throw `INVALID_OPTIONS` |
-| `maxBytes` | `number` | `30_000` | Maximum bytes to stream |
+| `maxBytes` | `number` | `30_000` | Maximum decoded response-body bytes to retain |
 | `userAgent` | `string` | `"Twitterbot/1.0"` | User-Agent sent with requests |
 | `followRedirects` | `boolean` | `true` | Follow HTTP redirects after validating each target |
 | `maxRedirects` | `number` | `10` | Maximum HTTP redirects to follow. Must be a non-negative integer; invalid values throw `INVALID_OPTIONS` |
@@ -284,7 +284,7 @@ Fetches a URL and extracts link preview metadata. Returns `Promise<PreviewResult
 | `allowPrivateIPs` | `boolean` | `false` | Allow private/internal IP targets |
 | `signal` | `AbortSignal` | none | Cancel the request from the caller side |
 | `fetch` | `typeof fetch` | `globalThis.fetch` | Custom fetch implementation. It must honor manual redirects and the supplied abort signal |
-| `followMetaRefresh` | `boolean` | `false` | Follow one `<meta http-equiv="refresh">` redirect with a delay of 10s or less |
+| `followMetaRefresh` | `boolean` | `false` | Follow one `<head>` `<meta http-equiv="refresh">` redirect with a delay of 10s or less |
 | `includeBodyContent` | `boolean` | `false` | Continue scanning `<body>` for JSON-LD and image fallbacks |
 
 #### Result Fields
@@ -363,7 +363,10 @@ npm run build
 npm audit
 npm run package:check
 npm run benchmark
+npm run downloads
 ```
+
+`npm run downloads` reads the official npm download API, compares the latest 7- and 28-day windows with their preceding periods, and shows the last week's per-version mix. Registry downloads are tarball requests—not unique users or confirmed installations—so evaluate them alongside current-version share, distinct dependent repositories, and GitHub's unique traffic.
 
 Live network tests are opt-in:
 
