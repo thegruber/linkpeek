@@ -51,6 +51,39 @@ function relTokens(rel: string | undefined): Set<string> {
 	return new Set((rel || "").toLowerCase().split(/\s+/).filter(Boolean));
 }
 
+function iconWidth(sizes: string): number | null {
+	for (const candidate of sizes.split(/\s+/)) {
+		const separator = candidate.indexOf("x");
+		if (
+			separator <= 0 ||
+			candidate.indexOf("x", separator + 1) !== -1 ||
+			!isAsciiDigits(candidate.slice(0, separator)) ||
+			!isAsciiDigits(candidate.slice(separator + 1))
+		) {
+			continue;
+		}
+		return Number.parseInt(candidate.slice(0, separator), 10);
+	}
+	return null;
+}
+
+function isAsciiDigits(value: string): boolean {
+	if (!value) return false;
+	for (let index = 0; index < value.length; index++) {
+		const code = value.charCodeAt(index);
+		if (code < 48 || code > 57) return false;
+	}
+	return true;
+}
+
+function firstSafeDocumentBase(
+	current: string | null,
+	href: string | undefined,
+	fallback: string,
+): string | null {
+	return current || resolveHttpUrl(href, fallback);
+}
+
 /**
  * Parse HTML string and extract link preview metadata.
  * Uses SAX streaming for maximum speed — stops at </head>.
@@ -60,7 +93,7 @@ export function parseHTML(
 	baseUrl: string,
 	options?: Pick<PreviewOptions, "includeBodyContent">,
 ): PreviewResult {
-	const meta: Record<string, string> = {};
+	const meta = new Map<string, string>();
 	const jsonLdRaw: string[] = [];
 	let titleText = "";
 	let faviconHref: string | null = null;
@@ -71,18 +104,22 @@ export function parseHTML(
 	let oEmbedUrl: string | null = null;
 	let htmlLang: string | null = null;
 	let firstBodyImage: string | null = null;
+	let documentBaseUrl: string | null = null;
 	let inTitle = false;
 	let inJsonLd = false;
 	let jsonLdBuf = "";
 	let headClosed = false;
+	const includeBodyContent = options?.includeBodyContent === true;
 	const safeBaseUrl =
 		resolveHttpUrl(baseUrl, FALLBACK_BASE_URL) || FALLBACK_BASE_URL;
 
-	const parser = new Parser(
+	let parser: Parser;
+	parser = new Parser(
 		{
 			onopentag(name, attrs) {
 				if (name === "body") {
 					headClosed = true;
+					if (!includeBodyContent) parser.pause();
 					return;
 				}
 
@@ -90,11 +127,18 @@ export function parseHTML(
 				// flow-content element ends the head scope.
 				if (!headClosed && !HEAD_TAGS.has(name)) {
 					headClosed = true;
+					if (!includeBodyContent) {
+						parser.pause();
+						return;
+					}
 				}
 
 				// JSON-LD: capture in head AND body (body only when includeBodyContent is enabled)
-				if (name === "script" && (attrs.type || "").includes("ld+json")) {
-					if (!headClosed || options?.includeBodyContent === true) {
+				if (
+					name === "script" &&
+					(attrs.type || "").toLowerCase().includes("ld+json")
+				) {
+					if (!headClosed || includeBodyContent) {
 						inJsonLd = true;
 						jsonLdBuf = "";
 					}
@@ -106,7 +150,7 @@ export function parseHTML(
 					name === "img" &&
 					!firstBodyImage &&
 					attrs.src &&
-					options?.includeBodyContent === true
+					includeBodyContent
 				) {
 					const w = attrs.width ? Number.parseInt(attrs.width, 10) : 0;
 					const h = attrs.height ? Number.parseInt(attrs.height, 10) : 0;
@@ -121,6 +165,14 @@ export function parseHTML(
 				}
 				if (headClosed) return;
 
+				if (name === "base") {
+					documentBaseUrl = firstSafeDocumentBase(
+						documentBaseUrl,
+						attrs.href,
+						safeBaseUrl,
+					);
+				}
+
 				if (name === "html" && attrs.lang && !htmlLang) {
 					htmlLang = attrs.lang;
 				}
@@ -131,7 +183,7 @@ export function parseHTML(
 					const content = attrs.content;
 					if (content && prop) {
 						const key = prop.toLowerCase();
-						if (meta[key] === undefined) meta[key] = content;
+						if (!meta.has(key)) meta.set(key, content);
 					}
 					// itemprop="image" fallback (Schema.org microdata)
 					if (attrs.itemprop === "image" && attrs.content && !itempropImage) {
@@ -146,12 +198,13 @@ export function parseHTML(
 					// Favicon
 					if (href && (rel.has("icon") || rel.has("apple-touch-icon"))) {
 						const sizes = attrs.sizes || "";
-						const sizeMatch = sizes.match(/(\d+)x(\d+)/);
-						const size = sizeMatch
-							? Number.parseInt(sizeMatch[1], 10)
-							: rel.has("apple-touch-icon")
-								? APPLE_TOUCH_ICON_DEFAULT_SIZE
-								: 0;
+						const declaredWidth = iconWidth(sizes);
+						const size =
+							declaredWidth !== null
+								? declaredWidth
+								: rel.has("apple-touch-icon")
+									? APPLE_TOUCH_ICON_DEFAULT_SIZE
+									: 0;
 						if (size >= faviconSize) {
 							faviconSize = size;
 							faviconHref = href;
@@ -198,7 +251,10 @@ export function parseHTML(
 					inJsonLd = false;
 					jsonLdRaw.push(jsonLdBuf);
 				}
-				if (name === "head") headClosed = true;
+				if (name === "head") {
+					headClosed = true;
+					if (!includeBodyContent) parser.pause();
+				}
 			},
 		},
 		{
@@ -217,13 +273,14 @@ export function parseHTML(
 	// htmlparser2 already decoded entities, so values are used as-is.
 	const get = (...keys: string[]): string | null => {
 		for (const k of keys) {
-			const v = meta[k];
+			const v = meta.get(k);
 			if (v) return v;
 		}
 		return null;
 	};
 
 	const parsedUrl = new URL(safeBaseUrl);
+	const effectiveBaseUrl = documentBaseUrl || safeBaseUrl;
 
 	const title =
 		get("og:title", "twitter:title") ||
@@ -250,7 +307,7 @@ export function parseHTML(
 		imageSrcHref ||
 		itempropImage ||
 		firstBodyImage;
-	const image = resolveHttpUrl(rawImage, safeBaseUrl);
+	const image = resolveHttpUrl(rawImage, effectiveBaseUrl);
 
 	const imageWidthRaw = get("og:image:width");
 	const imageHeightRaw = get("og:image:height");
@@ -265,7 +322,7 @@ export function parseHTML(
 		parsedUrl.hostname.replace(/^www\./, "");
 
 	const favicon =
-		resolveHttpUrl(faviconHref, safeBaseUrl) ||
+		resolveHttpUrl(faviconHref, effectiveBaseUrl) ||
 		resolveHttpUrl("/favicon.ico", safeBaseUrl);
 
 	const mediaType = get("og:type") || "website";
@@ -282,8 +339,8 @@ export function parseHTML(
 		);
 
 	const canonicalUrl =
-		resolveHttpUrl(canonicalHref, safeBaseUrl) ||
-		resolveHttpUrl(get("og:url"), safeBaseUrl) ||
+		resolveHttpUrl(canonicalHref, effectiveBaseUrl) ||
+		resolveHttpUrl(get("og:url"), effectiveBaseUrl) ||
 		safeBaseUrl;
 
 	const locale = get("og:locale");
@@ -295,11 +352,11 @@ export function parseHTML(
 
 	const video = resolveHttpUrl(
 		get("og:video", "og:video:url", "og:video:secure_url"),
-		safeBaseUrl,
+		effectiveBaseUrl,
 	);
 	const audio = resolveHttpUrl(
 		get("og:audio", "og:audio:url", "og:audio:secure_url"),
-		safeBaseUrl,
+		effectiveBaseUrl,
 	);
 	const lang =
 		htmlLang ||
@@ -344,7 +401,7 @@ export function parseHTML(
 		twitterSite,
 		twitterCreator,
 		themeColor,
-		oEmbedUrl: resolveHttpUrl(oEmbedUrl, safeBaseUrl),
+		oEmbedUrl: resolveHttpUrl(oEmbedUrl, effectiveBaseUrl),
 	};
 
 	return result;
@@ -429,12 +486,27 @@ export function extractMetaRefreshUrl(
 	baseUrl: string,
 ): string | null {
 	let refreshUrl: string | null = null;
+	const safeBaseUrl =
+		resolveHttpUrl(baseUrl, FALLBACK_BASE_URL) || FALLBACK_BASE_URL;
+	let documentBaseUrl: string | null = null;
 	const parser = new Parser(
 		{
 			onopentag(name, attrs) {
-				if (refreshUrl || name !== "meta") return;
+				if (refreshUrl) return;
+				if (name === "base") {
+					documentBaseUrl = firstSafeDocumentBase(
+						documentBaseUrl,
+						attrs.href,
+						safeBaseUrl,
+					);
+					return;
+				}
+				if (name !== "meta") return;
 				if ((attrs["http-equiv"] || "").toLowerCase() !== "refresh") return;
-				refreshUrl = parseMetaRefreshContent(attrs.content, baseUrl);
+				refreshUrl = parseMetaRefreshContent(
+					attrs.content,
+					documentBaseUrl || safeBaseUrl,
+				);
 			},
 		},
 		{

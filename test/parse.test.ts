@@ -331,6 +331,18 @@ describe("extractMetaRefreshUrl", () => {
 		);
 	});
 
+	it("resolves relative refresh targets against the document base URL", () => {
+		const html = `<html><head>
+			<base href="javascript:alert(1)">
+			<base href="https://redirects.example.net/paths/">
+			<meta http-equiv="refresh" content="0; url=next">
+		</head></html>`;
+
+		expect(extractMetaRefreshUrl(html, BASE)).toBe(
+			"https://redirects.example.net/paths/next",
+		);
+	});
+
 	it("extracts meta refresh URLs regardless of attribute order", () => {
 		const html = '<meta content="0; url=/new-page" http-equiv="refresh">';
 		expect(extractMetaRefreshUrl(html, BASE)).toBe(
@@ -381,6 +393,14 @@ describe("entity handling (single decode)", () => {
 });
 
 describe("JSON-LD @graph robustness", () => {
+	it("recognizes JSON-LD MIME types case-insensitively", () => {
+		const html = `<html><head>
+			<script type="Application/LD+JSON">{"name":"Mixed-case JSON-LD"}</script>
+		</head></html>`;
+		const result = parseHTML(html, BASE);
+		expect(result.title).toBe("Mixed-case JSON-LD");
+	});
+
 	it("extracts from an object-valued @graph without dropping the script", () => {
 		const html = `<html><head>
 			<script type="application/ld+json">{"@graph": {"name": "Solo Node", "description": "From graph object"}}</script>
@@ -464,9 +484,60 @@ describe("duplicate metadata precedence", () => {
 		expect(result.title).toBe("First Title");
 		expect(result.image).toBe("https://example.com/first.jpg");
 	});
+
+	it("does not inherit metadata from Object.prototype", () => {
+		Object.defineProperty(Object.prototype, "og:title", {
+			configurable: true,
+			value: "Polluted title",
+		});
+		try {
+			const result = parseHTML("<title>Document title</title>", BASE);
+			expect(result.title).toBe("Document title");
+		} finally {
+			Reflect.deleteProperty(Object.prototype, "og:title");
+		}
+	});
+});
+
+describe("adversarial metadata", () => {
+	it("parses long invalid icon sizes without polynomial backtracking", () => {
+		const sizes = "9".repeat(20_000);
+		const html = `<html><head><link rel="icon" href="/icon.png" sizes="${sizes}"></head></html>`;
+		const startedAt = performance.now();
+
+		const result = parseHTML(html, BASE);
+
+		expect(result.favicon).toBe("https://example.com/icon.png");
+		expect(performance.now() - startedAt).toBeLessThan(50);
+	});
 });
 
 describe("safe metadata URL resolution", () => {
+	it("resolves relative metadata against the document base URL", () => {
+		const html = `<html><head>
+			<base href="javascript:alert(1)">
+			<base href="https://cdn.example.net/articles/">
+			<base href="https://ignored.example.org/">
+			<meta property="og:image" content="hero.jpg">
+			<meta property="og:video" content="video.mp4">
+			<meta property="og:audio" content="audio.mp3">
+			<link rel="canonical" href="story">
+			<link rel="icon" href="icon.png">
+			<link rel="alternate" type="application/json+oembed" href="oembed.json">
+		</head></html>`;
+
+		const result = parseHTML(html, BASE);
+
+		expect(result.image).toBe("https://cdn.example.net/articles/hero.jpg");
+		expect(result.video).toBe("https://cdn.example.net/articles/video.mp4");
+		expect(result.audio).toBe("https://cdn.example.net/articles/audio.mp3");
+		expect(result.canonicalUrl).toBe("https://cdn.example.net/articles/story");
+		expect(result.favicon).toBe("https://cdn.example.net/articles/icon.png");
+		expect(result.oEmbedUrl).toBe(
+			"https://cdn.example.net/articles/oembed.json",
+		);
+	});
+
 	it("drops unsafe URL schemes from extracted media fields", () => {
 		const html = `<!DOCTYPE html><html><head>
 			<meta property="og:image" content="javascript:alert(1)">
@@ -713,6 +784,25 @@ describe("body-image-fallback.html — first body <img>", () => {
 });
 
 describe("includeBodyContent defaults to false", () => {
+	it("stops tokenizing after the closing head tag", () => {
+		const head = "<html><head><title>Head only</title></head>";
+		const fullHtml = `${head}<body>${"content ".repeat(1000)}</body></html>`;
+		const monitoredHtml = {
+			length: fullHtml.length,
+			charCodeAt(index: number) {
+				if (index >= head.length) {
+					throw new Error("body was tokenized");
+				}
+				return fullHtml.charCodeAt(index);
+			},
+			slice(start?: number, end?: number) {
+				return fullHtml.slice(start, end);
+			},
+		} as unknown as string;
+
+		expect(parseHTML(monitoredHtml, BASE).title).toBe("Head only");
+	});
+
 	it("body JSON-LD is skipped when includeBodyContent is not set", () => {
 		const result = parseHTML(loadFixture("json-ld-body.html"), BASE);
 		// Falls back to <title> tag in head, NOT the body JSON-LD headline

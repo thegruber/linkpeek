@@ -209,6 +209,7 @@ function ipv4FromWords(high: number, low: number): number[] {
 }
 
 const DEFAULT_TIMEOUT = 8000;
+const MAX_TIMEOUT = 2_147_483_647;
 const DEFAULT_MAX_BYTES = 30_000;
 const DEFAULT_USER_AGENT = "Twitterbot/1.0";
 
@@ -229,9 +230,11 @@ export async function fetchUrl(
 	options: PreviewOptions = {},
 ): Promise<FetchResult> {
 	validateUrl(url, options.allowPrivateIPs);
-	const timeout = options.timeout ?? DEFAULT_TIMEOUT;
+	const timeout = normalizeTimeout(options.timeout ?? DEFAULT_TIMEOUT);
 	const maxBytes = normalizeMaxBytes(options.maxBytes ?? DEFAULT_MAX_BYTES);
-	const maxRedirects = options.maxRedirects ?? DEFAULT_MAX_REDIRECTS;
+	const maxRedirects = normalizeMaxRedirects(
+		options.maxRedirects ?? DEFAULT_MAX_REDIRECTS,
+	);
 	const userAgent = options.userAgent ?? DEFAULT_USER_AGENT;
 	const fetchImpl = options.fetch ?? fetch;
 	const headers = buildRequestHeaders(userAgent, options.headers);
@@ -317,6 +320,26 @@ function normalizeMaxBytes(maxBytes: number): number {
 		);
 	}
 	return Math.max(0, Math.floor(maxBytes));
+}
+
+function normalizeTimeout(timeout: number): number {
+	if (!Number.isFinite(timeout) || timeout < 0 || timeout > MAX_TIMEOUT) {
+		throw new LinkpeekError(
+			"INVALID_OPTIONS",
+			`timeout must be between 0 and ${MAX_TIMEOUT} milliseconds`,
+		);
+	}
+	return timeout;
+}
+
+function normalizeMaxRedirects(maxRedirects: number): number {
+	if (!Number.isSafeInteger(maxRedirects) || maxRedirects < 0) {
+		throw new LinkpeekError(
+			"INVALID_OPTIONS",
+			"maxRedirects must be a non-negative integer",
+		);
+	}
+	return maxRedirects;
 }
 
 function buildRequestHeaders(

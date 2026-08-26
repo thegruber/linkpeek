@@ -72,7 +72,10 @@ export async function preview(
 					result.url = refreshed.finalUrl;
 					result.statusCode = refreshed.statusCode;
 				}
-			} catch {
+			} catch (error) {
+				if (options.signal?.aborted) {
+					throw options.signal.reason ?? error;
+				}
 				// Meta-refresh target unreachable or blocked — return what we have
 			}
 		}
