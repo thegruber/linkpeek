@@ -36,6 +36,36 @@ describe("preview()", () => {
 		await expect(preview("not-a-valid-url")).rejects.toThrow();
 	});
 
+	it.each([Number.NaN, Number.POSITIVE_INFINITY, -1, 1.5])(
+		"rejects an invalid maxRedirects value (%s) before fetching",
+		async (maxRedirects) => {
+			const fetchMock = vi.fn();
+			vi.stubGlobal("fetch", fetchMock);
+
+			await expect(
+				preview("https://example.com", { maxRedirects }),
+			).rejects.toMatchObject({
+				code: "INVALID_OPTIONS",
+			});
+			expect(fetchMock).not.toHaveBeenCalled();
+		},
+	);
+
+	it.each([Number.NaN, Number.POSITIVE_INFINITY, -1, 2_147_483_648])(
+		"rejects an invalid timeout value (%s) before fetching",
+		async (timeout) => {
+			const fetchMock = vi.fn();
+			vi.stubGlobal("fetch", fetchMock);
+
+			await expect(
+				preview("https://example.com", { timeout }),
+			).rejects.toMatchObject({
+				code: "INVALID_OPTIONS",
+			});
+			expect(fetchMock).not.toHaveBeenCalled();
+		},
+	);
+
 	it("detects direct media content types case-insensitively", async () => {
 		vi.stubGlobal(
 			"fetch",
@@ -85,6 +115,38 @@ describe("preview()", () => {
 		expect(fetchMock).toHaveBeenCalledTimes(2);
 		expect(result.title).toBe("Real Title");
 		expect(result.url).toBe("https://example.com/real");
+	});
+
+	it("rethrows caller aborts during a meta-refresh request", async () => {
+		const interstitial = `<html><head>
+			<meta http-equiv="refresh" content="0; url=https://example.com/real">
+		</head></html>`;
+		const controller = new AbortController();
+		const abortReason = new DOMException(
+			"Caller stopped preview",
+			"AbortError",
+		);
+		const fetchMock = vi
+			.fn()
+			.mockResolvedValueOnce(
+				new Response(interstitial, {
+					status: 200,
+					headers: { "content-type": "text/html" },
+				}),
+			)
+			.mockImplementationOnce(async (_url: string, init?: RequestInit) => {
+				controller.abort(abortReason);
+				throw init?.signal?.reason;
+			});
+		vi.stubGlobal("fetch", fetchMock);
+
+		const result = preview("https://example.com/start", {
+			followMetaRefresh: true,
+			signal: controller.signal,
+		});
+
+		await expect(result).rejects.toBe(abortReason);
+		expect(fetchMock).toHaveBeenCalledTimes(2);
 	});
 
 	it("does not refetch slow meta refreshes", async () => {

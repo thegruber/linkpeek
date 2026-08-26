@@ -1,5 +1,5 @@
 export interface PreviewOptions {
-	/** Request timeout in milliseconds (default: 8000) */
+	/** Request timeout in milliseconds, from 0 to 2_147_483_647 (default: 8000) */
 	timeout?: number;
 	/** Maximum bytes to download (default: 30_000) */
 	maxBytes?: number;
@@ -7,7 +7,7 @@ export interface PreviewOptions {
 	userAgent?: string;
 	/** Follow HTTP redirects (default: true) */
 	followRedirects?: boolean;
-	/** Maximum HTTP redirects to follow (default: 10) */
+	/** Maximum HTTP redirects to follow; must be a non-negative integer (default: 10) */
 	maxRedirects?: number;
 	/** Extra non-sensitive request headers. Common credential-bearing headers are rejected. */
 	headers?: Record<string, string>;
