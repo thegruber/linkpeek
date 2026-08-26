@@ -1,0 +1,30 @@
+<article class="doc">
+		<p class="eyebrow">Benchmarks · 26 August 2026</p>
+		<h1>Measure the byte path, not just the parser.</h1>
+		<p class="doc-lede">These local benchmarks separate parser throughput, requested source chunks, install footprint, and same-corpus end-to-end overhead instead of collapsing them into one “fastest” claim. Live-network effects were not measured.</p>
+
+		<h2 id="method">Method</h2>
+		<p>The local harness builds the package ESM output, warms each parser mode, reports median/min/mean/max samples, and probes a controlled 500 KB response in 1 KB chunks. The competitive harness serves identical fixtures from one local HTTP server in the same Node process. The dated stream result below measures this unreleased worktree based on 2.1.3 using Darwin 25.6 arm64, Node.js 24.15.0, and npm 11.12.1.</p>
+
+		<h2 id="stream">Controlled stream probe</h2>
+		<div class="table-wrap"><table><thead><tr><th>Mode</th><th>Source bytes requested</th><th>Configured ceiling</th><th>500 KB page</th></tr></thead><tbody>
+			<tr><td><strong>Fast</strong></td><td><strong>2 KB</strong></td><td>30 KB</td><td>Stops after <code>&lt;/head&gt;</code></td></tr>
+			<tr><td>Quality</td><td>~202 KB</td><td>200 KB</td><td>Continues for body fallbacks</td></tr>
+		</tbody></table></div>
+		<p class="table-note">“Source bytes” includes one queued 1 KB stream chunk; the retained byte ceiling remains exact.</p>
+
+		<h2 id="comparison">Same-corpus comparison</h2>
+		<p>The competitive harness runs pinned packages against identical fixtures on one local server. The dated <a href="https://github.com/thegruber/linkpeek/blob/main/docs/comparison.md">comparison and measurement notes</a> are the single source for exact results, package versions, security sources, and caveats. Live-network effects are deliberately not inferred from localhost timings.</p>
+
+		<h2 id="size">Package footprint</h2>
+		<p><code>npm run benchmark</code> reports the current tarball, unpacked package, entry-file, and runtime-dependency sizes. The evidence notes separately reproduce clean installs of the pinned published packages. Entry-file gzip size is not presented as a full application bundle.</p>
+
+		<h2 id="reproduce">Reproduce before quoting</h2>
+		<pre><code>npm ci
+npm run benchmark
+
+cd benchmarks/competitive
+npm ci
+npm run bench</code></pre>
+		<p>The competitive lockfile pins every compared version. Exact npm-artifact and clean-install commands are documented in the <a href="https://github.com/thegruber/linkpeek/blob/main/docs/comparison.md">complete evidence notes</a>. Live benchmarks are network smoke tests, not competitive evidence.</p>
+	</article>

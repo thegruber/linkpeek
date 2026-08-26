@@ -5,6 +5,11 @@
 		"enabled": true,
 		"indentStyle": "tab"
 	},
+	"html": {
+		"parser": {
+			"interpolation": true
+		}
+	},
 	"linter": {
 		"enabled": true,
 		"rules": {
@@ -17,6 +22,7 @@
 			"!**/dist",
 			"!**/node_modules",
 			"!**/coverage",
+			"!website/dist",
 			"!**/.context",
 			"!test/fixtures",
 			"!**/.claude",

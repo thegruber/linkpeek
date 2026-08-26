@@ -1,0 +1,68 @@
+<article class="doc">
+		<p class="eyebrow">Decision guide · 26 August 2026</p>
+		<h1>Choose a link preview library by the job.</h1>
+		<p class="doc-lede">linkpeek is a focused choice for server-side preview cards with typed output and safe network defaults. Broader scraping, text-to-URL detection, rich oEmbed fetching, and provider-specific rules are different jobs with different good tools.</p>
+
+		<h2 id="fit">Start with the capability you need</h2>
+		<div class="table-wrap"><table><thead><tr><th>Package</th><th>Good fit</th><th>Tradeoff versus linkpeek</th></tr></thead><tbody>
+			<tr><td><strong>linkpeek</strong></td><td>Typed URL previews on Node.js, Bun, Deno, and fetch-based edge runtimes</td><td>Deliberately not a full article or provider-rule extraction framework</td></tr>
+			<tr><td><code>link-preview-js</code></td><td>Previewing a URL or finding the first URL in text</td><td>Broader input API; a different result shape and runtime focus</td></tr>
+			<tr><td><code>open-graph-scraper</code></td><td>Node-oriented Open Graph scraping with broader scraper controls</td><td>Larger install tree; edge parse-only users may prefer its separate lite package</td></tr>
+			<tr><td><code>metascraper</code></td><td>Composable, provider-specific metadata rules</td><td>More setup and dependencies for a much broader extraction framework</td></tr>
+			<tr><td><code>unfurl.js</code></td><td>Rich nested metadata and fetched oEmbed data in Node.js</td><td><a href="https://github.com/jacktuck/unfurl">Archived upstream</a> as of this guide; not focused on a small edge-runtime preview path</td></tr>
+			<tr><td><code>url-metadata</code></td><td>Broad page metadata in Node.js</td><td>Broader output and dependency surface than a preview-card utility</td></tr>
+		</tbody></table></div>
+		<p class="table-note">This is a fit comparison, not a universal ranking. Verify the linked dated evidence before using it in an architectural decision.</p>
+
+		<h2 id="shape">Normalize the result shape before migrating</h2>
+		<p>The packages expose similar concepts through different keys. In the benchmarked APIs, title access commonly looks like this:</p>
+		<div class="table-wrap"><table><thead><tr><th>Package</th><th>Typical title access</th><th>Fetch ownership</th></tr></thead><tbody>
+			<tr><td>linkpeek</td><td><code>result.title</code></td><td><code>preview()</code> fetches; <code>parseHTML()</code> parses existing HTML</td></tr>
+			<tr><td><code>link-preview-js</code></td><td><code>result.title</code></td><td>URL and content APIs</td></tr>
+			<tr><td><code>open-graph-scraper</code></td><td><code>response.result.ogTitle</code></td><td>Main package fetches</td></tr>
+			<tr><td><code>metascraper</code></td><td><code>result.title</code></td><td>Your application supplies HTML</td></tr>
+			<tr><td><code>unfurl.js</code></td><td><code>result.open_graph?.title</code></td><td><code>unfurl()</code> fetches</td></tr>
+			<tr><td><code>url-metadata</code></td><td><code>result["og:title"]</code></td><td>Main API fetches</td></tr>
+		</tbody></table></div>
+
+		<h2 id="security">Compare the outbound-fetch boundary</h2>
+		<p>For a public preview endpoint, the important question is not merely whether metadata parses: it is which layer validates an untrusted destination and every redirect before the next request.</p>
+		<div class="table-wrap"><table><thead><tr><th>Package</th><th>Security consideration as of 26 August 2026</th></tr></thead><tbody>
+			<tr><td>linkpeek</td><td>Blocks credential-bearing input, common secret headers, private/special-use IP literals, and redirect targets by default. Platform <code>fetch</code> still owns final DNS resolution, so infrastructure egress controls remain important.</td></tr>
+			<tr><td><code>link-preview-js</code></td><td>Version 5.0.0 contains the fix for <a href="https://github.com/advisories/GHSA-4gp8-rjrq-ch6q">CVE-2026-43897</a>, which affected versions through 4.0.0. Do not evaluate the current release using the fixed historical behavior.</td></tr>
+			<tr><td><code>open-graph-scraper</code></td><td>The main package owns the Node.js fetch path. If your application already has a controlled fetch boundary, compare the maintainers' separate parse-only <a href="https://github.com/jshemas/openGraphScraper/issues/203"><code>open-graph-scraper-lite</code></a> option.</td></tr>
+			<tr><td><code>metascraper</code></td><td>The application supplies HTML, so redirect validation, address policy, timeouts, byte limits, and credentials belong to the caller's fetch implementation.</td></tr>
+			<tr><td><code>unfurl.js</code></td><td>The repository is archived; still-open <a href="https://github.com/jacktuck/unfurl/pull/117">PR #117</a> documents destination validation proposed after the last published release.</td></tr>
+			<tr><td><code>url-metadata</code></td><td>The Node-oriented API exposes request-filtering agent options. Review its current defaults and options against your threat model rather than assuming every runtime has the same network controls.</td></tr>
+		</tbody></table></div>
+		<p class="table-note">These are dated architectural notes, not security ratings. Every server-side URL fetcher also benefits from rate limiting, cache controls, and platform egress policy.</p>
+
+		<h2 id="migrate">Map behavior, not just field names</h2>
+		<pre><code>npm install linkpeek
+
+<span class="code-keyword">import</span> { preview } <span class="code-keyword">from</span> <span class="code-value">"linkpeek"</span>;
+
+<span class="code-keyword">const</span> result = <span class="code-keyword">await</span> preview(url);
+
+<span class="code-keyword">if</span> (result.statusCode &gt;= <span class="code-number">400</span>) {
+	<span class="code-comment">// Render a fallback and skip caching.</span>
+}
+
+<span class="code-keyword">const</span> card = {
+	title: result.title,
+	description: result.description,
+	image: result.image,
+	url: result.canonicalUrl,
+};</code></pre>
+		<ul class="check-list">
+			<li>HTTP error pages resolve with their metadata and <code>statusCode</code>; invalid input, blocked targets, timeouts, and network failures throw.</li>
+			<li>Private and special-use addresses are blocked by default. Keep that default for public input and review the documented DNS-resolution limit.</li>
+			<li>Discovered oEmbed endpoints are returned in <code>oEmbedUrl</code> but are not fetched.</li>
+			<li>The default preset scans the head with a 30 KB ceiling. Use <code>presets.quality</code> when body JSON-LD or body-image fallback is worth more work.</li>
+			<li>Keep preview fetching on the server; browser CORS and untrusted outbound requests make this a poor client-side boundary.</li>
+		</ul>
+
+		<h2 id="evidence">Check dated size, speed, and security notes</h2>
+		<p>Same-corpus latency, package footprint, competitor versions, known runtime constraints, security sources, and reproduction commands live in the dated comparison notes; refresh that evidence before quoting it later.</p>
+		<div class="next-links"><a href="https://www.npmjs.com/package/linkpeek">Install linkpeek from npm →</a><a href="https://github.com/thegruber/linkpeek/blob/main/docs/comparison.md">Read the complete evidence →</a><a href="{{base}}">Start with the API →</a></div>
+	</article>

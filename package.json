@@ -1,7 +1,7 @@
 {
 	"name": "linkpeek",
 	"version": "2.1.3",
-	"description": "Lightweight, secure link preview and URL metadata extractor for Open Graph, Twitter Cards, JSON-LD, and edge runtimes.",
+	"description": "Secure TypeScript link preview and URL metadata extractor with Open Graph parsing for Node.js, Bun, Deno, and edge runtimes.",
 	"type": "module",
 	"exports": {
 		".": {
@@ -21,7 +21,6 @@
 	"types": "./dist/index.d.ts",
 	"files": [
 		"dist",
-		"llms.txt",
 		"CHANGELOG.md"
 	],
 	"packageManager": "npm@11.19.0",
@@ -30,6 +29,9 @@
 		"build": "tsup",
 		"benchmark": "npm run build --silent && node scripts/benchmark.mjs",
 		"benchmark:live": "npm run build --silent && LINKPEEK_LIVE_TESTS=1 node scripts/benchmark.mjs --live",
+		"docs:build": "node scripts/build-docs.mjs",
+		"docs:preview": "npm run docs:build && node scripts/serve-docs.mjs",
+		"downloads": "node scripts/downloads.mjs",
 		"test": "vitest run",
 		"test:coverage": "vitest run --coverage",
 		"test:live": "LINKPEEK_LIVE_TESTS=1 vitest run",
@@ -38,8 +40,8 @@
 		"lint:fix": "biome check --write .",
 		"audit": "npm audit --omit=dev && npm audit --audit-level=high && npm audit --prefix benchmarks/competitive --package-lock-only",
 		"package:check": "npm run build --silent && node test/package-smoke.mjs && publint && attw --pack . && npm pack --dry-run",
-		"publish:check": "npm run lint && npm run typecheck && npm run test && npm run audit && npm run build --silent",
-		"quality": "npm run lint && npm run typecheck && npm run test && npm run audit && npm run package:check",
+		"publish:check": "npm run lint && npm run typecheck && npm run test && npm run audit && npm run build --silent && npm run docs:build",
+		"quality": "npm run lint && npm run typecheck && npm run test && npm run audit && npm run docs:build && npm run package:check",
 		"typecheck": "tsc --noEmit && tsc -p tsconfig.test.json",
 		"prepublishOnly": "npm run publish:check",
 		"release": "release-it"
@@ -56,7 +58,15 @@
 		"ssrf",
 		"edge-runtime",
 		"cloudflare-workers",
-		"typescript"
+		"typescript",
+		"opengraph",
+		"link-metadata",
+		"link-unfurling",
+		"open-graph-parser",
+		"metadata-parser",
+		"url-preview",
+		"preview-card",
+		"nodejs"
 	],
 	"author": "Adrian Gruber",
 	"license": "MIT",
@@ -64,7 +74,7 @@
 		"type": "git",
 		"url": "git+https://github.com/thegruber/linkpeek.git"
 	},
-	"homepage": "https://github.com/thegruber/linkpeek#readme",
+	"homepage": "https://thegruber.github.io/linkpeek/",
 	"bugs": {
 		"url": "https://github.com/thegruber/linkpeek/issues"
 	},

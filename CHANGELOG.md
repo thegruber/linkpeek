@@ -2,6 +2,30 @@
 
 All notable changes to this project are documented here.
 
+## Unreleased
+
+### Added
+
+- Added a dependency-free static documentation site with a compact quick start, API, framework integration, security, and benchmark pages, plus sitemap, social metadata, structured data, and a pinned GitHub Pages workflow.
+- Added controlled fast/quality stream probes, large head-first parser fixtures, and raw/gzip ESM size reporting to the local benchmark.
+- Added precise npm discovery keywords for link metadata, URL previews, Open Graph parsing, and link unfurling.
+- Added a reproducible npm registry-request scorecard with rolling 7-, 28-, and 90-day windows plus the last week's per-version mix.
+- Added an AI agent integration guide, a generated documentation-site `llms.txt` index, and discoverable Markdown alternates with honest package-selection and prompt-injection guidance.
+- Added a dependency-free local documentation preview command and visible, structured breadcrumbs.
+
+### Changed
+
+- Fast-mode URL previews now cancel the response stream after the HTML head boundary when possible instead of reading until the 30 KB ceiling. Charset detection, exact retained-byte limits, and body-scanning behavior remain intact.
+- Refreshed package footprint and same-corpus comparison data, and clarified the limits of entry-file, local-latency, stream-cancellation, competitor, and wire-byte claims.
+- Reworked the npm README first screen around immediate installation, a minimal working example, framework recipes, and compact package trust signals.
+- Reduced the documentation UI to a conventional dark README-style layout using system fonts, semantic HTML, one small stylesheet, and no client-side JavaScript or UI framework.
+- Pointed the package homepage to the searchable GitHub Pages documentation site.
+- Kept the repository's optional `llms.txt` reference out of the published tarball because npm discovery does not use it and Google Search gives it no ranking benefit.
+
+### Fixed
+
+- Meta-refresh extraction is now limited to the document head, fixing response-chunk-dependent behavior for invalid refresh tags in the body.
+
 ## 2.1.3 - 2026-08-26
 
 ### Changed

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>{{title}} · linkpeek</title>
+		<meta name="description" content="{{description}}" />
+		<meta name="robots" content="index,follow,max-image-preview:large" />
+		<link rel="canonical" href="{{canonical}}" />
+		<link rel="describedby" type="text/markdown" href="{{base}}llms.txt" />
+		<link rel="alternate" type="text/markdown" href="{{alternate}}" />
+		<link rel="icon" href="{{base}}assets/favicon.svg" type="image/svg+xml" />
+		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content="linkpeek" />
+		<meta property="og:title" content="{{title}} · linkpeek" />
+		<meta property="og:description" content="{{description}}" />
+		<meta property="og:url" content="{{canonical}}" />
+		<meta property="og:image" content="{{socialImage}}" />
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="theme-color" content="#1b1b1f" />
+		<link rel="stylesheet" href="{{base}}assets/styles.css" />
+		<script type="application/ld+json">{{structuredData}}</script>
+	</head>
+	<body>
+		<a class="skip-link" href="#content">Skip to content</a>
+		<header class="site-header">
+			<div class="header-inner">
+				<a class="wordmark" href="{{base}}">linkpeek</a>
+				<div class="header-links">
+					<a href="https://www.npmjs.com/package/linkpeek">npm</a>
+					<a href="https://github.com/thegruber/linkpeek">GitHub</a>
+				</div>
+			</div>
+		</header>
+		<div class="docs-shell">
+			<aside class="site-sidebar" aria-label="Documentation"><nav>{{navigation}}</nav></aside>
+			<main class="docs-main" id="content">
+				<details class="mobile-nav"><summary>Documentation</summary><nav>{{navigation}}</nav></details>
+				{{breadcrumbs}}{{content}}
+			</main>
+		</div>
+		<footer class="site-footer">linkpeek · MIT · <a href="https://www.npmjs.com/package/linkpeek">npm</a> · <a href="https://github.com/thegruber/linkpeek">source</a></footer>
+	</body>
+</html>

@@ -1,0 +1,36 @@
+<article class="doc">
+		<p class="eyebrow">Integration</p>
+		<h1>Fetch-native previews at the edge.</h1>
+		<p class="doc-lede">linkpeek uses platform <code>fetch</code>, Web Streams, <code>TextDecoder</code>, and <code>AbortController</code>. It needs no Node HTTP client or DOM implementation.</p>
+
+		<h2 id="worker">Create a Worker endpoint</h2>
+		<pre><code>npm install linkpeek</code></pre>
+		<pre><code><span class="code-keyword">import</span> { preview } <span class="code-keyword">from</span> <span class="code-value">"linkpeek"</span>;
+
+<span class="code-keyword">export default</span> {
+	<span class="code-keyword">async</span> fetch(request: Request): Promise&lt;Response&gt; {
+		<span class="code-keyword">const</span> url = <span class="code-keyword">new</span> URL(request.url).searchParams.get(<span class="code-value">"url"</span>);
+		<span class="code-keyword">if</span> (!url) <span class="code-keyword">return</span> Response.json({ error: <span class="code-value">"Missing url"</span> }, { status: <span class="code-number">400</span> });
+
+		<span class="code-keyword">try</span> {
+			<span class="code-keyword">const</span> result = <span class="code-keyword">await</span> preview(url);
+			<span class="code-keyword">return</span> Response.json(result, {
+				headers: {
+					<span class="code-value">"Cache-Control"</span>: result.statusCode &lt; <span class="code-number">400</span>
+						? <span class="code-value">"public, max-age=3600"</span>
+						: <span class="code-value">"no-store"</span>,
+				},
+			});
+		} <span class="code-keyword">catch</span> {
+			<span class="code-keyword">return</span> Response.json({ error: <span class="code-value">"Preview unavailable"</span> }, { status: <span class="code-number">422</span> });
+		}
+	},
+};</code></pre>
+
+		<h2 id="cache">Let the edge absorb repeat work</h2>
+		<p>For public preview endpoints, normalize the URL into a stable cache key and cache only validated 2xx/3xx results. Add rate limiting before exposing arbitrary outbound fetches to the internet.</p>
+
+		<h2 id="limits">Know what the runtime owns</h2>
+		<p>linkpeek validates literal addresses and each redirect target. The Worker runtime still owns final DNS resolution and connection establishment. Keep private-IP access disabled and use platform egress controls when hostile public input is in scope.</p>
+		<div class="next-links"><a href="https://www.npmjs.com/package/linkpeek">Install from npm →</a><a href="https://github.com/thegruber/linkpeek/tree/main/examples/cloudflare-worker">Complete example on GitHub →</a><a href="{{base}}security/">Security model →</a></div>
+	</article>

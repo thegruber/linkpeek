@@ -1,0 +1,46 @@
+<article class="doc">
+		<p class="eyebrow">Integration</p>
+		<h1>Build a link preview API with Express.</h1>
+		<p class="doc-lede">Keep URL fetching on the server, return typed metadata to the browser, and cache successful previews so repeated page views do not repeat outbound work.</p>
+
+		<h2 id="endpoint">Create the endpoint</h2>
+		<pre><code>npm install express linkpeek</code></pre>
+		<pre><code><span class="code-keyword">import</span> express <span class="code-keyword">from</span> <span class="code-value">"express"</span>;
+<span class="code-keyword">import</span> { preview } <span class="code-keyword">from</span> <span class="code-value">"linkpeek"</span>;
+
+<span class="code-keyword">const</span> app = express();
+
+app.get(<span class="code-value">"/api/preview"</span>, <span class="code-keyword">async</span> (request, response) =&gt; {
+	<span class="code-keyword">const</span> url = request.query.url;
+	<span class="code-keyword">if</span> (<span class="code-keyword">typeof</span> url !== <span class="code-value">"string"</span>) {
+		response.status(<span class="code-number">400</span>).json({ error: <span class="code-value">"Missing url"</span> });
+		<span class="code-keyword">return</span>;
+	}
+
+	<span class="code-keyword">try</span> {
+		<span class="code-keyword">const</span> result = <span class="code-keyword">await</span> preview(url);
+		response
+			.set(<span class="code-value">"Cache-Control"</span>, result.statusCode &lt; <span class="code-number">400</span>
+				? <span class="code-value">"public, max-age=300"</span>
+				: <span class="code-value">"no-store"</span>)
+			.json(result);
+	} <span class="code-keyword">catch</span> {
+		response.status(<span class="code-number">422</span>).json({ error: <span class="code-value">"Preview unavailable"</span> });
+	}
+});</code></pre>
+		<p>The endpoint accepts one URL and returns the stable <code>PreviewResult</code> shape used by a client-side preview card.</p>
+
+		<h2 id="cache">Cache successes by normalized URL</h2>
+		<p>The response header helps browsers and shared proxies, but a server-side cache avoids the outbound fetch even when clients miss. Normalize equivalent URLs into one key, coalesce concurrent misses, choose a product-appropriate TTL, and skip caching when <code>statusCode</code> is 400 or higher.</p>
+		<div class="note"><strong>Keep errors local.</strong> A failed metadata request should produce a hostname-only fallback card rather than block the parent page or message.</div>
+
+		<h2 id="production">Protect a public preview route</h2>
+		<ul class="check-list">
+			<li>Add authentication or rate limiting before accepting public traffic.</li>
+			<li>Keep <code>allowPrivateIPs</code> disabled for untrusted input.</li>
+			<li>Never forward caller cookies, authorization headers, or internal tokens.</li>
+			<li>Treat returned titles, descriptions, images, and links as untrusted data.</li>
+			<li>Use infrastructure egress rules when the endpoint faces hostile traffic.</li>
+		</ul>
+		<div class="next-links"><a href="https://www.npmjs.com/package/linkpeek">Install from npm →</a><a href="https://github.com/thegruber/linkpeek/tree/main/examples/express-api">Complete example on GitHub →</a><a href="{{base}}security/">Security model →</a></div>
+	</article>
