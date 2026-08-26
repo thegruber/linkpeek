@@ -26,17 +26,9 @@ result.canonicalUrl; // absolute final/canonical URL
 [![types](https://img.shields.io/npm/types/linkpeek)](https://www.npmjs.com/package/linkpeek)
 [![license](https://img.shields.io/npm/l/linkpeek)](LICENSE)
 
-[API](#api) · [Security model](./SECURITY.md) · [Benchmarks](./docs/comparison.md) · [Examples](./examples)
-
-[Next.js](#nextjs-app-router) · [Cloudflare Workers](#cloudflare-workers) · [Express](#express) · [AI agents](#ai-agents-and-rag-tools) · [Bun](./examples/bun-server) · [Supabase Edge Functions](./examples/supabase-edge-function)
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/thegruber/linkpeek/main/assets/preview.png" alt="linkpeek URL preview metadata result" width="820" />
-</p>
+[Documentation](https://thegruber.github.io/linkpeek/) · [API](#api) · [Security](./SECURITY.md) · [Examples](./examples) · [Benchmarks](./docs/comparison.md)
 
 ## Runtime support
-
-Runtime support:
 
 | Runtime | Support |
 | --- | --- |
