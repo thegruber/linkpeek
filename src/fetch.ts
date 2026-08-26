@@ -1,4 +1,5 @@
 import { LinkpeekError } from "./errors.js";
+import { createHeadBoundaryDetector } from "./parse.js";
 import type { PreviewOptions } from "./types.js";
 
 const ALLOWED_PROTOCOLS = new Set(["http:", "https:"]);
@@ -222,7 +223,8 @@ export interface FetchResult {
 }
 
 /**
- * Fetch a URL with streaming body, aborting after maxBytes.
+ * Fetch a URL with a streaming body, stopping after the head when possible and
+ * always enforcing maxBytes on retained decoded response-body bytes.
  * Returns the HTML string and metadata about the response.
  */
 export async function fetchUrl(
@@ -295,7 +297,12 @@ export async function fetchUrl(
 				}
 			}
 
-			return await readFetchResponse(response, currentUrl, maxBytes);
+			return await readFetchResponse(
+				response,
+				currentUrl,
+				maxBytes,
+				options.includeBodyContent !== true,
+			);
 		}
 	} catch (err) {
 		if (err instanceof LinkpeekError) throw err;
@@ -385,6 +392,7 @@ async function readFetchResponse(
 	response: Response,
 	currentUrl: string,
 	maxBytes: number,
+	stopAfterHead: boolean,
 ): Promise<FetchResult> {
 	const finalUrl = response.url || currentUrl;
 	const statusCode = response.status;
@@ -404,6 +412,12 @@ async function readFetchResponse(
 	const reader = response.body.getReader();
 	const chunks: Uint8Array[] = [];
 	let totalBytes = 0;
+	const headDetector = stopAfterHead ? createHeadBoundaryDetector() : null;
+	let headDecoder: TextDecoder | null = null;
+	const headerCharset = extractHeaderCharset(contentType);
+	if (headDetector && headerCharset) {
+		headDecoder = createTextDecoder(headerCharset);
+	}
 
 	while (true) {
 		const { done, value } = await reader.read();
@@ -413,28 +427,57 @@ async function readFetchResponse(
 		const chunk = value.length > remaining ? value.slice(0, remaining) : value;
 		chunks.push(chunk);
 		totalBytes += chunk.length;
+
+		if (headDetector) {
+			if (headDecoder) {
+				headDetector.write(headDecoder.decode(chunk, { stream: true }));
+			} else if (
+				totalBytes >= CHARSET_PRESCAN_BYTES ||
+				totalBytes >= maxBytes
+			) {
+				const buffered = combineChunks(chunks, totalBytes);
+				headDecoder = createTextDecoder(detectCharset(contentType, buffered));
+				headDetector.write(headDecoder.decode(buffered, { stream: true }));
+			}
+			if (headDetector.headClosed) break;
+		}
 		if (totalBytes >= maxBytes) break;
 	}
 	reader.cancel().catch(() => {});
 
+	const combined = combineChunks(chunks, totalBytes);
+	if (headDetector && !headDecoder && totalBytes > 0) {
+		headDecoder = createTextDecoder(detectCharset(contentType, combined));
+		headDetector.write(headDecoder.decode(combined, { stream: true }));
+	}
+
+	const charset = detectCharset(contentType, combined);
+	const html = createTextDecoder(charset).decode(combined);
+
+	return { html, finalUrl, contentType, isHtml, statusCode };
+}
+
+function combineChunks(chunks: Uint8Array[], totalBytes: number): Uint8Array {
 	const combined = new Uint8Array(totalBytes);
 	let offset = 0;
 	for (const chunk of chunks) {
 		combined.set(chunk, offset);
 		offset += chunk.length;
 	}
+	return combined;
+}
 
-	const charset = detectCharset(contentType, combined);
-
-	let html: string;
+function createTextDecoder(charset: string): TextDecoder {
 	try {
-		html = new TextDecoder(charset, { fatal: false }).decode(combined);
+		return new TextDecoder(charset, { fatal: false });
 	} catch {
 		// Unknown charset — fall back to utf-8
-		html = new TextDecoder("utf-8", { fatal: false }).decode(combined);
+		return new TextDecoder("utf-8", { fatal: false });
 	}
+}
 
-	return { html, finalUrl, contentType, isHtml, statusCode };
+function extractHeaderCharset(contentType: string): string | null {
+	return contentType.match(/charset=["']?([^"'\s;]+)/i)?.[1] ?? null;
 }
 
 // How many leading bytes to scan for a <meta charset> declaration when the
@@ -443,7 +486,7 @@ const CHARSET_PRESCAN_BYTES = 1024;
 
 function detectCharset(contentType: string, bytes: Uint8Array): string {
 	// Content-Type header wins (strip quotes if present)
-	const headerCharset = contentType.match(/charset=["']?([^"'\s;]+)/i)?.[1];
+	const headerCharset = extractHeaderCharset(contentType);
 	if (headerCharset) return headerCharset;
 
 	// Byte order marks

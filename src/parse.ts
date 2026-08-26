@@ -19,12 +19,61 @@ const HEAD_TAGS = new Set([
 	"template",
 ]);
 
+function startsBodyContent(tagName: string): boolean {
+	return !HEAD_TAGS.has(tagName);
+}
+
 // Body <img> fallback skips icons and trackers below this pixel size.
 const MIN_BODY_IMAGE_DIMENSION = 50;
 // apple-touch-icon defaults to 180x180 when no sizes attribute is present.
 const APPLE_TOUCH_ICON_DEFAULT_SIZE = 180;
 // Meta refreshes above this delay are page reloads, not redirects.
 const MAX_META_REFRESH_DELAY_SECONDS = 10;
+
+interface HeadBoundaryDetector {
+	readonly headClosed: boolean;
+	write(chunk: string): void;
+}
+
+/**
+ * Incrementally detects the HTML head boundary without building metadata.
+ * fetchUrl uses this to cancel fast-mode response streams before maxBytes.
+ */
+export function createHeadBoundaryDetector(): HeadBoundaryDetector {
+	let headClosed = false;
+	let parser: Parser;
+
+	const closeHead = () => {
+		if (headClosed) return;
+		headClosed = true;
+		parser.pause();
+	};
+
+	parser = new Parser(
+		{
+			onopentag(name) {
+				if (startsBodyContent(name)) closeHead();
+			},
+			onclosetag(name) {
+				if (name === "head") closeHead();
+			},
+		},
+		{
+			decodeEntities: false,
+			lowerCaseTags: true,
+			lowerCaseAttributeNames: true,
+		},
+	);
+
+	return {
+		get headClosed() {
+			return headClosed;
+		},
+		write(chunk) {
+			if (!headClosed) parser.write(chunk);
+		},
+	};
+}
 
 interface JsonLdData {
 	title: string | null;
@@ -125,7 +174,7 @@ export function parseHTML(
 
 				// Implicit body: HTML5 allows omitting <head>/<body>, so the first
 				// flow-content element ends the head scope.
-				if (!headClosed && !HEAD_TAGS.has(name)) {
+				if (!headClosed && startsBodyContent(name)) {
 					headClosed = true;
 					if (!includeBodyContent) {
 						parser.pause();
@@ -477,7 +526,8 @@ function extractJsonLd(jsonLdRaw: string[]): JsonLdData {
 }
 
 /**
- * Extract meta-refresh redirect URLs without depending on attribute order.
+ * Extract head-scoped meta-refresh redirect URLs without depending on
+ * attribute order. Body refresh tags are invalid HTML and intentionally ignored.
  * Refreshes slower than {@link MAX_META_REFRESH_DELAY_SECONDS} are treated as
  * page reloads rather than redirects and return null.
  */
@@ -489,10 +539,15 @@ export function extractMetaRefreshUrl(
 	const safeBaseUrl =
 		resolveHttpUrl(baseUrl, FALLBACK_BASE_URL) || FALLBACK_BASE_URL;
 	let documentBaseUrl: string | null = null;
-	const parser = new Parser(
+	let parser: Parser;
+	parser = new Parser(
 		{
 			onopentag(name, attrs) {
 				if (refreshUrl) return;
+				if (startsBodyContent(name)) {
+					parser.pause();
+					return;
+				}
 				if (name === "base") {
 					documentBaseUrl = firstSafeDocumentBase(
 						documentBaseUrl,
@@ -507,6 +562,9 @@ export function extractMetaRefreshUrl(
 					attrs.content,
 					documentBaseUrl || safeBaseUrl,
 				);
+			},
+			onclosetag(name) {
+				if (name === "head") parser.pause();
 			},
 		},
 		{

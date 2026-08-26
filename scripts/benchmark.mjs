@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { performance } from "node:perf_hooks";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { gzipSync } from "node:zlib";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const args = new Set(process.argv.slice(2));
@@ -16,11 +17,28 @@ const { parseHTML, preview, presets } = await import(
 	pathToFileURL(resolve(root, "dist/index.js")).href
 );
 
-const fixtures = [
+const fixturePaths = [
 	"test/fixtures/all-fields.html",
 	"test/fixtures/recipe-blog.html",
 	"test/fixtures/json-ld-graph.html",
 	"test/fixtures/body-image-fallback.html",
+];
+
+const benchmarkParagraph = `<p>${"benchmark content ".repeat(64)}</p>`;
+const largePage = `<!doctype html><html><head>
+	<title>Large benchmark page</title>
+	<meta property="og:title" content="Large benchmark page">
+	<meta property="og:image" content="https://cdn.example.com/hero.jpg">
+	</head><body>${benchmarkParagraph.repeat(
+		Math.ceil(500_000 / benchmarkParagraph.length),
+	)}</body></html>`;
+
+const fixtures = [
+	...fixturePaths.map((fixture) => ({
+		fixture,
+		html: readFileSync(resolve(root, fixture), "utf8"),
+	})),
+	{ fixture: "synthetic/head-first-500kb.html", html: largePage },
 ];
 
 const liveUrls = [
@@ -35,6 +53,7 @@ const result = {
 	node: process.version,
 	package: packageInfo(),
 	parse: runParseBenchmarks(sampleCount),
+	stream: await runStreamProbe(),
 	live: includeLive ? await runLiveBenchmarks() : null,
 };
 
@@ -46,6 +65,7 @@ if (isJson) {
 
 function packageInfo() {
 	const pkg = JSON.parse(readFileSync(resolve(root, "package.json"), "utf8"));
+	const esm = readFileSync(resolve(root, "dist/index.js"));
 	const pack = JSON.parse(
 		execFileSync("npm", ["pack", "--dry-run", "--json"], {
 			cwd: root,
@@ -61,50 +81,111 @@ function packageInfo() {
 		tarballBytes: pack.size,
 		unpackedBytes: pack.unpackedSize,
 		fileCount: pack.entryCount,
+		esmBytes: esm.length,
+		esmGzipBytes: gzipSync(esm).length,
 	};
 }
 
 function runParseBenchmarks(samples) {
-	return fixtures.map((fixture) => {
-		const html = readFileSync(resolve(root, fixture), "utf8");
-		const iterations = chooseIterations(html.length);
+	const modes = [
+		{ mode: "fast", includeBodyContent: false },
+		{ mode: "quality", includeBodyContent: true },
+	];
+	const rows = [];
 
-		for (let i = 0; i < 1000; i++) {
-			parseHTML(html, "https://example.com/page", { includeBodyContent: true });
-		}
+	for (const { fixture, html } of fixtures) {
+		for (const { mode, includeBodyContent } of modes) {
+			const iterations = chooseIterations(html.length, mode);
+			const warmups = Math.min(1000, iterations);
 
-		const msPerParseSamples = [];
-		const totalMsSamples = [];
-		for (let sample = 0; sample < samples; sample++) {
-			const started = performance.now();
-			for (let i = 0; i < iterations; i++) {
-				parseHTML(html, "https://example.com/page", {
-					includeBodyContent: true,
-				});
+			for (let i = 0; i < warmups; i++) {
+				parseHTML(html, "https://example.com/page", { includeBodyContent });
 			}
-			const elapsedMs = performance.now() - started;
-			totalMsSamples.push(elapsedMs);
-			msPerParseSamples.push(elapsedMs / iterations);
+
+			const msPerParseSamples = [];
+			const totalMsSamples = [];
+			for (let sample = 0; sample < samples; sample++) {
+				const started = performance.now();
+				for (let i = 0; i < iterations; i++) {
+					parseHTML(html, "https://example.com/page", {
+						includeBodyContent,
+					});
+				}
+				const elapsedMs = performance.now() - started;
+				totalMsSamples.push(elapsedMs);
+				msPerParseSamples.push(elapsedMs / iterations);
+			}
+
+			const msStats = summarize(msPerParseSamples);
+			const totalStats = summarize(totalMsSamples);
+
+			rows.push({
+				mode,
+				fixture,
+				bytes: Buffer.byteLength(html),
+				iterations,
+				samples,
+				totalMs: round(totalStats.median),
+				totalMsMin: round(totalStats.min),
+				totalMsMax: round(totalStats.max),
+				msPerParse: round(msStats.median, 4),
+				msPerParseMin: round(msStats.min, 4),
+				msPerParseMean: round(msStats.mean, 4),
+				msPerParseMax: round(msStats.max, 4),
+				parsesPerSecond: Math.round(1000 / msStats.median),
+			});
 		}
+	}
 
-		const msStats = summarize(msPerParseSamples);
-		const totalStats = summarize(totalMsSamples);
+	return rows;
+}
 
-		return {
-			fixture,
-			bytes: Buffer.byteLength(html),
-			iterations,
-			samples,
-			totalMs: round(totalStats.median),
-			totalMsMin: round(totalStats.min),
-			totalMsMax: round(totalStats.max),
-			msPerParse: round(msStats.median, 4),
-			msPerParseMin: round(msStats.min, 4),
-			msPerParseMean: round(msStats.mean, 4),
-			msPerParseMax: round(msStats.max, 4),
-			parsesPerSecond: Math.round(1000 / msStats.median),
-		};
-	});
+async function runStreamProbe() {
+	const encoder = new TextEncoder();
+	const bytes = encoder.encode(largePage);
+	const modes = [
+		{ mode: "fast", options: presets.fast },
+		{ mode: "quality", options: presets.quality },
+	];
+	const rows = [];
+
+	for (const { mode, options } of modes) {
+		let emittedBytes = 0;
+		let canceled = false;
+		const body = new ReadableStream({
+			pull(controller) {
+				if (emittedBytes >= bytes.length) {
+					controller.close();
+					return;
+				}
+				const end = Math.min(emittedBytes + 1024, bytes.length);
+				controller.enqueue(bytes.slice(emittedBytes, end));
+				emittedBytes = end;
+			},
+			cancel() {
+				canceled = true;
+			},
+		});
+
+		const previewResult = await preview("https://example.com/large", {
+			...options,
+			fetch: async () =>
+				new Response(body, {
+					headers: { "content-type": "text/html; charset=utf-8" },
+				}),
+		});
+
+		rows.push({
+			mode,
+			pageBytes: bytes.length,
+			maxBytes: options.maxBytes,
+			sourceBytes: emittedBytes,
+			canceled,
+			title: previewResult.title,
+		});
+	}
+
+	return rows;
 }
 
 async function runLiveBenchmarks() {
@@ -138,8 +219,9 @@ async function runLiveBenchmarks() {
 	return rows;
 }
 
-function chooseIterations(bytes) {
-	if (bytes > 10_000) return 10_000;
+function chooseIterations(bytes, mode) {
+	if (bytes > 100_000) return mode === "fast" ? 10_000 : 500;
+	if (bytes > 10_000) return 5_000;
 	if (bytes > 2_000) return 50_000;
 	return 100_000;
 }
@@ -150,15 +232,27 @@ function printText(data) {
 	console.log(
 		`Package: ${formatBytes(data.package.tarballBytes)} tarball, ${formatBytes(
 			data.package.unpackedBytes,
-		)} unpacked, ${data.package.runtimeDependencies} runtime dependency`,
+		)} unpacked, ${formatBytes(data.package.esmBytes)} ESM (${formatBytes(
+			data.package.esmGzipBytes,
+		)} gzip), ${data.package.runtimeDependencies} runtime dependency`,
 	);
 	console.log("");
 	console.log("Parse benchmark");
 	for (const row of data.parse) {
 		console.log(
-			`- ${row.fixture}: ${row.msPerParse} ms/parse median (${row.msPerParseMin}-${row.msPerParseMax} min-max), ${row.parsesPerSecond.toLocaleString()} parses/sec (${formatBytes(
+			`- ${row.mode} | ${row.fixture}: ${row.msPerParse} ms/parse median (${row.msPerParseMin}-${row.msPerParseMax} min-max), ${row.parsesPerSecond.toLocaleString()} parses/sec (${formatBytes(
 				row.bytes,
 			)}, ${row.samples} samples x ${row.iterations.toLocaleString()} iterations)`,
+		);
+	}
+
+	console.log("");
+	console.log("Controlled stream probe");
+	for (const row of data.stream) {
+		console.log(
+			`- ${row.mode}: requested ${formatBytes(row.sourceBytes)} of ${formatBytes(
+				row.pageBytes,
+			)} source bytes (max ${formatBytes(row.maxBytes)}), canceled=${row.canceled}`,
 		);
 	}
 

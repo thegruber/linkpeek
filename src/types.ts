@@ -1,7 +1,7 @@
 export interface PreviewOptions {
 	/** Request timeout in milliseconds, from 0 to 2_147_483_647 (default: 8000) */
 	timeout?: number;
-	/** Maximum bytes to download (default: 30_000) */
+	/** Maximum decoded response-body bytes to retain (default: 30_000) */
 	maxBytes?: number;
 	/** User-Agent header (default: "Twitterbot/1.0") */
 	userAgent?: string;
@@ -27,7 +27,7 @@ export interface PreviewOptions {
 	 */
 	fetch?: typeof globalThis.fetch;
 	/**
-	 * Follow <meta http-equiv="refresh"> redirects with a delay of 10 seconds
+	 * Follow <head> <meta http-equiv="refresh"> redirects with a delay of 10 seconds
 	 * or less (longer delays are page reloads, not redirects). Disabling this
 	 * skips the extra HTTP round-trip at the cost of missing
 	 * Cloudflare-challenged or JS-redirect pages. (default: false)
