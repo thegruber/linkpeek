@@ -9,7 +9,7 @@
 	"dependencies": {
 		"link-preview-js": "5.0.0",
 		"linkpeek": "file:../..",
-		"metascraper": "5.56.2",
+		"metascraper": "5.58.1",
 		"metascraper-author": "5.56.2",
 		"metascraper-date": "5.56.2",
 		"metascraper-description": "5.56.2",
