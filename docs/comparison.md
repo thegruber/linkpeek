@@ -110,6 +110,24 @@ work. The controlled stream probe measures requested source chunks and retained
 decoded-body bytes, not exact network wire bytes. Do not quote the small-page
 column as "fastest" or infer live-network latency from this local benchmark.
 
+### Running the current harness
+
+The table above is a historical measurement of the listed versions, not a claim
+about the current checkout. The current benchmark lockfile includes security
+updates (including url-metadata 6.3.0). Every warmup and timed result must match
+the fixture's expected title; failed extraction is reported separately from latency.
+
+```bash
+npm run build
+npm ci --prefix benchmarks/competitive
+npm run bench --prefix benchmarks/competitive
+npm run bench --prefix benchmarks/competitive -- --json
+```
+
+JSON output includes commit/dirty state, package versions, runtime/platform, adapter options,
+iterations, and per-fixture results. Use repeated runs on an idle machine before
+publishing a new comparison; do not mix results from different environments.
+
 ## Security and runtime notes (sourced, as of 2026-08-26)
 
 Verify each claim against the source before citing it in marketing material. This data ages.

@@ -3,7 +3,10 @@
 // needs an option to talk to 127.0.0.1 (documented per adapter below).
 //
 // Run from this directory:
-//   (cd ../.. && npm run build) && npm install && npm run bench
+//   (cd ../.. && npm run build) && npm ci && npm run bench
+// Add -- --json to retain results with versions and environment details.
+import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { createServer } from "node:http";
 
@@ -86,6 +89,7 @@ const adapters = {
 		// hosts with no opt-out, so it cannot be benchmarked end-to-end locally.
 		run: async (url) => (await getLinkPreview(url)).title,
 		note: "getLinkPreview(url)",
+		expectedFailure: true,
 	},
 	"link-preview-js (fetch+parse)": {
 		run: async (url) => {
@@ -111,12 +115,12 @@ const adapters = {
 		note: "unfurl(url)",
 	},
 	"url-metadata": {
-		run: async (url) =>
-			(
-				await urlMetadata(url, {
-					requestFilteringAgentOptions: { allowPrivateIPAddress: true },
-				})
-			)["og:title"],
+		run: async (url) => {
+			const result = await urlMetadata(url, {
+				requestFilteringAgentOptions: { allowPrivateIPAddress: true },
+			});
+			return result["og:title"] || result.title;
+		},
 		note: "urlMetadata(url, { allowPrivateIPAddress: true })",
 	},
 	"metascraper (native fetch)": {
@@ -138,7 +142,46 @@ function p95(arr) {
 	return sorted[Math.floor(sorted.length * 0.95)];
 }
 
+function sourceRevision() {
+	try {
+		const options = {
+			cwd: new URL("../..", import.meta.url),
+			encoding: "utf8",
+			stdio: ["ignore", "pipe", "ignore"],
+		};
+		return {
+			commit: execFileSync("git", ["rev-parse", "HEAD"], options).trim(),
+			dirty: Boolean(
+				execFileSync("git", ["status", "--porcelain"], options).trim(),
+			),
+		};
+	} catch {
+		return { commit: null, dirty: null };
+	}
+}
+
 const WARMUP = 5;
+const expectedTitles = {
+	"og-standard.html": "The Open Graph Title",
+	"all-fields.html": "All Fields OG Title",
+	"recipe-blog.html": "Best Chocolate Chip Cookies",
+	"large-500kb.html": "Large Page OG Title",
+};
+const results = [];
+const jsonOutput = process.argv.includes("--json");
+const lock = JSON.parse(
+	readFileSync(new URL("package-lock.json", import.meta.url), "utf8"),
+);
+const versions = Object.fromEntries(
+	Object.keys(lock.packages[""].dependencies).map((name) => [
+		name,
+		name === "linkpeek"
+			? JSON.parse(
+					readFileSync(new URL("../../package.json", import.meta.url), "utf8"),
+				).version
+			: lock.packages[`node_modules/${name}`].version,
+	]),
+);
 
 for (const [fixture, body] of Object.entries(corpus)) {
 	const iters = body.length > 100_000 ? 40 : 150;
@@ -150,16 +193,27 @@ for (const [fixture, body] of Object.entries(corpus)) {
 		try {
 			for (let i = 0; i < WARMUP; i++) {
 				title = await adapter.run(`${base}/${fixture}?w=${i}`);
+				assert.equal(
+					title,
+					expectedTitles[fixture],
+					"Incorrect extracted title",
+				);
 			}
 			for (let i = 0; i < iters; i++) {
 				const t0 = process.hrtime.bigint();
-				await adapter.run(`${base}/${fixture}?i=${i}`);
+				title = await adapter.run(`${base}/${fixture}?i=${i}`);
 				times.push(Number(process.hrtime.bigint() - t0) / 1e6);
+				assert.equal(
+					title,
+					expectedTitles[fixture],
+					"Incorrect extracted title",
+				);
 			}
 			rows.push({ name, median: median(times), p95: p95(times), title });
 		} catch (err) {
 			failed = err.message?.slice(0, 90) ?? String(err);
 			rows.push({ name, failed });
+			if (!adapter.expectedFailure) process.exitCode = 1;
 		}
 	}
 	rows.sort(
@@ -167,6 +221,13 @@ for (const [fixture, body] of Object.entries(corpus)) {
 			(a.median ?? Number.POSITIVE_INFINITY) -
 			(b.median ?? Number.POSITIVE_INFINITY),
 	);
+	results.push({
+		fixture,
+		bytes: Buffer.byteLength(body),
+		iterations: iters,
+		rows,
+	});
+	if (jsonOutput) continue;
 	console.log(
 		`\n## ${fixture} (${(body.length / 1024).toFixed(1)} kB, ${iters} iterations)`,
 	);
@@ -181,5 +242,28 @@ for (const [fixture, body] of Object.entries(corpus)) {
 	}
 }
 
-console.log("\nNode:", process.version);
+if (jsonOutput) {
+	console.log(
+		JSON.stringify(
+			{
+				date: new Date().toISOString(),
+				source: sourceRevision(),
+				node: process.version,
+				platform: process.platform,
+				arch: process.arch,
+				versions,
+				warmup: WARMUP,
+				adapters: Object.fromEntries(
+					Object.entries(adapters).map(([name, adapter]) => [
+						name,
+						adapter.note,
+					]),
+				),
+				results,
+			},
+			null,
+			2,
+		),
+	);
+} else console.log("\nNode:", process.version, "Versions:", versions);
 server.close();

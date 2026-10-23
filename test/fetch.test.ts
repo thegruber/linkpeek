@@ -62,16 +62,41 @@ describe("fetchUrl", () => {
 		expect(result.html).toBe("abcde");
 	});
 
-	it("retains no response bytes when maxBytes is zero", async () => {
-		vi.stubGlobal(
-			"fetch",
-			vi.fn(async () => htmlResponse(["a first chunk larger than the limit"])),
-		);
-
-		const result = await fetchUrl("https://example.com", { maxBytes: 0 });
-
-		expect(result.html).toBe("");
-	});
+	it.each([0, 30_000])(
+		"cancels a stalled body once the byte budget or head is complete (maxBytes=%s)",
+		async (maxBytes) => {
+			let canceled = false;
+			const body = new ReadableStream<Uint8Array>(
+				{
+					start(controller) {
+						if (maxBytes)
+							controller.enqueue(
+								encoder.encode("<head><title>Ready</title></head>"),
+							);
+					},
+					pull(controller) {
+						// A second read must not be needed. Fail deterministically instead of hanging.
+						controller.error(
+							new Error("Read beyond the completed head or zero budget"),
+						);
+					},
+					cancel() {
+						canceled = true;
+					},
+				},
+				{ highWaterMark: 0 },
+			);
+			const result = await fetchUrl("https://example.com", {
+				maxBytes,
+				fetch: async () =>
+					new Response(body, { headers: { "content-type": "text/html" } }),
+			});
+			expect(result.html).toBe(
+				maxBytes ? "<head><title>Ready</title></head>" : "",
+			);
+			expect(canceled).toBe(true);
+		},
+	);
 
 	it("retains a positive response smaller than a sub-kilobyte limit", async () => {
 		vi.stubGlobal(
@@ -320,14 +345,40 @@ describe("fetchUrl", () => {
 		vi.stubGlobal("fetch", fetchMock);
 
 		const result = fetchUrl("https://example.com/start", { timeout: 10 });
-		const assertion = result.catch((err: unknown) => {
-			expect(err).toBeInstanceOf(LinkpeekError);
-			expect((err as LinkpeekError).code).toBe("TIMEOUT");
+		const assertion = expect(result).rejects.toMatchObject({
+			name: "LinkpeekError",
+			code: "TIMEOUT",
 		});
 		await vi.advanceTimersByTimeAsync(10);
 
 		await assertion;
 		expect(fetchMock).toHaveBeenCalledTimes(1);
+	});
+
+	it("keeps the timeout active while waiting for response-body bytes", async () => {
+		vi.useFakeTimers();
+		const result = fetchUrl("https://example.com", {
+			timeout: 10,
+			fetch: async (_url, init) =>
+				new Response(
+					new ReadableStream({
+						start(controller) {
+							init?.signal?.addEventListener(
+								"abort",
+								() => controller.error(init.signal?.reason),
+								{ once: true },
+							);
+						},
+					}),
+					{ headers: { "content-type": "text/html" } },
+				),
+		});
+		const assertion = expect(result).rejects.toMatchObject({
+			name: "LinkpeekError",
+			code: "TIMEOUT",
+		});
+		await vi.advanceTimersByTimeAsync(10);
+		await assertion;
 	});
 
 	it("rethrows a caller abort without wrapping it as a timeout", async () => {
@@ -656,6 +707,34 @@ describe("charset detection", () => {
 		const result = await fetchUrl("https://example.com");
 
 		expect(result.html).toContain("Привет");
+	});
+
+	it("lets a split BOM override a conflicting HTTP charset", async () => {
+		const bytes = Buffer.concat([
+			Buffer.from([0xff, 0xfe]),
+			Buffer.from("<head><title>Café</title></head>", "utf16le"),
+		]);
+		const result = await fetchUrl("https://example.com", {
+			fetch: async () =>
+				chunkedBytesResponse(
+					[bytes.subarray(0, 1), bytes.subarray(1, 3), bytes.subarray(3)],
+					"text/html; charset=windows-1251",
+				),
+		});
+		expect(result.html).toBe("<head><title>Café</title></head>");
+	});
+
+	it.each([
+		'<!-- <meta charset="windows-1251"> -->',
+		`<script>const text = '<meta charset="windows-1251">';</script>`,
+		'<template><meta charset="windows-1251"></template>',
+		'<meta content="charset=windows-1251">',
+	])("ignores inert or invalid charset declarations: %s", async (prefix) => {
+		const page = `<head>${prefix}<meta charset="utf-8"><title>Café</title></head>`;
+		const result = await fetchUrl("https://example.com", {
+			fetch: async () => chunkedBytesResponse([encoder.encode(page)]),
+		});
+		expect(result.html).toBe(page);
 	});
 
 	it("detects UTF-16LE from a byte order mark", async () => {

@@ -33,7 +33,7 @@ result.canonicalUrl; // absolute final/canonical URL
 
 | Runtime | Support |
 | --- | --- |
-| Node.js | 22+ |
+| Node.js | 22.12+ (ESM and CommonJS) |
 | Bun | Current stable |
 | Deno | `import { preview } from "npm:linkpeek"` |
 | Edge runtimes | Fetch-compatible runtimes such as Cloudflare Workers and Vercel Edge |

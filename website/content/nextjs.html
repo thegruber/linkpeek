@@ -20,7 +20,7 @@
 		<span class="code-keyword">return</span> NextResponse.json(result, {
 			headers: {
 				<span class="code-value">"Cache-Control"</span>:
-					result.statusCode &lt; <span class="code-number">400</span> ? <span class="code-value">"public, s-maxage=3600"</span> : <span class="code-value">"no-store"</span>,
+					result.statusCode &gt;= <span class="code-number">200</span> &amp;&amp; result.statusCode &lt; <span class="code-number">300</span> ? <span class="code-value">"public, s-maxage=3600"</span> : <span class="code-value">"no-store"</span>,
 			},
 		});
 	} <span class="code-keyword">catch</span> {

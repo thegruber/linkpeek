@@ -5,8 +5,11 @@ import {
 	LinkpeekError,
 	parseHTML,
 	presets,
+	preview,
 	validateUrl,
 } from "../dist/index.js";
+
+import { runPreviewSmoke } from "./runtime-smoke.ts";
 
 if (!("Bun" in globalThis)) {
 	throw new Error("bun-smoke must run under the Bun runtime");
@@ -39,4 +42,5 @@ try {
 	}
 }
 
+await runPreviewSmoke(preview);
 console.log("Bun smoke test passed");

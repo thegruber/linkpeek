@@ -7,6 +7,7 @@
 		"sourceMap": false,
 		"outDir": null,
 		"rootDir": ".",
+		"paths": { "linkpeek": ["./src/index.ts"] },
 		"types": ["node"]
 	},
 	"include": ["src", "test"],

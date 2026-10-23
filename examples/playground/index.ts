@@ -7,12 +7,20 @@ import { LinkpeekError, preview } from "linkpeek";
 // Cloudflare WAF rate-limiting rule in front for real abuse protection.
 const RATE_LIMIT = 20;
 const RATE_WINDOW_MS = 60_000;
+const MAX_TRACKED_CLIENTS = 1000;
 const hits = new Map<string, { count: number; resetAt: number }>();
 
 function rateLimited(ip: string): boolean {
 	const now = Date.now();
+	// Entries are inserted in expiry order. Reject new clients at capacity
+	// rather than evicting active limits; expired entries are reclaimed first.
+	for (const [key, entry] of hits) {
+		if (entry.resetAt > now) break;
+		hits.delete(key);
+	}
 	const entry = hits.get(ip);
-	if (!entry || entry.resetAt < now) {
+	if (!entry) {
+		if (hits.size >= MAX_TRACKED_CLIENTS) return true;
 		hits.set(ip, { count: 1, resetAt: now + RATE_WINDOW_MS });
 		return false;
 	}
@@ -79,8 +87,10 @@ const PAGE = `<!DOCTYPE html>
   body { font: 16px/1.5 system-ui, sans-serif; max-width: 640px; margin: 0 auto; padding: 2rem 1rem 4rem; }
   h1 { font-size: 1.4rem; } h1 a { color: inherit; }
   p.sub { color: var(--muted); margin-top: -0.5rem; }
-  form { display: flex; gap: 0.5rem; margin: 1.5rem 0; }
-  input { flex: 1; padding: 0.6rem 0.8rem; font: inherit; border: 1px solid var(--border); border-radius: 8px; background: transparent; color: inherit; }
+  form { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1.5rem 0; }
+  label { flex-basis: 100%; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  input { flex: 1; min-width: 0; padding: 0.6rem 0.8rem; font: inherit; border: 1px solid var(--border); border-radius: 8px; background: transparent; color: inherit; }
   button { padding: 0.6rem 1.1rem; font: inherit; border: 0; border-radius: 8px; background: var(--accent); color: #fff; cursor: pointer; }
   button:disabled { opacity: 0.6; }
   .card { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-top: 1rem; }
@@ -102,28 +112,34 @@ const PAGE = `<!DOCTYPE html>
 <h1><a href="https://github.com/thegruber/linkpeek">linkpeek</a> playground</h1>
 <p class="sub">Server-side link previews with SSRF protection on by default. Try any URL — private/internal targets are blocked by the library, not by this demo.</p>
 <form id="f">
+  <label for="url">Page URL</label>
   <input id="url" type="url" required placeholder="https://github.com/thegruber/linkpeek" autocomplete="off">
   <button id="go">Preview</button>
 </form>
+<p id="status" role="status"></p>
 <div id="out"></div>
-<footer>Powered by <a href="https://www.npmjs.com/package/linkpeek">linkpeek</a> on Cloudflare Workers — 1 runtime dependency, ~7 KB gzipped.</footer>
+<footer>Powered by <a href="https://www.npmjs.com/package/linkpeek">linkpeek</a> on Cloudflare Workers — 1 runtime dependency, small streaming parser.</footer>
 <script>
 const f = document.getElementById("f");
 const out = document.getElementById("out");
 const go = document.getElementById("go");
+const status = document.getElementById("status");
 const esc = (s) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 f.addEventListener("submit", async (e) => {
   e.preventDefault();
   const url = document.getElementById("url").value;
   go.disabled = true;
-  out.innerHTML = "<p>Fetching…</p>";
+  out.innerHTML = "";
+  status.textContent = "Fetching…";
   try {
     const res = await fetch("/api/preview?url=" + encodeURIComponent(url));
     const data = await res.json();
-    if (!res.ok) {
-      out.innerHTML = '<div class="error"><code>' + esc(data.code || String(res.status)) + "</code> " + esc(data.error || "Request failed") + "</div>";
+    if (!res.ok || data.statusCode < 200 || data.statusCode >= 300) {
+      status.textContent = "";
+      out.innerHTML = '<div class="error" role="alert"><code>' + esc(data.code || String(data.statusCode || res.status)) + "</code> " + esc(data.error || "Request failed") + "</div>";
       return;
     }
+    status.textContent = "Preview ready.";
     const hero = data.image ? '<img class="hero" src="' + esc(data.image) + '" alt="' + esc(data.imageAlt || "") + '">' : "";
     const favicon = data.favicon ? '<img src="' + esc(data.favicon) + '" alt="">' : "";
     out.innerHTML =
@@ -131,9 +147,10 @@ f.addEventListener("submit", async (e) => {
       '<div class="body"><div class="site">' + favicon + "<span>" + esc(data.siteName || "") + "</span></div>" +
       "<h2>" + esc(data.title || "(no title)") + "</h2>" +
       "<p>" + esc(data.description || "") + "</p></div></div>" +
-      "<details><summary>Raw JSON</summary><pre>" + esc(JSON.stringify(data, null, 2)) + "</pre></details>";
+      '<details><summary>Raw JSON</summary><pre tabindex="0" role="region" aria-label="Preview JSON">' + esc(JSON.stringify(data, null, 2)) + "</pre></details>";
   } catch (err) {
-    out.innerHTML = '<div class="error">' + esc(String(err)) + "</div>";
+    status.textContent = "";
+    out.innerHTML = '<div class="error" role="alert">' + esc(String(err)) + "</div>";
   } finally {
     go.disabled = false;
   }

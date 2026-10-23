@@ -15,5 +15,10 @@ supabase functions deploy preview
 ## Usage
 
 ```bash
-curl "https://<your-project>.supabase.co/functions/v1/preview?url=https://github.com"
+curl -H "Authorization: Bearer $SUPABASE_USER_JWT" \
+  "https://<your-project>.supabase.co/functions/v1/preview?url=https://github.com"
 ```
+
+Set `SUPABASE_USER_JWT` to a valid caller JWT from your app’s Supabase Auth
+session. Default deployments verify this JWT before invoking the function.
+Send it only to your Supabase function; never forward it to a preview target.

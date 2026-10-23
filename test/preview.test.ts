@@ -70,6 +70,39 @@ describe("preview()", () => {
 		expect(emittedBytes).toBeLessThan(30_000);
 	});
 
+	it.each([false, true])(
+		"ignores nested template metadata and refreshes (body scan=%s)",
+		async (includeBodyContent) => {
+			const chunks = [
+				'<head><template><meta property="og:title" content="Inert"><meta http-equiv="refresh" content="0; url=/wrong"><template><div>Inert body</div></template></template>',
+				'<title>Real title</title></head><body><template><img src="/inert.jpg"><script type="application/ld+json">{"name":"Inert JSON"}</script></template><img src="/real.jpg"></body>',
+			];
+			const fetchMock = vi.fn(
+				async () =>
+					new Response(
+						new ReadableStream<Uint8Array>({
+							pull(controller) {
+								const chunk = chunks.shift();
+								if (chunk) controller.enqueue(new TextEncoder().encode(chunk));
+								else controller.close();
+							},
+						}),
+						{ headers: { "content-type": "text/html" } },
+					),
+			);
+			const result = await preview("https://example.com", {
+				fetch: fetchMock,
+				includeBodyContent,
+				followMetaRefresh: true,
+			});
+			expect(result.title).toBe("Real title");
+			expect(result.image).toBe(
+				includeBodyContent ? "https://example.com/real.jpg" : null,
+			);
+			expect(fetchMock).toHaveBeenCalledTimes(1);
+		},
+	);
+
 	it("continues reading body metadata when body scanning is enabled", async () => {
 		const page = `<html><head><title>Head fallback</title></head><body>
 			${"padding ".repeat(300)}
@@ -245,6 +278,55 @@ describe("preview()", () => {
 		expect(result.title).toBe("Real Title");
 		expect(result.url).toBe("https://example.com/real");
 	});
+
+	it.each([
+		{
+			httpRedirect: false,
+			target: "https://other.example/real",
+			expected: null,
+		},
+		{
+			httpRedirect: true,
+			target: "https://other.example/real",
+			expected: null,
+		},
+		{
+			httpRedirect: false,
+			target: "https://example.com/real",
+			expected: "site-value",
+		},
+	])(
+		"keeps custom headers on the original origin across meta refresh ($httpRedirect, $target)",
+		async ({ httpRedirect, target, expected }) => {
+			const seen: (string | null)[] = [];
+			const fetchMock = vi.fn(
+				async (input: string | URL | Request, init?: RequestInit) => {
+					seen.push(new Headers(init?.headers).get("X-Site-Header"));
+					if (httpRedirect && seen.length === 1)
+						return new Response(null, {
+							status: 302,
+							headers: { location: "https://other.example/interstitial" },
+						});
+					return new Response(
+						String(input) === target
+							? "<head><title>Destination</title></head>"
+							: `<head><meta http-equiv="refresh" content="0; url=${target}"></head>`,
+						{ headers: { "content-type": "text/html" } },
+					);
+				},
+			);
+			const result = await preview("https://example.com/start", {
+				fetch: fetchMock,
+				followMetaRefresh: true,
+				headers: { "X-Site-Header": "site-value" },
+			});
+			expect(result.title).toBe("Destination");
+			expect(seen[0]).toBe("site-value");
+			expect(seen.slice(1)).toEqual(
+				httpRedirect ? [null, expected] : [expected],
+			);
+		},
+	);
 
 	it("rethrows caller aborts during a meta-refresh request", async () => {
 		const interstitial = `<html><head>

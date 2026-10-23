@@ -23,7 +23,7 @@
 		"dist",
 		"CHANGELOG.md"
 	],
-	"packageManager": "npm@11.19.0",
+	"packageManager": "npm@11.21.1",
 	"sideEffects": false,
 	"scripts": {
 		"build": "tsup",
@@ -81,7 +81,7 @@
 		"url": "https://github.com/thegruber/linkpeek/issues"
 	},
 	"engines": {
-		"node": ">=22.0.0"
+		"node": ">=22.12.0"
 	},
 	"allowScripts": {
 		"esbuild@0.27.2": true,
@@ -92,14 +92,19 @@
 	},
 	"devDependencies": {
 		"@arethetypeswrong/cli": "^0.18.5",
-		"@biomejs/biome": "^2.5.10",
-		"@release-it/conventional-changelog": "^12.0.0",
-		"@types/node": "^22.20.1",
-		"@vitest/coverage-v8": "^4.1.11",
-		"publint": "^0.3.24",
-		"release-it": "^21.0.2",
+		"@biomejs/biome": "^2.6.2",
+		"@release-it/conventional-changelog": "^12.0.2",
+		"@types/node": "^22.20.5",
+		"@vitest/coverage-v8": "^4.1.12",
+		"publint": "^0.3.25",
+		"release-it": "^21.1.1",
 		"tsup": "^8.5.1",
 		"typescript": "^6.0.3",
-		"vitest": "^4.1.11"
+		"vitest": "^4.1.12"
+	},
+	"overrides": {
+		"get-uri": {
+			"basic-ftp": "^6.2.3"
+		}
 	}
 }

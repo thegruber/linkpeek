@@ -1,6 +1,7 @@
 // Smoke test: verifies linkpeek dist output loads and works in Deno.
-// Run after `npm run build`: deno run test/deno-smoke.ts
-import { parseHTML } from "../dist/index.js";
+// Run from a packed consumer with npm dependencies installed (see CI).
+import { parseHTML, preview } from "npm:linkpeek";
+import { runPreviewSmoke } from "./runtime-smoke.ts";
 
 const result = parseHTML(
 	'<html><head><title>Test</title><meta property="og:title" content="OG Title"></head></html>',
@@ -14,4 +15,5 @@ if (result.siteName !== "example.com") {
 	throw new Error(`Expected "example.com", got: ${result.siteName}`);
 }
 
-console.log("Deno smoke test passed");
+await runPreviewSmoke(preview);
+console.log("Deno npm consumer smoke test passed");

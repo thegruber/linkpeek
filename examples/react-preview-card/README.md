@@ -17,3 +17,8 @@ export default function Page() {
 ```
 
 The component expects a `/api/preview?url=` endpoint. Adjust the `fetch` URL in the component to match your API.
+
+The component cancels obsolete requests and ignores late responses. It expects
+the full preview result, including `statusCode` and `imageAlt`, and shows an error
+for either API failures or non-2xx target responses. Loading and error states
+are announced to assistive technology.

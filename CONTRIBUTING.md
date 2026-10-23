@@ -7,12 +7,16 @@ Thanks for your interest in contributing.
 1. Install dependencies from the committed npm lockfile:
 
 ```bash
+npm install --global npm@11.21.1
 npm ci
 ```
 
-The published library supports Node.js 22+. The current release-it toolchain
-requires Node.js 22.21+ or 24+, so use a current Node 22 patch release when
-running release commands locally.
+The published library supports Node.js 22.12+ (including CommonJS). Use a
+current patched Node 24 release for development and npm 11.21.1, matching CI.
+`.npmrc` requires explicit approval of dependency install scripts through
+`allowScripts` in `package.json`; review new scripts before changing that list.
+The scoped `get-uri` → `basic-ftp` override supplies the patched FTP client
+until upstream updates its dependency range.
 
 2. Run the full quality gate (lint, typecheck, tests, audit, build, package checks):
 
