@@ -66,7 +66,11 @@ export async function preview(
 		if (refreshUrl && refreshUrl !== finalUrl) {
 			try {
 				validateUrl(refreshUrl, options.allowPrivateIPs);
-				const refreshed = await fetchUrl(refreshUrl, options);
+				const refreshed = await fetchUrl(
+					refreshUrl,
+					options,
+					new URL(url).origin,
+				);
 				if (refreshed.isHtml) {
 					result = parseHTML(refreshed.html, refreshed.finalUrl, options);
 					result.url = refreshed.finalUrl;

@@ -77,7 +77,15 @@ for (const page of pages) {
 			: articleSchema(page, canonical),
 	).replaceAll("<", "\\u003c");
 	const content = render(
-		readFileSync(resolve(contentDir, page.source), "utf8"),
+		readFileSync(resolve(contentDir, page.source), "utf8")
+			.replaceAll(
+				"<pre",
+				'<pre tabindex="0" role="region" aria-label="Code example"',
+			)
+			.replaceAll(
+				'<div class="table-wrap">',
+				'<div class="table-wrap" tabindex="0" role="region" aria-label="Comparison table">',
+			),
 		{
 			base: siteBase,
 		},

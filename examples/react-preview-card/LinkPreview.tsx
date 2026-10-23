@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 
 interface PreviewData {
+	statusCode: number;
+	imageAlt: string | null;
 	title: string | null;
 	description: string | null;
 	image: string | null;
@@ -14,18 +16,35 @@ export function LinkPreview({ url }: { url: string }) {
 	const [error, setError] = useState<string | null>(null);
 
 	useEffect(() => {
+		const controller = new AbortController();
+		let active = true;
 		setData(null);
 		setError(null);
-		fetch(`/api/preview?url=${encodeURIComponent(url)}`)
+		fetch(`/api/preview?url=${encodeURIComponent(url)}`, {
+			signal: controller.signal,
+		})
 			.then((res) =>
 				res.ok ? res.json() : Promise.reject(new Error("Fetch failed")),
 			)
-			.then(setData)
-			.catch((err) => setError(err.message));
+			.then((preview: PreviewData) => {
+				if (!active) return;
+				if (preview.statusCode < 200 || preview.statusCode >= 300) {
+					throw new Error("Target did not return a successful response");
+				}
+				setData(preview);
+			})
+			.catch((err: unknown) => {
+				if (active)
+					setError(err instanceof Error ? err.message : "Fetch failed");
+			});
+		return () => {
+			active = false;
+			controller.abort();
+		};
 	}, [url]);
 
-	if (error) return <div>Failed to load preview</div>;
-	if (!data) return <div>Loading...</div>;
+	if (error) return <div role="alert">Failed to load preview</div>;
+	if (!data) return <div role="status">Loading...</div>;
 
 	return (
 		<a
@@ -45,7 +64,7 @@ export function LinkPreview({ url }: { url: string }) {
 			{data.image && (
 				<img
 					src={data.image}
-					alt={data.title ?? ""}
+					alt={data.imageAlt ?? ""}
 					style={{ width: "100%", height: 200, objectFit: "cover" }}
 				/>
 			)}

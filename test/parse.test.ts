@@ -924,6 +924,19 @@ describe("edge cases", () => {
 		expect(result.title).toBe("Still Works");
 	});
 
+	it("extracts JSON-LD graphs nested inside top-level arrays without recursion", () => {
+		let data: unknown = { headline: "Nested article", image: "/nested.jpg" };
+		for (let index = 0; index < 100; index++) data = [{ "@graph": [data] }];
+		const result = parseHTML(
+			`<head><script type="application/ld+json">${JSON.stringify(data)}</script></head>`,
+			BASE,
+		);
+		expect(result).toMatchObject({
+			title: "Nested article",
+			image: "https://example.com/nested.jpg",
+		});
+	});
+
 	it("handles duplicate meta tags (first wins)", () => {
 		const html = `<html><head>
 			<meta property="og:title" content="First">
@@ -954,6 +967,93 @@ describe("edge cases", () => {
 
 		expect(result.title).toBeNull();
 		expect(result.description).toBeNull();
+	});
+
+	it("keeps image dimensions and alt text with their own Open Graph image", () => {
+		const result = parseHTML(
+			`<head>
+			<meta property="og:image" content="/first.jpg">
+			<meta property="og:image" content="/second.jpg">
+			<meta property="og:image:width" content="640">
+			<meta property="og:image:alt" content="Second image">
+		</head>`,
+			BASE,
+		);
+		expect(result).toMatchObject({
+			image: "https://example.com/first.jpg",
+			imageWidth: null,
+			imageAlt: null,
+		});
+	});
+
+	it.each(["-1", "120px", "1e3", "9".repeat(310)])(
+		"rejects invalid image dimensions (%s)",
+		(dimension) => {
+			const result = parseHTML(
+				`<head><meta property="og:image" content="/image.jpg"><meta property="og:image:width" content="${dimension}"><meta property="og:image:height" content="${dimension}"></head>`,
+				BASE,
+			);
+			expect(result.imageWidth).toBeNull();
+			expect(result.imageHeight).toBeNull();
+		},
+	);
+
+	it.each(["image", "video", "audio"] as const)(
+		"continues to a safe %s candidate after an unsafe URL",
+		(field) => {
+			const result = parseHTML(
+				`<head><meta property="og:${field}" content="javascript:bad"><meta property="og:${field}:secure_url" content="https://cdn.example/safe"></head>`,
+				BASE,
+			);
+			expect(result[field]).toBe("https://cdn.example/safe");
+		},
+	);
+
+	it.each(["video", "audio"] as const)(
+		"tries repeated %s URLs in order until one is safe",
+		(field) => {
+			const result = parseHTML(
+				`<head><meta property="og:${field}" content="javascript:bad"><meta property="og:${field}" content="/safe"><meta property="og:${field}" content="/later"></head>`,
+				BASE,
+			);
+			expect(result[field]).toBe("https://example.com/safe");
+		},
+	);
+
+	it("uses a safe Twitter image when Open Graph is unsafe", () => {
+		const result = parseHTML(
+			'<head><meta property="og:image" content="data:bad"><meta property="og:image:alt" content="Wrong"><meta name="twitter:image" content="/twitter.jpg"><meta name="twitter:image:alt" content="Twitter image"></head>',
+			BASE,
+		);
+		expect(result).toMatchObject({
+			image: "https://example.com/twitter.jpg",
+			imageAlt: "Twitter image",
+		});
+	});
+
+	it("does not attach rejected Twitter alt text to a JSON-LD fallback", () => {
+		const result = parseHTML(
+			`<head>
+			<meta property="og:image" content="javascript:bad">
+			<meta name="twitter:image" content="data:bad">
+			<meta name="twitter:image:alt" content="Rejected image">
+			<script type="application/ld+json">{"image":"/json.jpg"}</script>
+		</head>`,
+			BASE,
+		);
+		expect(result).toMatchObject({
+			image: "https://example.com/json.jpg",
+			imageAlt: null,
+		});
+	});
+
+	it("skips unsafe body images before selecting a fallback", () => {
+		const result = parseHTML(
+			'<head></head><body><img src="javascript:bad"><img src="/body.jpg"></body>',
+			BASE,
+			{ includeBodyContent: true },
+		);
+		expect(result.image).toBe("https://example.com/body.jpg");
 	});
 
 	it("handles non-numeric image dimensions", () => {

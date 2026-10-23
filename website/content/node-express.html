@@ -20,7 +20,7 @@ app.get(<span class="code-value">"/api/preview"</span>, <span class="code-keywor
 	<span class="code-keyword">try</span> {
 		<span class="code-keyword">const</span> result = <span class="code-keyword">await</span> preview(url);
 		response
-			.set(<span class="code-value">"Cache-Control"</span>, result.statusCode &lt; <span class="code-number">400</span>
+			.set(<span class="code-value">"Cache-Control"</span>, result.statusCode &gt;= <span class="code-number">200</span> &amp;&amp; result.statusCode &lt; <span class="code-number">300</span>
 				? <span class="code-value">"public, max-age=300"</span>
 				: <span class="code-value">"no-store"</span>)
 			.json(result);
@@ -31,7 +31,7 @@ app.get(<span class="code-value">"/api/preview"</span>, <span class="code-keywor
 		<p>The endpoint accepts one URL and returns the stable <code>PreviewResult</code> shape used by a client-side preview card.</p>
 
 		<h2 id="cache">Cache successes by normalized URL</h2>
-		<p>The response header helps browsers and shared proxies, but a server-side cache avoids the outbound fetch even when clients miss. Normalize equivalent URLs into one key, coalesce concurrent misses, choose a product-appropriate TTL, and skip caching when <code>statusCode</code> is 400 or higher.</p>
+		<p>The response header helps browsers and shared proxies, but a server-side cache avoids the outbound fetch even when clients miss. Normalize equivalent URLs into one key, coalesce concurrent misses, choose a product-appropriate TTL, and cache only when <code>statusCode</code> is between 200 and 299.</p>
 		<div class="note"><strong>Keep errors local.</strong> A failed metadata request should produce a hostname-only fallback card rather than block the parent page or message.</div>
 
 		<h2 id="production">Protect a public preview route</h2>

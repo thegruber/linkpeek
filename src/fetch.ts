@@ -1,3 +1,4 @@
+import { Parser } from "htmlparser2";
 import { LinkpeekError } from "./errors.js";
 import { createHeadBoundaryDetector } from "./parse.js";
 import type { PreviewOptions } from "./types.js";
@@ -230,6 +231,7 @@ export interface FetchResult {
 export async function fetchUrl(
 	url: string,
 	options: PreviewOptions = {},
+	headerOrigin?: string,
 ): Promise<FetchResult> {
 	validateUrl(url, options.allowPrivateIPs);
 	const timeout = normalizeTimeout(options.timeout ?? DEFAULT_TIMEOUT);
@@ -245,7 +247,7 @@ export async function fetchUrl(
 	const crossOriginHeaders = options.headers
 		? buildRequestHeaders(userAgent, undefined)
 		: headers;
-	const startOrigin = new URL(url).origin;
+	const startOrigin = headerOrigin ?? new URL(url).origin;
 
 	if (options.signal?.aborted) {
 		throw (
@@ -402,7 +404,7 @@ async function readFetchResponse(
 		normalizedContentType.includes("text/html") ||
 		normalizedContentType.includes("xhtml");
 
-	if (!isHtml || !response.body) {
+	if (!isHtml || !response.body || maxBytes === 0) {
 		// Drain unused bodies so the connection is released immediately.
 		response.body?.cancel().catch(() => {});
 		return { html: "", finalUrl, contentType, isHtml, statusCode };
@@ -414,11 +416,6 @@ async function readFetchResponse(
 	let totalBytes = 0;
 	const headDetector = stopAfterHead ? createHeadBoundaryDetector() : null;
 	let headDecoder: TextDecoder | null = null;
-	const headerCharset = extractHeaderCharset(contentType);
-	if (headDetector && headerCharset) {
-		headDecoder = createTextDecoder(headerCharset);
-	}
-
 	while (true) {
 		const { done, value } = await reader.read();
 		if (done) break;
@@ -431,10 +428,9 @@ async function readFetchResponse(
 		if (headDetector) {
 			if (headDecoder) {
 				headDetector.write(headDecoder.decode(chunk, { stream: true }));
-			} else if (
-				totalBytes >= CHARSET_PRESCAN_BYTES ||
-				totalBytes >= maxBytes
-			) {
+			} else if (totalBytes >= 3 || totalBytes >= maxBytes) {
+				// Wait only for a possible split BOM. ASCII-compatible encodings
+				// share the head markup; final text decoding uses the full prescan.
 				const buffered = combineChunks(chunks, totalBytes);
 				headDecoder = createTextDecoder(detectCharset(contentType, buffered));
 				headDetector.write(headDecoder.decode(buffered, { stream: true }));
@@ -485,10 +481,7 @@ function extractHeaderCharset(contentType: string): string | null {
 const CHARSET_PRESCAN_BYTES = 1024;
 
 function detectCharset(contentType: string, bytes: Uint8Array): string {
-	// Content-Type header wins (strip quotes if present)
-	const headerCharset = extractHeaderCharset(contentType);
-	if (headerCharset) return headerCharset;
-
+	// A BOM takes precedence over HTTP and document declarations.
 	// Byte order marks
 	if (
 		bytes.length >= 3 &&
@@ -502,14 +495,43 @@ function detectCharset(contentType: string, bytes: Uint8Array): string {
 	if (bytes.length >= 2 && bytes[0] === 0xfe && bytes[1] === 0xff)
 		return "utf-16be";
 
-	// Prescan for <meta charset="..."> or http-equiv content-type charset
-	const head = new TextDecoder("latin1").decode(
-		bytes.subarray(0, CHARSET_PRESCAN_BYTES),
+	const headerCharset = extractHeaderCharset(contentType);
+	if (headerCharset) return headerCharset;
+
+	// Parse only the bounded prescan: comments and raw script/style text must
+	// not masquerade as encoding declarations.
+	let charset: string | null = null;
+	let templateDepth = 0;
+	const parser = new Parser(
+		{
+			onopentag(name, attrs) {
+				if (name === "template") templateDepth++;
+				if (templateDepth || name !== "meta") return;
+				const candidate =
+					attrs.charset ||
+					((attrs["http-equiv"] || "").toLowerCase() === "content-type"
+						? extractHeaderCharset(attrs.content || "")
+						: null);
+				if (!candidate) return;
+				try {
+					const encoding = new TextDecoder(candidate).encoding;
+					// HTML meta declarations cannot switch an ASCII document to UTF-16.
+					charset = encoding.startsWith("utf-16") ? "utf-8" : encoding;
+					parser.pause();
+				} catch {
+					/* Ignore unsupported declarations and continue scanning. */
+				}
+			},
+			onclosetag(name) {
+				if (name === "template" && templateDepth) templateDepth--;
+			},
+		},
+		{ decodeEntities: true },
 	);
-	const metaCharset = head.match(
-		/<meta[^>]+charset\s*=\s*["']?([^"'\s/>;]+)/i,
-	)?.[1];
-	if (metaCharset) return metaCharset;
+	parser.write(
+		new TextDecoder("latin1").decode(bytes.subarray(0, CHARSET_PRESCAN_BYTES)),
+	);
+	if (charset) return charset;
 
 	return "utf-8";
 }

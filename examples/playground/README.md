@@ -1,8 +1,7 @@
 # linkpeek playground
 
 A single Cloudflare Worker that serves a minimal preview-card UI and a
-rate-limited `/api/preview` endpoint. This is the hosted demo for linkpeek —
-it dogfoods the edge-runtime claim and shows the SSRF protection live (try
+rate-limited `/api/preview` endpoint. Deploy it to demonstrate the edge runtime and SSRF protection (try
 `http://169.254.169.254/` and watch it get blocked by the library).
 
 ## Run locally
@@ -28,11 +27,11 @@ the hero image) — do not link it before it is deployed.
 
 ## Production notes
 
-- The in-memory rate limit is per-isolate and best-effort. For real abuse
+- The in-memory rate limit is per-isolate and best-effort. It retains at most
+  1,000 clients for one minute and rejects new clients while at capacity. For real abuse
   protection add a Cloudflare WAF rate-limiting rule on `/api/preview`.
 - Successful previews are served with `Cache-Control: public, max-age=600`;
   error statuses are `no-store`.
 - The endpoint caps `timeout` at 5s and `maxBytes` at 30 KB and never enables
   `allowPrivateIPs` — the library's SSRF blocking is the demo.
-- Watch usage in the Cloudflare dashboard; the free tier (100k requests/day)
-  is plenty for a demo endpoint.
+- Monitor usage and your current plan limits in the Cloudflare dashboard.

@@ -2,6 +2,27 @@
 
 All notable changes to this project are documented here.
 
+## 2.1.6 - 2026-10-23
+
+This release improves request isolation, preview reliability, and example accessibility.
+
+**Runtime requirement:** Node.js 22.12 or newer. This corrects the previously advertised minimum, which did not support the CommonJS build. The public API and fast/quality defaults remain unchanged.
+
+### Fixed
+
+- Keep custom headers on the original origin across HTTP redirects and meta-refresh.
+- Finish fast previews at a complete small head and cancel zero-byte budgets without waiting for body data.
+- Honor BOM encoding precedence and ignore inert or invalid charset declarations.
+- Ignore template metadata, keep Open Graph image properties together, continue safe media fallbacks, reject invalid dimensions, and traverse nested JSON-LD graphs.
+- Cancel stale React preview requests, handle target HTTP errors, improve example accessibility, and bound the playground rate limiter.
+
+### Changed
+
+- Require Node.js 22.12+ for the published ESM/CommonJS package and verify that exact floor in CI.
+- Patch development and benchmark dependencies, align npm across CI, enforce install-script approvals, and refresh pinned Actions.
+- Extend Bun/Deno streaming and abort checks, test Deno's packed npm consumption, validate benchmark extraction results, and remove the unused entity decoder.
+- Correct authentication/cache documentation and make documentation scroll regions keyboard accessible.
+
 ## 2.1.5 - 2026-08-26
 
 ### Added

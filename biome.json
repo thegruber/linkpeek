@@ -1,6 +1,12 @@
 {
-	"$schema": "https://biomejs.dev/schemas/2.5.10/schema.json",
-	"assist": { "actions": { "source": { "organizeImports": "on" } } },
+	"$schema": "https://biomejs.dev/schemas/2.6.2/schema.json",
+	"assist": {
+		"actions": {
+			"source": {
+				"organizeImports": "on"
+			}
+		}
+	},
 	"formatter": {
 		"enabled": true,
 		"indentStyle": "tab"
@@ -29,5 +35,10 @@
 			"!**/.DS_Store",
 			"!**/*.tgz"
 		]
+	},
+	"markdown": {
+		"formatter": {
+			"enabled": false
+		}
 	}
 }

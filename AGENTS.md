@@ -16,7 +16,7 @@
 ## Architecture
 - `src/types.ts`: public TypeScript interfaces
 - `src/errors.ts`: `LinkpeekError` with machine-readable `code` values
-- `src/resolve.ts`: entity decoding and safe URL resolution helpers
+- `src/resolve.ts`: safe URL resolution helpers
 - `src/parse.ts`: SAX parser using `htmlparser2` (entities are decoded exactly once, by htmlparser2; never re-decode its output)
 - `src/fetch.ts`: streaming fetch, byte limit, redirect validation, SSRF host checks, charset detection
 - `src/index.ts`: public API (`preview`, `parseHTML`, `presets`, `validateUrl`, `isPrivateHost`, `LinkpeekError`)
@@ -29,7 +29,7 @@
 - Package exports must keep separate ESM and CJS declaration files:
   - import types: `./dist/index.d.ts`
   - require types: `./dist/index.d.cts`
-- Node support starts at Node 22. Node 20 is EOL and must not be reintroduced to CI or docs.
+- Node support starts at Node 22.12 (including CommonJS). Node 20 is EOL and must not be reintroduced to CI or docs.
 
 ## Security Rules
 - Validate the initial URL and every HTTP redirect before fetching the next target.

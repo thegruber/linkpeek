@@ -19,6 +19,15 @@ const HEAD_TAGS = new Set([
 	"template",
 ]);
 
+const MEDIA_URL_KEYS = new Set([
+	"og:video",
+	"og:video:url",
+	"og:video:secure_url",
+	"og:audio",
+	"og:audio:url",
+	"og:audio:secure_url",
+]);
+
 function startsBodyContent(tagName: string): boolean {
 	return !HEAD_TAGS.has(tagName);
 }
@@ -41,6 +50,7 @@ interface HeadBoundaryDetector {
  */
 export function createHeadBoundaryDetector(): HeadBoundaryDetector {
 	let headClosed = false;
+	let templateDepth = 0;
 	let parser: Parser;
 
 	const closeHead = () => {
@@ -52,9 +62,16 @@ export function createHeadBoundaryDetector(): HeadBoundaryDetector {
 	parser = new Parser(
 		{
 			onopentag(name) {
+				if (name === "template") templateDepth++;
+				if (templateDepth) return;
 				if (startsBodyContent(name)) closeHead();
 			},
 			onclosetag(name) {
+				if (name === "template" && templateDepth) {
+					templateDepth--;
+					return;
+				}
+				if (templateDepth) return;
 				if (name === "head") closeHead();
 			},
 		},
@@ -125,6 +142,12 @@ function isAsciiDigits(value: string): boolean {
 	return true;
 }
 
+function imageDimension(value: string | null | undefined): number | null {
+	if (!value || !isAsciiDigits(value)) return null;
+	const dimension = Number(value);
+	return Number.isSafeInteger(dimension) ? dimension : null;
+}
+
 function firstSafeDocumentBase(
 	current: string | null,
 	href: string | undefined,
@@ -143,6 +166,8 @@ export function parseHTML(
 	options?: Pick<PreviewOptions, "includeBodyContent">,
 ): PreviewResult {
 	const meta = new Map<string, string>();
+	const ogImages: Map<string, string>[] = [];
+	const mediaUrls = new Map<string, string[]>();
 	const jsonLdRaw: string[] = [];
 	let titleText = "";
 	let faviconHref: string | null = null;
@@ -162,10 +187,13 @@ export function parseHTML(
 	const safeBaseUrl =
 		resolveHttpUrl(baseUrl, FALLBACK_BASE_URL) || FALLBACK_BASE_URL;
 
+	let templateDepth = 0;
 	let parser: Parser;
 	parser = new Parser(
 		{
 			onopentag(name, attrs) {
+				if (name === "template") templateDepth++;
+				if (templateDepth) return;
 				if (name === "body") {
 					headClosed = true;
 					if (!includeBodyContent) parser.pause();
@@ -208,7 +236,10 @@ export function parseHTML(
 						!(h > 0 && h < MIN_BODY_IMAGE_DIMENSION) &&
 						!attrs.src.startsWith("data:")
 					) {
-						firstBodyImage = attrs.src;
+						firstBodyImage = resolveHttpUrl(
+							attrs.src,
+							documentBaseUrl || safeBaseUrl,
+						);
 					}
 					return;
 				}
@@ -232,6 +263,18 @@ export function parseHTML(
 					const content = attrs.content;
 					if (content && prop) {
 						const key = prop.toLowerCase();
+						if (key === "og:image" || key === "og:image:url") {
+							ogImages.push(new Map([["url", content]]));
+						} else if (key.startsWith("og:image:")) {
+							const image = ogImages.at(-1);
+							const field = key.slice("og:image:".length);
+							if (image && !image.has(field)) image.set(field, content);
+						}
+						if (MEDIA_URL_KEYS.has(key)) {
+							const values = mediaUrls.get(key);
+							if (values) values.push(content);
+							else mediaUrls.set(key, [content]);
+						}
 						if (!meta.has(key)) meta.set(key, content);
 					}
 					// itemprop="image" fallback (Schema.org microdata)
@@ -290,11 +333,17 @@ export function parseHTML(
 			},
 
 			ontext(text) {
+				if (templateDepth) return;
 				if (inTitle) titleText += text;
 				if (inJsonLd) jsonLdBuf += text;
 			},
 
 			onclosetag(name) {
+				if (name === "template" && templateDepth) {
+					templateDepth--;
+					return;
+				}
+				if (templateDepth) return;
 				if (name === "title") inTitle = false;
 				if (name === "script" && inJsonLd) {
 					inJsonLd = false;
@@ -343,27 +392,40 @@ export function parseHTML(
 		jsonLd.description ||
 		get("dc.description", "dcterms.description");
 
-	const rawImage =
-		get(
-			"og:image",
-			"og:image:url",
-			"og:image:secure_url",
-			"twitter:image",
-			"twitter:image:src",
-		) ||
-		jsonLd.image ||
-		jsonLd.thumbnailUrl ||
-		imageSrcHref ||
-		itempropImage ||
-		firstBodyImage;
-	const image = resolveHttpUrl(rawImage, effectiveBaseUrl);
+	const firstSafeUrl = (
+		values: (string | null | undefined)[],
+	): string | null => {
+		for (const value of values) {
+			const resolved = resolveHttpUrl(value, effectiveBaseUrl);
+			if (resolved) return resolved;
+		}
+		return null;
+	};
+	const selectedImage = ogImages.find((candidate) =>
+		firstSafeUrl([candidate.get("url"), candidate.get("secure_url")]),
+	);
+	const ogImage = firstSafeUrl([
+		selectedImage?.get("url"),
+		selectedImage?.get("secure_url"),
+		ogImages.length ? null : get("og:image:secure_url"),
+	]);
+	const twitterImage = firstSafeUrl([
+		get("twitter:image"),
+		get("twitter:image:src"),
+	]);
+	const image =
+		ogImage ||
+		twitterImage ||
+		firstSafeUrl([
+			jsonLd.image,
+			jsonLd.thumbnailUrl,
+			imageSrcHref,
+			itempropImage,
+			firstBodyImage,
+		]);
 
-	const imageWidthRaw = get("og:image:width");
-	const imageHeightRaw = get("og:image:height");
-	const imageWidth = imageWidthRaw ? Number.parseInt(imageWidthRaw, 10) : null;
-	const imageHeight = imageHeightRaw
-		? Number.parseInt(imageHeightRaw, 10)
-		: null;
+	const imageWidth = imageDimension(selectedImage?.get("width"));
+	const imageHeight = imageDimension(selectedImage?.get("height"));
 
 	const siteName =
 		get("og:site_name") ||
@@ -399,14 +461,17 @@ export function parseHTML(
 		jsonLd.datePublished ||
 		get("dc.date", "dcterms.date");
 
-	const video = resolveHttpUrl(
-		get("og:video", "og:video:url", "og:video:secure_url"),
-		effectiveBaseUrl,
+	const video = firstSafeUrl(
+		["og:video", "og:video:url", "og:video:secure_url"].flatMap(
+			(key) => mediaUrls.get(key) || [],
+		),
 	);
-	const audio = resolveHttpUrl(
-		get("og:audio", "og:audio:url", "og:audio:secure_url"),
-		effectiveBaseUrl,
+	const audio = firstSafeUrl(
+		["og:audio", "og:audio:url", "og:audio:secure_url"].flatMap(
+			(key) => mediaUrls.get(key) || [],
+		),
 	);
+
 	const lang =
 		htmlLang ||
 		get("content-language") ||
@@ -415,7 +480,18 @@ export function parseHTML(
 	const twitterCard = get("twitter:card");
 	const twitterSite = get("twitter:site");
 	const twitterCreator = get("twitter:creator");
-	const imageAlt = get("og:image:alt", "twitter:image:alt");
+	let imageAlt: string | null = null;
+	if (ogImage) {
+		imageAlt = selectedImage
+			? selectedImage.get("alt") || null
+			: get("og:image:alt");
+	} else if (twitterImage) {
+		imageAlt = get("twitter:image:alt");
+	} else if (!image) {
+		// Preserve standalone alt metadata when no image can be selected.
+		imageAlt = get("og:image:alt", "twitter:image:alt");
+	}
+
 	const themeColor = get("theme-color");
 
 	const keywordsRaw = get("keywords");
@@ -433,8 +509,8 @@ export function parseHTML(
 		description,
 		image,
 		imageAlt,
-		imageWidth: Number.isNaN(imageWidth) ? null : imageWidth,
-		imageHeight: Number.isNaN(imageHeight) ? null : imageHeight,
+		imageWidth,
+		imageHeight,
 		siteName,
 		favicon,
 		mediaType,
@@ -456,14 +532,20 @@ export function parseHTML(
 	return result;
 }
 
-/** Flatten a JSON-LD payload into the items worth inspecting. */
-function jsonLdItems(data: unknown): unknown[] {
-	if (Array.isArray(data)) return data;
-	if (!data || typeof data !== "object") return [data];
-	const graph = (data as Record<string, unknown>)["@graph"];
-	if (Array.isArray(graph)) return [data, ...graph];
-	if (graph && typeof graph === "object") return [data, graph];
-	return [data];
+/** Walk arrays and @graph containers in document order without recursion. */
+function* jsonLdItems(data: unknown): Generator<unknown> {
+	const pending = [data];
+	while (pending.length) {
+		const item = pending.pop();
+		if (Array.isArray(item)) {
+			for (let index = item.length - 1; index >= 0; index--)
+				pending.push(item[index]);
+		} else if (item && typeof item === "object") {
+			yield item;
+			const graph = (item as Record<string, unknown>)["@graph"];
+			if (graph && typeof graph === "object") pending.push(graph);
+		}
+	}
 }
 
 function extractJsonLd(jsonLdRaw: string[]): JsonLdData {
@@ -539,10 +621,13 @@ export function extractMetaRefreshUrl(
 	const safeBaseUrl =
 		resolveHttpUrl(baseUrl, FALLBACK_BASE_URL) || FALLBACK_BASE_URL;
 	let documentBaseUrl: string | null = null;
+	let templateDepth = 0;
 	let parser: Parser;
 	parser = new Parser(
 		{
 			onopentag(name, attrs) {
+				if (name === "template") templateDepth++;
+				if (templateDepth) return;
 				if (refreshUrl) return;
 				if (startsBodyContent(name)) {
 					parser.pause();
@@ -564,6 +649,11 @@ export function extractMetaRefreshUrl(
 				);
 			},
 			onclosetag(name) {
+				if (name === "template" && templateDepth) {
+					templateDepth--;
+					return;
+				}
+				if (templateDepth) return;
 				if (name === "head") parser.pause();
 			},
 		},

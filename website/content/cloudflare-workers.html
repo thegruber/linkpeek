@@ -16,7 +16,7 @@
 			<span class="code-keyword">const</span> result = <span class="code-keyword">await</span> preview(url);
 			<span class="code-keyword">return</span> Response.json(result, {
 				headers: {
-					<span class="code-value">"Cache-Control"</span>: result.statusCode &lt; <span class="code-number">400</span>
+					<span class="code-value">"Cache-Control"</span>: result.statusCode &gt;= <span class="code-number">200</span> &amp;&amp; result.statusCode &lt; <span class="code-number">300</span>
 						? <span class="code-value">"public, max-age=3600"</span>
 						: <span class="code-value">"no-store"</span>,
 				},
@@ -27,8 +27,8 @@
 	},
 };</code></pre>
 
-		<h2 id="cache">Let the edge absorb repeat work</h2>
-		<p>For public preview endpoints, normalize the URL into a stable cache key and cache only validated 2xx/3xx results. Add rate limiting before exposing arbitrary outbound fetches to the internet.</p>
+		<h2 id="cache">Add shared caching when needed</h2>
+		<p>These response headers support browser and downstream caching. This Worker does not use the Cloudflare Cache API: every request reaching the handler still fetches the target. Add a shared cache with a stable URL key if needed, store only 2xx previews, and rate-limit public callers.</p>
 
 		<h2 id="limits">Know what the runtime owns</h2>
 		<p>linkpeek validates literal addresses and each redirect target. The Worker runtime still owns final DNS resolution and connection establishment. Keep private-IP access disabled and use platform egress controls when hostile public input is in scope.</p>

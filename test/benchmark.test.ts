@@ -11,6 +11,7 @@ describe.skipIf(!liveTestsEnabled)("live URL extraction quality", () => {
 			const result = await preview(
 				"https://www.youtube.com/watch?v=dQw4w9WgXcQ",
 			);
+			expect(result.statusCode).toBe(200);
 			expect(result.title).toBeTruthy();
 			expect(result.image).toBeTruthy();
 			expect(result.siteName).toContain("YouTube");
@@ -22,7 +23,8 @@ describe.skipIf(!liveTestsEnabled)("live URL extraction quality", () => {
 		"GitHub repository",
 		async () => {
 			const result = await preview("https://github.com/fb55/htmlparser2");
-			expect(result.title).toBeTruthy();
+			expect(result.statusCode).toBe(200);
+			expect(result.title).toMatch(/htmlparser2/i);
 			expect(result.description).toBeTruthy();
 		},
 		TIMEOUT,
@@ -34,7 +36,8 @@ describe.skipIf(!liveTestsEnabled)("live URL extraction quality", () => {
 			const result = await preview(
 				"https://en.wikipedia.org/wiki/Web_scraping",
 			);
-			expect(result.title).toBeTruthy();
+			expect(result.statusCode).toBe(200);
+			expect(result.title).toMatch(/Web scraping/i);
 		},
 		TIMEOUT,
 	);
@@ -43,6 +46,7 @@ describe.skipIf(!liveTestsEnabled)("live URL extraction quality", () => {
 		"BBC News",
 		async () => {
 			const result = await preview("https://www.bbc.com/news");
+			expect(result.statusCode).toBe(200);
 			expect(result.title).toBeTruthy();
 			expect(result.siteName).toBeTruthy();
 		},
@@ -55,6 +59,7 @@ describe.skipIf(!liveTestsEnabled)("live URL extraction quality", () => {
 			const result = await preview(
 				"https://stackoverflow.com/questions/10049557/reading-all-files-in-a-directory",
 			);
+			expect(result.statusCode).toBe(200);
 			expect(result.title).toBeTruthy();
 		},
 		TIMEOUT,
@@ -64,6 +69,7 @@ describe.skipIf(!liveTestsEnabled)("live URL extraction quality", () => {
 		"Medium article",
 		async () => {
 			const result = await preview("https://medium.com/about");
+			expect(result.statusCode).toBe(200);
 			expect(result.title).toBeTruthy();
 		},
 		TIMEOUT,
@@ -73,6 +79,7 @@ describe.skipIf(!liveTestsEnabled)("live URL extraction quality", () => {
 		"Reddit",
 		async () => {
 			const result = await preview("https://www.reddit.com");
+			expect(result.statusCode).toBe(200);
 			expect(result.title).toBeTruthy();
 		},
 		TIMEOUT,
@@ -82,6 +89,7 @@ describe.skipIf(!liveTestsEnabled)("live URL extraction quality", () => {
 		"NYTimes",
 		async () => {
 			const result = await preview("https://www.nytimes.com");
+			expect(result.statusCode).toBe(200);
 			expect(result.title).toBeTruthy();
 			expect(result.siteName).toBeTruthy();
 		},
@@ -92,6 +100,7 @@ describe.skipIf(!liveTestsEnabled)("live URL extraction quality", () => {
 		"CNN",
 		async () => {
 			const result = await preview("https://www.cnn.com");
+			expect(result.statusCode).toBe(200);
 			expect(result.title).toBeTruthy();
 		},
 		TIMEOUT,
@@ -101,6 +110,7 @@ describe.skipIf(!liveTestsEnabled)("live URL extraction quality", () => {
 		"Twitter/X profile",
 		async () => {
 			const result = await preview("https://x.com/veraborovets");
+			expect(result.statusCode).toBe(200);
 			expect(result.title).toBeTruthy();
 		},
 		TIMEOUT,
@@ -110,6 +120,7 @@ describe.skipIf(!liveTestsEnabled)("live URL extraction quality", () => {
 		"LinkedIn",
 		async () => {
 			const result = await preview("https://www.linkedin.com");
+			expect(result.statusCode).toBe(200);
 			expect(result.title).toBeTruthy();
 		},
 		TIMEOUT,
@@ -119,6 +130,7 @@ describe.skipIf(!liveTestsEnabled)("live URL extraction quality", () => {
 		"Spotify",
 		async () => {
 			const result = await preview("https://open.spotify.com");
+			expect(result.statusCode).toBe(200);
 			expect(result.title).toBeTruthy();
 		},
 		TIMEOUT,
@@ -128,7 +140,8 @@ describe.skipIf(!liveTestsEnabled)("live URL extraction quality", () => {
 		"IMDb",
 		async () => {
 			const result = await preview("https://www.imdb.com/title/tt0111161/");
-			expect(result.title ?? result.siteName).toBeTruthy();
+			expect(result.statusCode).toBe(200);
+			expect(result.title).toMatch(/Shawshank/i);
 		},
 		TIMEOUT,
 	);
@@ -137,7 +150,8 @@ describe.skipIf(!liveTestsEnabled)("live URL extraction quality", () => {
 		"example.com (simple)",
 		async () => {
 			const result = await preview("http://example.com");
-			expect(result.title).toBeTruthy();
+			expect(result.statusCode).toBe(200);
+			expect(result.title).toMatch(/Example Domain/i);
 		},
 		TIMEOUT,
 	);
@@ -146,6 +160,7 @@ describe.skipIf(!liveTestsEnabled)("live URL extraction quality", () => {
 		"W3C (potential Dublin Core)",
 		async () => {
 			const result = await preview("https://www.w3.org");
+			expect(result.statusCode).toBe(200);
 			expect(result.title).toBeTruthy();
 		},
 		TIMEOUT,
@@ -155,6 +170,7 @@ describe.skipIf(!liveTestsEnabled)("live URL extraction quality", () => {
 		"Non-English site (Japan)",
 		async () => {
 			const result = await preview("https://www.yahoo.co.jp");
+			expect(result.statusCode).toBe(200);
 			expect(result.title).toBeTruthy();
 		},
 		TIMEOUT,
@@ -164,6 +180,7 @@ describe.skipIf(!liveTestsEnabled)("live URL extraction quality", () => {
 		"Vimeo video",
 		async () => {
 			const result = await preview("https://vimeo.com/1084537");
+			expect(result.statusCode).toBe(200);
 			expect(result.title).toBeTruthy();
 			expect(result.image).toBeTruthy();
 		},
@@ -174,7 +191,8 @@ describe.skipIf(!liveTestsEnabled)("live URL extraction quality", () => {
 		"Hacker News",
 		async () => {
 			const result = await preview("https://news.ycombinator.com");
-			expect(result.title).toBeTruthy();
+			expect(result.statusCode).toBe(200);
+			expect(result.title).toMatch(/Hacker News/i);
 		},
 		TIMEOUT,
 	);
@@ -183,7 +201,8 @@ describe.skipIf(!liveTestsEnabled)("live URL extraction quality", () => {
 		"NPM package page",
 		async () => {
 			const result = await preview("https://www.npmjs.com/package/htmlparser2");
-			expect(result.title).toBeTruthy();
+			expect(result.statusCode).toBe(200);
+			expect(result.title).toMatch(/htmlparser2/i);
 		},
 		TIMEOUT,
 	);
