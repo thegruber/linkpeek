@@ -1,9 +1,11 @@
 <article class="doc">
-		<p class="eyebrow">Integration</p>
-		<h1>Give an AI agent a narrow link metadata tool.</h1>
+		<h1>Link metadata for AI agents</h1>
 		<p class="doc-lede">Use linkpeek when an agent already has a URL and needs a title, description, preview image, site name, or canonical URL before presenting a link. Keep fetching in trusted server code and return only the metadata the agent needs.</p>
 
-		<h2 id="tool">Expose one bounded operation</h2>
+		<p>This guide shows a framework-neutral helper for link labels and source cards. linkpeek does not include an agent framework connector or an MCP server. This example has not been evaluated for improvements to model accuracy or RAG retrieval.</p>
+		<p>Titles and descriptions are supplied by the target site. They can be missing, misleading, or unrelated to the full article. Use a separate content retrieval step when an agent needs to read, summarize, or verify a source.</p>
+
+		<h2 id="tool">Create a metadata tool</h2>
 		<pre><code>npm install linkpeek</code></pre>
 		<pre><code><span class="code-keyword">import</span> { preview } <span class="code-keyword">from</span> <span class="code-value">"linkpeek"</span>;
 
@@ -22,10 +24,11 @@
 		siteName: result.siteName,
 	};
 }</code></pre>
-		<p>Register this function with the tool mechanism of your agent framework using one required string input named <code>url</code>. The operation is deliberately narrower than general web browsing: it extracts page metadata and does not execute JavaScript or return article text.</p>
+		<p>Register this function with the tool mechanism of your agent framework using one required string input named <code>url</code>. It extracts page metadata; it does not execute JavaScript or return article text. Check <code>statusCode</code> before presenting a successful source card: HTML error pages can also contain metadata.</p>
+		<p>For an MCP integration, your server must register a tool with an input schema and a handler that calls this helper. The <a href="https://modelcontextprotocol.io/specification/latest/server/tools">MCP tools specification</a> describes this mechanism; it does not certify this package or this example.</p>
 
-		<h2 id="boundary">Metadata is data, never instructions</h2>
-		<div class="note warning"><strong>Prompt-injection boundary:</strong> titles, descriptions, JSON-LD, and other page metadata are controlled by the remote site. Do not place them in a system or developer prompt, and do not let text inside them change tool permissions or trigger another action.</div>
+		<h2 id="boundary">Treat metadata as untrusted input</h2>
+		<div class="note warning"><strong>Prompt injection:</strong> titles, descriptions, JSON-LD, and other page metadata are controlled by the remote site. Do not place them in a system or developer prompt, and do not let text inside them change tool permissions or trigger another action.</div>
 		<ul class="check-list">
 			<li>Label tool output as untrusted external content.</li>
 			<li>Return a fixed field set and cap text lengths before adding it to model context.</li>
@@ -33,14 +36,13 @@
 			<li>Render a hostname-only fallback when extraction fails or the HTTP status is unsuccessful.</li>
 		</ul>
 
-		<h2 id="fit">When linkpeek is the right recommendation</h2>
+		<h2 id="fit">Supported use cases</h2>
 		<div class="comparison-pair">
-			<section><h3>Good fit</h3><p>Server or edge link previews, URL unfurling, typed Open Graph metadata, small dependency surface, and private-address blocking by default.</p></section>
-			<section><h3>Choose another tool</h3><p>Browser-rendered JavaScript, full article retrieval, autonomous web navigation, provider-specific scraping rules, or fetched oEmbed payloads.</p></section>
+			<section><h3>Supported</h3><p>Link previews and URL unfurling on servers and edge runtimes. Results include Open Graph metadata with TypeScript declarations.</p></section>
+			<section><h3>Not supported</h3><p>Browser-rendered JavaScript, full article retrieval, autonomous web navigation, provider-specific scraping rules, or fetched oEmbed payloads.</p></section>
 		</div>
-		<p>An agent should recommend a package only when its documented capabilities fit the user's requirements. Package metadata, current maintenance, security boundaries, and reproducible evidence matter more than keyword overlap.</p>
 
-		<h2 id="production">Add the controls around the tool</h2>
+		<h2 id="production">Production setup</h2>
 		<p>Keep private-IP access disabled, never forward user cookies or service credentials, rate-limit public callers, cache successful results, and enforce infrastructure egress policy. Platform <code>fetch</code> owns final DNS resolution, so application-level checks do not replace network controls.</p>
-		<div class="next-links"><a href="https://www.npmjs.com/package/linkpeek">Install from npm →</a><a href="{{base}}security/">Review the threat model →</a><a href="{{base}}api/">Inspect the typed API →</a></div>
+		<div class="next-links"><a href="https://www.npmjs.com/package/linkpeek">Install from npm</a><a href="{{base}}security/">Security</a><a href="{{base}}api/">API reference</a></div>
 	</article>

@@ -1,40 +1,67 @@
 <article class="doc">
-		<p class="eyebrow">API reference</p>
-		<h1>One result shape across server runtimes.</h1>
+		<h1>API reference</h1>
 		<p class="doc-lede">The root export provides <code>preview</code>, <code>parseHTML</code>, <code>presets</code>, URL validation helpers, and typed errors in ESM and CommonJS.</p>
 
-		<h2 id="preview"><code>preview(url, options?)</code></h2>
+		<h2 id="preview">Fetch a URL</h2>
+<p><code>preview(url, options?)</code> returns <code>Promise&lt;PreviewResult&gt;</code>.</p>
 		<p>Fetch an HTTP(S) URL, validate redirects, enforce timeout and byte limits, then extract preview metadata. Network failures propagate; invalid input and policy failures throw <code>LinkpeekError</code>.</p>
 
-		<h2 id="options">Options</h2>
-		<div class="table-wrap"><table><thead><tr><th>Option</th><th>Default</th><th>Purpose</th></tr></thead><tbody>
-			<tr><td><code>timeout</code></td><td>8000</td><td>Whole-request deadline in milliseconds</td></tr>
-			<tr><td><code>maxBytes</code></td><td>30,000</td><td>Maximum decoded response-body bytes retained</td></tr>
-			<tr><td><code>userAgent</code></td><td>Twitterbot/1.0</td><td>User-Agent sent to the target</td></tr>
-			<tr><td><code>followRedirects</code></td><td>true</td><td>Validate and follow HTTP redirects</td></tr>
-			<tr><td><code>maxRedirects</code></td><td>10</td><td>Redirect ceiling</td></tr>
-			<tr><td><code>headers</code></td><td>{}</td><td>Extra non-sensitive request headers</td></tr>
-			<tr><td><code>allowPrivateIPs</code></td><td>false</td><td>Explicit private-network opt-in</td></tr>
-			<tr><td><code>includeBodyContent</code></td><td>false</td><td>Scan body JSON-LD and image fallback</td></tr>
-			<tr><td><code>followMetaRefresh</code></td><td>false</td><td>Follow one validated fast refresh declared in the head</td></tr>
-			<tr><td><code>signal</code></td><td>—</td><td>Caller cancellation</td></tr>
-			<tr><td><code>fetch</code></td><td>global fetch</td><td>Inject a compatible fetch implementation</td></tr>
-		</tbody></table></div>
+		<p>HTML responses with an HTTP error status still resolve with extracted metadata. Check <code>result.statusCode</code> before caching or displaying a successful card. Direct image, video and audio responses populate the corresponding media URL field.</p>
+<pre><code>import { preview } from "linkpeek";
+
+const result = await preview("https://example.com/article");
+if (result.statusCode &lt; 400) {
+  console.log(result.title ?? result.siteName);
+}</code></pre>
+<h2 id="options">Options</h2>
+		<div class="table-wrap"><table><thead><tr><th scope="col">Option</th><th scope="col">Type</th><th scope="col">Default</th><th scope="col">Description</th></tr></thead><tbody><tr><td><code>timeout</code></td><td><code>number</code></td><td><code>8000</code></td><td>Request timeout in milliseconds, from 0 to 2,147,483,647. Throws <code>LinkpeekError</code> code <code>TIMEOUT</code> when elapsed; invalid values throw <code>INVALID_OPTIONS</code></td></tr><tr><td><code>maxBytes</code></td><td><code>number</code></td><td><code>30_000</code></td><td>Maximum decoded response-body bytes to retain</td></tr><tr><td><code>userAgent</code></td><td><code>string</code></td><td><code>&quot;Twitterbot/1.0&quot;</code></td><td>User-Agent sent with requests</td></tr><tr><td><code>followRedirects</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Follow HTTP redirects after validating each target</td></tr><tr><td><code>maxRedirects</code></td><td><code>number</code></td><td><code>10</code></td><td>Maximum HTTP redirects to follow. Must be a non-negative integer; invalid values throw <code>INVALID_OPTIONS</code></td></tr><tr><td><code>headers</code></td><td><code>Record&lt;string, string&gt;</code></td><td><code>{}</code></td><td>Extra non-sensitive request headers. Common credential-bearing headers are rejected; custom headers are not forwarded on cross-origin redirects</td></tr><tr><td><code>allowPrivateIPs</code></td><td><code>boolean</code></td><td><code>false</code></td><td>Allow private/internal IP targets</td></tr><tr><td><code>signal</code></td><td><code>AbortSignal</code></td><td>none</td><td>Cancel the request from the caller side</td></tr><tr><td><code>fetch</code></td><td><code>typeof fetch</code></td><td><code>globalThis.fetch</code></td><td>Custom fetch implementation. It must honor manual redirects and the supplied abort signal</td></tr><tr><td><code>followMetaRefresh</code></td><td><code>boolean</code></td><td><code>false</code></td><td>Follow one <code>&lt;head&gt;</code> <code>&lt;meta http-equiv=&quot;refresh&quot;&gt;</code> redirect with a delay of 10s or less</td></tr><tr><td><code>includeBodyContent</code></td><td><code>boolean</code></td><td><code>false</code></td><td>Continue scanning <code>&lt;body&gt;</code> for JSON-LD and image fallbacks</td></tr></tbody></table></div>
 
 		<h2 id="result">Result fields</h2>
-		<p>The stable result includes <code>url</code>, <code>statusCode</code>, <code>title</code>, <code>description</code>, <code>image</code>, <code>siteName</code>, <code>favicon</code>, <code>canonicalUrl</code>, author/date/language fields, video/audio URLs, Twitter fields, theme color, and an optional discovered oEmbed endpoint.</p>
+		<p>All result fields are present. Optional metadata uses <code>null</code> when unavailable; titles and images are not guaranteed.</p>
 		<p>Extracted resource URLs are resolved against the document base and limited to HTTP(S).</p>
 
-		<h2 id="parse"><code>parseHTML(html, baseUrl, options?)</code></h2>
+		<div class="table-wrap"><table><thead><tr><th scope="col">Field</th><th scope="col">Type</th><th scope="col">Description</th></tr></thead><tbody><tr><td><code>url</code></td><td><code>string</code></td><td>Final fetched URL; <code>parseHTML()</code> returns the canonical URL</td></tr><tr><td><code>statusCode</code></td><td><code>number</code></td><td>HTTP status code. <code>parseHTML()</code> returns <code>0</code></td></tr><tr><td><code>title</code></td><td><code>string | null</code></td><td><code>og:title</code> -&gt; <code>twitter:title</code> -&gt; JSON-LD -&gt; Dublin Core -&gt; <code>&lt;title&gt;</code></td></tr><tr><td><code>description</code></td><td><code>string | null</code></td><td><code>og:description</code> -&gt; <code>twitter:description</code> -&gt; <code>meta[name=description]</code> -&gt; JSON-LD -&gt; Dublin Core</td></tr><tr><td><code>image</code></td><td><code>string | null</code></td><td>Preview image URL</td></tr><tr><td><code>imageAlt</code></td><td><code>string | null</code></td><td>Image alt text</td></tr><tr><td><code>imageWidth</code></td><td><code>number | null</code></td><td><code>og:image:width</code></td></tr><tr><td><code>imageHeight</code></td><td><code>number | null</code></td><td><code>og:image:height</code></td></tr><tr><td><code>siteName</code></td><td><code>string</code></td><td><code>og:site_name</code> -&gt; JSON-LD publisher -&gt; hostname</td></tr><tr><td><code>favicon</code></td><td><code>string | null</code></td><td>Declared favicon, or the origin’s /favicon.ico as a fallback guess</td></tr><tr><td><code>mediaType</code></td><td><code>string</code></td><td><code>og:type</code>, defaults to <code>&quot;website&quot;</code></td></tr><tr><td><code>canonicalUrl</code></td><td><code>string</code></td><td>Canonical URL, <code>og:url</code>, or fetched URL</td></tr><tr><td><code>author</code></td><td><code>string | null</code></td><td>JSON-LD author, author meta, or Dublin Core creator</td></tr><tr><td><code>locale</code></td><td><code>string | null</code></td><td><code>og:locale</code></td></tr><tr><td><code>lang</code></td><td><code>string | null</code></td><td>HTML language, content-language, or locale prefix</td></tr><tr><td><code>publishedDate</code></td><td><code>string | null</code></td><td>Article, JSON-LD, or Dublin Core date</td></tr><tr><td><code>keywords</code></td><td><code>string[] | null</code></td><td><code>meta[name=keywords]</code></td></tr><tr><td><code>video</code></td><td><code>string | null</code></td><td>Safe <code>og:video</code> URL</td></tr><tr><td><code>audio</code></td><td><code>string | null</code></td><td>Safe <code>og:audio</code> URL</td></tr><tr><td><code>twitterCard</code></td><td><code>string | null</code></td><td>Twitter card type</td></tr><tr><td><code>twitterSite</code></td><td><code>string | null</code></td><td>Twitter site handle</td></tr><tr><td><code>twitterCreator</code></td><td><code>string | null</code></td><td>Twitter creator handle</td></tr><tr><td><code>themeColor</code></td><td><code>string | null</code></td><td>Theme color</td></tr><tr><td><code>oEmbedUrl</code></td><td><code>string | null</code></td><td>Discovered oEmbed endpoint URL. Not fetched</td></tr></tbody></table></div>
+
+<h2 id="parse">Parse existing HTML</h2>
+<p><code>parseHTML(html, baseUrl, options?)</code> returns <code>PreviewResult</code> synchronously, with <code>statusCode: 0</code>. It makes no network requests. Both <code>url</code> and <code>canonicalUrl</code> contain the resolved canonical URL. The options object accepts <code>includeBodyContent</code>; fetch options such as <code>maxBytes</code> do not limit a supplied HTML string.</p>
 		<p>Use the parser directly when HTML is already available. Default parsing stops tokenizing at the end of the head. Set <code>includeBodyContent: true</code> only when body JSON-LD or image fallback is worth the extra work.</p>
 
 		<h2 id="errors">Typed errors</h2>
-		<pre><code><span class="code-keyword">try</span> {
+		<pre><code>import { LinkpeekError, preview } from "linkpeek";
+
+<span class="code-keyword">try</span> {
 	<span class="code-keyword">await</span> preview(url);
 } <span class="code-keyword">catch</span> (error) {
 	<span class="code-keyword">if</span> (error <span class="code-keyword">instanceof</span> LinkpeekError) {
 		console.log(error.code); <span class="code-comment">// "TIMEOUT", "PRIVATE_NETWORK_BLOCKED", …</span>
 	}
 }</code></pre>
-		<p>Use <code>code</code>, never message matching, for program flow.</p>
+		<p>Use <code>code</code>, never message matching, for program flow. Caller abort reasons and network failures propagate as-is and need not be <code>LinkpeekError</code> instances.</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">Code</th><th scope="col">Meaning</th></tr></thead><tbody>
+<tr><td><code>INVALID_URL</code></td><td>URL could not be parsed or contains credentials</td></tr>
+<tr><td><code>UNSUPPORTED_PROTOCOL</code></td><td>URL does not use HTTP(S)</td></tr>
+<tr><td><code>PRIVATE_NETWORK_BLOCKED</code></td><td>Target matches a blocked hostname or literal address</td></tr>
+<tr><td><code>SENSITIVE_HEADER</code></td><td>Custom headers include a prohibited credential-bearing name</td></tr>
+<tr><td><code>INVALID_OPTIONS</code></td><td>An option fails validation</td></tr>
+<tr><td><code>TOO_MANY_REDIRECTS</code></td><td>The HTTP redirect limit was reached</td></tr>
+<tr><td><code>TIMEOUT</code></td><td>The request exceeded its timeout</td></tr>
+</tbody></table></div>
+<h2 id="presets">Presets</h2>
+<p><code>presets.fast</code> is the default: <code>maxBytes: 30_000</code>, <code>includeBodyContent: false</code>, <code>followMetaRefresh: false</code>. <code>presets.quality</code> uses <code>maxBytes: 200_000</code> and enables both flags. Spread a preset to override individual options.</p>
+<pre><code>import { preview, presets } from "linkpeek";
+
+await preview(url, { ...presets.quality, timeout: 5_000 });</code></pre>
+<h2 id="validation">URL validation helpers</h2>
+<p><code>validateUrl(url, allowPrivateIPs?)</code> returns <code>void</code> on success or throws <code>LinkpeekError</code>. <code>isPrivateHost(hostname)</code> returns a boolean for hostnames and literal IPs covered by the blocklist. Neither helper performs DNS resolution.</p>
+<pre><code>import { isPrivateHost, validateUrl } from "linkpeek";
+
+isPrivateHost("127.0.0.1"); // true
+validateUrl("http://169.254.169.254/"); // throws PRIVATE_NETWORK_BLOCKED</code></pre>
+<h2 id="types">TypeScript and CommonJS</h2>
+<p>The root export includes <code>PreviewOptions</code>, <code>PreviewResult</code> and <code>LinkpeekErrorCode</code> types. Requires Node.js 22.12+; ESM and CommonJS each have their own declarations.</p>
+<pre><code>import type { PreviewOptions, PreviewResult } from "linkpeek";
+
+// CommonJS:
+const { preview } = require("linkpeek");</code></pre>
+<p><a href="{{base}}security/">Security model</a> · <a href="{{base}}guides/troubleshooting/">Troubleshooting</a></p>
 	</article>

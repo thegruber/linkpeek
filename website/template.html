@@ -16,29 +16,39 @@
 		<meta property="og:description" content="{{description}}" />
 		<meta property="og:url" content="{{canonical}}" />
 		<meta property="og:image" content="{{socialImage}}" />
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="630" />
+		<meta property="og:image:type" content="image/png" />
+		<meta property="og:image:alt" content="linkpeek: TypeScript link previews and URL metadata" />
+		<meta name="twitter:title" content="{{title}} · linkpeek" />
+		<meta name="twitter:description" content="{{description}}" />
+		<meta name="twitter:image" content="{{socialImage}}" />
+		<meta name="twitter:image:alt" content="linkpeek: TypeScript link previews and URL metadata" />
 		<meta name="twitter:card" content="summary_large_image" />
 		<meta name="theme-color" content="#1b1b1f" />
 		<link rel="stylesheet" href="{{base}}assets/styles.css" />
 		<script type="application/ld+json">{{structuredData}}</script>
 	</head>
-	<body>
+	<body class="{{pageClass}}">
 		<a class="skip-link" href="#content">Skip to content</a>
 		<header class="site-header">
 			<div class="header-inner">
 				<a class="wordmark" href="{{base}}">linkpeek</a>
-				<div class="header-links">
+				<nav class="header-links" aria-label="Project"><a href="{{base}}api/">Docs</a>
 					<a href="https://www.npmjs.com/package/linkpeek">npm</a>
 					<a href="https://github.com/thegruber/linkpeek">GitHub</a>
-				</div>
+				</nav>
 			</div>
 		</header>
 		<div class="docs-shell">
 			<aside class="site-sidebar" aria-label="Documentation"><nav>{{navigation}}</nav></aside>
 			<main class="docs-main" id="content">
 				<details class="mobile-nav"><summary>Documentation</summary><nav>{{navigation}}</nav></details>
-				{{breadcrumbs}}{{content}}
+				{{breadcrumbs}}{{content}}{{pageTools}}
 			</main>
+			<aside class="toc-sidebar">{{toc}}</aside>
 		</div>
-		<footer class="site-footer">linkpeek · MIT · <a href="https://www.npmjs.com/package/linkpeek">npm</a> · <a href="https://github.com/thegruber/linkpeek">source</a></footer>
+		<footer class="site-footer"><span>linkpeek {{version}} · MIT · Adrian Gruber</span><nav aria-label="Resources"><a href="{{base}}llms.txt">llms.txt</a><a href="{{base}}llms-full.txt">Full text</a><a href="{{base}}sitemap.xml">Sitemap</a><a href="https://github.com/thegruber/linkpeek/releases">Releases</a></nav></footer>
+		{{pageScript}}
 	</body>
 </html>

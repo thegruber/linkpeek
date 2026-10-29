@@ -68,7 +68,9 @@
 		"preview-card",
 		"nodejs",
 		"og-parser",
-		"web-metadata"
+		"web-metadata",
+		"bun",
+		"deno"
 	],
 	"author": "Adrian Gruber",
 	"license": "MIT",
@@ -105,6 +107,9 @@
 	"overrides": {
 		"get-uri": {
 			"basic-ftp": "^6.2.3"
+		},
+		"release-it": {
+			"undici": "^7.30.1"
 		}
 	}
 }

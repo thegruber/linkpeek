@@ -8,6 +8,8 @@ on:
       - "package-lock.json"
       - "package.json"
       - "scripts/build-docs.mjs"
+      - "scripts/docs-content.mjs"
+      - "src/**"
       - "website/**"
   workflow_dispatch:
 

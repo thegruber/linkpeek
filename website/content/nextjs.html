@@ -1,6 +1,5 @@
 <article class="doc">
-		<p class="eyebrow">Integration</p>
-		<h1>Safe link previews in the Next.js App Router.</h1>
+		<h1>Link previews in Next.js</h1>
 		<p class="doc-lede">Keep arbitrary outbound fetches in a Route Handler, validate caller input, and make failures local to the preview card.</p>
 
 		<h2 id="route">Create the route handler</h2>
@@ -28,11 +27,11 @@
 	}
 }</code></pre>
 
-		<h2 id="cache">Cache successes, not broken targets</h2>
+		<h2 id="cache">Cache successful responses</h2>
 		<p>The response cache prevents repeated network fetches from dominating render latency. Cache only successful previews, choose a TTL that fits your product, and consider request coalescing when many users share the same URL at once.</p>
 		<div class="note"><strong>Do not forward</strong> cookies, authorization headers, internal tokens, or caller-provided credentials to the target URL.</div>
 
 		<h2 id="render">Render metadata as untrusted data</h2>
 		<p>React escapes text by default. Keep it that way. Allow images only from origins covered by your image policy, treat canonical and media URLs as untrusted links, and provide a hostname-only fallback card when extraction fails.</p>
-		<div class="next-links"><a href="https://www.npmjs.com/package/linkpeek">Install from npm →</a><a href="https://github.com/thegruber/linkpeek/tree/main/examples/nextjs-app-router">Complete example on GitHub →</a><a href="{{base}}api/">API reference →</a></div>
+		<div class="next-links"><a href="https://www.npmjs.com/package/linkpeek">Install from npm</a><a href="https://github.com/thegruber/linkpeek/tree/main/examples/nextjs-app-router">Complete example on GitHub</a><a href="{{base}}api/">API reference</a></div>
 	</article>

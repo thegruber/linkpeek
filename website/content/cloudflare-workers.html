@@ -1,6 +1,5 @@
 <article class="doc">
-		<p class="eyebrow">Integration</p>
-		<h1>Fetch-native previews at the edge.</h1>
+		<h1>Link previews in Cloudflare Workers</h1>
 		<p class="doc-lede">linkpeek uses platform <code>fetch</code>, Web Streams, <code>TextDecoder</code>, and <code>AbortController</code>. It needs no Node HTTP client or DOM implementation.</p>
 
 		<h2 id="worker">Create a Worker endpoint</h2>
@@ -27,10 +26,10 @@
 	},
 };</code></pre>
 
-		<h2 id="cache">Add shared caching when needed</h2>
+		<h2 id="cache">Caching</h2>
 		<p>These response headers support browser and downstream caching. This Worker does not use the Cloudflare Cache API: every request reaching the handler still fetches the target. Add a shared cache with a stable URL key if needed, store only 2xx previews, and rate-limit public callers.</p>
 
-		<h2 id="limits">Know what the runtime owns</h2>
-		<p>linkpeek validates literal addresses and each redirect target. The Worker runtime still owns final DNS resolution and connection establishment. Keep private-IP access disabled and use platform egress controls when hostile public input is in scope.</p>
-		<div class="next-links"><a href="https://www.npmjs.com/package/linkpeek">Install from npm →</a><a href="https://github.com/thegruber/linkpeek/tree/main/examples/cloudflare-worker">Complete example on GitHub →</a><a href="{{base}}security/">Security model →</a></div>
+		<h2 id="limits">Runtime limitations</h2>
+		<p>linkpeek validates literal addresses and each redirect target. The Worker runtime resolves hostnames and establishes connections. Keep private-IP access disabled and use platform egress controls when hostile public input is in scope.</p>
+		<div class="next-links"><a href="https://www.npmjs.com/package/linkpeek">Install from npm</a><a href="https://github.com/thegruber/linkpeek/tree/main/examples/cloudflare-worker">Complete example on GitHub</a><a href="{{base}}security/">Security model</a></div>
 	</article>

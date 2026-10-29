@@ -1,10 +1,9 @@
 <article class="doc">
-		<p class="eyebrow">Benchmarks · 26 August 2026</p>
-		<h1>Measure the byte path, not just the parser.</h1>
+		<h1>Link preview benchmarks</h1>
 		<p class="doc-lede">These local benchmarks separate parser throughput, requested source chunks, install footprint, and same-corpus end-to-end overhead instead of collapsing them into one “fastest” claim. Live-network effects were not measured.</p>
 
 		<h2 id="method">Method</h2>
-		<p>The local harness builds the package ESM output, warms each parser mode, reports median/min/mean/max samples, and probes a controlled 500 KB response in 1 KB chunks. The competitive harness serves identical fixtures from one local HTTP server in the same Node process. The dated stream result below measures the repository code released as 2.1.4 using Darwin 25.6 arm64, Node.js 24.15.0, and npm 11.12.1.</p>
+		<p>The local harness builds the package ESM output, warms each parser mode, reports median/min/mean/max samples, and probes a controlled 500 KB response in 1 KB chunks. The competitive harness serves identical fixtures from one local HTTP server in the same Node process. The stream result below was measured on 26 August 2026 and covers the repository code released as 2.1.4 using Darwin 25.6 arm64, Node.js 24.15.0, and npm 11.12.1.</p>
 
 		<h2 id="stream">Controlled stream probe</h2>
 		<div class="table-wrap"><table><thead><tr><th>Mode</th><th>Source bytes requested</th><th>Configured ceiling</th><th>500 KB page</th></tr></thead><tbody>
@@ -19,7 +18,7 @@
 		<h2 id="size">Package footprint</h2>
 		<p><code>npm run benchmark</code> reports the current tarball, unpacked package, entry-file, and runtime-dependency sizes. The evidence notes separately reproduce clean installs of the pinned published packages. Entry-file gzip size is not presented as a full application bundle.</p>
 
-		<h2 id="reproduce">Reproduce before quoting</h2>
+		<h2 id="reproduce">Run the benchmarks</h2>
 		<pre><code>npm ci
 npm run benchmark
 
