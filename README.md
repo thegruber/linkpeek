@@ -2,7 +2,7 @@
 
 **A fast, safe-by-default link preview library for TypeScript, Node.js, Bun, Deno, and edge runtimes. One runtime dependency.**
 
-linkpeek turns a URL into typed Open Graph, Twitter Card, JSON-LD, and URL metadata. It is a lightweight link-unfurling alternative to `link-preview-js` and `open-graph-scraper`, with streaming extraction and SSRF-aware fetching built in.
+linkpeek turns a URL into typed Open Graph, Twitter Card, JSON-LD, and URL metadata. It is a lightweight link-unfurling alternative to `link-preview-js` and `open-graph-scraper`, with streaming extraction and SSRF-aware fetching built in. Requires **Node.js 22.12+**; see the [runtime support](#runtime-support) table for other environments.
 
 ```bash
 npm install linkpeek
@@ -25,9 +25,9 @@ result.canonicalUrl; // absolute final/canonical URL
 [![CI](https://github.com/thegruber/linkpeek/actions/workflows/ci.yml/badge.svg)](https://github.com/thegruber/linkpeek/actions/workflows/ci.yml)
 [![bundle size](https://img.shields.io/bundlephobia/minzip/linkpeek)](https://bundlephobia.com/package/linkpeek)
 [![types](https://img.shields.io/npm/types/linkpeek)](https://www.npmjs.com/package/linkpeek)
-[![license](https://img.shields.io/npm/l/linkpeek)](LICENSE)
+[![license](https://img.shields.io/npm/l/linkpeek)](https://github.com/thegruber/linkpeek/blob/main/LICENSE)
 
-[Documentation](https://thegruber.github.io/linkpeek/) · [API](#api) · [Security](./SECURITY.md) · [Examples](./examples) · [Benchmarks](./docs/comparison.md) · [Changelog](./CHANGELOG.md)
+[Documentation](https://thegruber.github.io/linkpeek/) · [API reference](https://thegruber.github.io/linkpeek/api/) · [Try the parser](https://thegruber.github.io/linkpeek/guides/open-graph-parser/#try-title) · [Troubleshooting](https://thegruber.github.io/linkpeek/guides/troubleshooting/) · [Security](https://thegruber.github.io/linkpeek/security/) · [Examples](https://github.com/thegruber/linkpeek/tree/main/examples) · [Benchmarks](https://thegruber.github.io/linkpeek/benchmarks/) · [Changelog](https://github.com/thegruber/linkpeek/blob/main/CHANGELOG.md)
 
 ## Runtime support
 
@@ -57,7 +57,7 @@ linkpeek focuses on server-side preview cards: fetch a URL, read only enough HTM
 - Chat and messaging apps that need Slack-style link cards
 - Social feeds, bookmarking tools, and link-curation products
 - Newsletter and CMS workflows that preview outbound links
-- AI agents or RAG tools that unfurl URLs before summarizing or ranking them
+- Chat assistants that show titles, descriptions, and images for links they already have
 
 ## When to use linkpeek
 
@@ -96,7 +96,7 @@ const custom = await preview(url, { ...presets.quality, timeout: 3000 });
 
 ## Framework recipes
 
-Full examples are in [examples](./examples). These are the shortest versions.
+Full examples are in [examples](https://github.com/thegruber/linkpeek/tree/main/examples). These are the shortest versions.
 
 ### Next.js App Router
 
@@ -172,11 +172,11 @@ export default {
 };
 ```
 
-Use [examples/react-preview-card](./examples/react-preview-card) for a browser component that renders the API response into a preview card.
+Use [examples/react-preview-card](https://github.com/thegruber/linkpeek/tree/main/examples/react-preview-card) for a browser component that renders the API response into a preview card.
 
-### AI agents and RAG tools
+### Link metadata in agent tools
 
-Use linkpeek as a narrow server-side tool when an agent already has a URL and needs preview metadata. It does not browse interactively, execute JavaScript, or extract article bodies.
+An agent application can wrap `preview()` in a server-side tool to label links or display source cards. The example below is a framework-neutral helper, not a complete agent integration or MCP server. linkpeek does not browse interactively, execute JavaScript, or extract article bodies. Metadata is supplied by the target site; it is not enough to summarize an article or verify its claims.
 
 ```typescript
 import { preview } from "linkpeek";
@@ -185,6 +185,7 @@ export async function inspectLink(url: string) {
   const result = await preview(url, { timeout: 5_000, maxBytes: 30_000 });
 
   return {
+    statusCode: result.statusCode,
     url: result.canonicalUrl,
     title: result.title?.slice(0, 300) ?? null,
     description: result.description?.slice(0, 800) ?? null,
@@ -194,13 +195,13 @@ export async function inspectLink(url: string) {
 }
 ```
 
-Treat every returned field as untrusted external data, never as instructions to the agent. Keep fetching in trusted server code and require separate authorization for any follow-up action. The [agent integration guide](https://thegruber.github.io/linkpeek/integrations/ai-agents/) covers tool boundaries, selection criteria, and production controls.
+Treat every returned field as untrusted external data, never as instructions to the agent. Keep fetching in trusted server code and require separate authorization for any follow-up action. The [agent integration guide](https://thegruber.github.io/linkpeek/integrations/ai-agents/) covers tool registration, HTTP errors, untrusted metadata, and production controls.
 
 ## Measured footprint and performance
 
 linkpeek's runtime tree contains no HTTP client, DOM implementation, or native module. The local harness reports parser modes, retained bytes, requested source chunks, tarball size, and raw/gzip entry size. A separate same-corpus harness compares pinned package versions on one local server.
 
-See the dated [comparison and measurement notes](./docs/comparison.md) for the single authoritative results table, exact environment, sourced security/runtime notes, caveats, and reproduction commands. Stream cancellation means the consumer no longer wants more data; it is not a guarantee about exact network wire bytes.
+See the dated [comparison and measurement notes](https://github.com/thegruber/linkpeek/blob/main/docs/comparison.md) for the single authoritative results table, exact environment, sourced security/runtime notes, caveats, and reproduction commands. Stream cancellation means the consumer no longer wants more data; it is not a guarantee about exact network wire bytes.
 
 ## Security Defaults
 
@@ -284,16 +285,16 @@ Fetches a URL and extracts link preview metadata. Returns `Promise<PreviewResult
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `url` | `string` | Final fetched URL |
+| `url` | `string` | Final fetched URL; `parseHTML()` returns the canonical URL |
 | `statusCode` | `number` | HTTP status code. `parseHTML()` returns `0` |
 | `title` | `string \| null` | `og:title` -> `twitter:title` -> JSON-LD -> Dublin Core -> `<title>` |
-| `description` | `string \| null` | `og:description` -> `twitter:description` -> `meta[name=description]` -> JSON-LD |
+| `description` | `string \| null` | `og:description` -> `twitter:description` -> `meta[name=description]` -> JSON-LD -> Dublin Core |
 | `image` | `string \| null` | Preview image URL |
 | `imageAlt` | `string \| null` | Image alt text |
 | `imageWidth` | `number \| null` | `og:image:width` |
 | `imageHeight` | `number \| null` | `og:image:height` |
 | `siteName` | `string` | `og:site_name` -> JSON-LD publisher -> hostname |
-| `favicon` | `string \| null` | Favicon URL |
+| `favicon` | `string \| null` | Declared favicon, or the origin’s `/favicon.ico` as a fallback guess |
 | `mediaType` | `string` | `og:type`, defaults to `"website"` |
 | `canonicalUrl` | `string` | Canonical URL, `og:url`, or fetched URL |
 | `author` | `string \| null` | JSON-LD author, author meta, or Dublin Core creator |
@@ -337,11 +338,11 @@ validateUrl("http://169.254.169.254/"); // throws PRIVATE_NETWORK_BLOCKED
 
 ## FAQ & Troubleshooting
 
-**A site returns 403 or empty metadata.** Bot protection (Cloudflare challenges, user-agent sniffing) blocks every server-side preview library. This is the most common failure mode in this category and no package solves it. Mitigate: try a different `userAgent`, cache successful previews aggressively, and render a graceful fallback card from the hostname.
+**A site returns 403 or empty metadata.** Bot challenges, user-agent policies, rate limits, or access restrictions can block server-side fetching. linkpeek does not execute browser challenges. Respect the target’s access policy, use an appropriate `userAgent`, cache successful previews, and render a hostname fallback. See the [troubleshooting guide](https://thegruber.github.io/linkpeek/guides/troubleshooting/).
 
 **`title` is `null` for a single-page app.** The page renders its metadata with JavaScript; linkpeek deliberately does not run a browser. `presets.quality` catches body JSON-LD that many SPAs ship; beyond that you need a headless browser, which is out of scope.
 
-**Can I call it from the browser?** No, server-side only. Cross-origin pages are unreadable from browsers anyway (CORS), and your preview fetcher should never run on untrusted clients. Put `preview()` behind an API route (see the recipes above).
+**Can I call it from the browser?** Run `preview()` behind a server or edge endpoint; browser CORS restrictions prevent arbitrary page retrieval. `parseHTML()` makes no network requests and can parse HTML strings locally, including in a browser bundle. The [interactive parser](https://thegruber.github.io/linkpeek/guides/open-graph-parser/#try-title) demonstrates this distinction.
 
 **I got a preview card for a 404 page.** HTTP error pages that return HTML resolve normally with their `statusCode` set. Check `result.statusCode` before caching or rendering (see [Error Handling](#error-handling)).
 
@@ -349,7 +350,7 @@ validateUrl("http://169.254.169.254/"); // throws PRIVATE_NETWORK_BLOCKED
 
 - Ask usage questions and share ideas in [GitHub Discussions](https://github.com/thegruber/linkpeek/discussions).
 - Report reproducible bugs or metadata mismatches with the [issue templates](https://github.com/thegruber/linkpeek/issues/new/choose).
-- Read the [contribution guide](./CONTRIBUTING.md) before opening a pull request.
+- Read the [contribution guide](https://github.com/thegruber/linkpeek/blob/main/CONTRIBUTING.md) before opening a pull request.
 - Report vulnerabilities privately through [GitHub Security Advisories](https://github.com/thegruber/linkpeek/security/advisories/new).
 
 If linkpeek saves you time, [star the repository](https://github.com/thegruber/linkpeek) so other developers can find it too.
@@ -376,7 +377,7 @@ Live network tests are opt-in:
 LINKPEEK_LIVE_TESTS=1 npm run test
 ```
 
-Framework examples are in [examples](./examples): Next.js, Express, Cloudflare Workers, React, Supabase Edge Functions, and Bun.
+Framework examples are in [examples](https://github.com/thegruber/linkpeek/tree/main/examples): Next.js, Express, Cloudflare Workers, React, Supabase Edge Functions, and Bun.
 
 ## License
 

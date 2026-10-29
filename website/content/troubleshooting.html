@@ -1,0 +1,39 @@
+<article class="doc">
+	<h1>Troubleshoot a preview</h1>
+	<p class="doc-lede">Start with the response status and the HTML the server actually returns. A page that looks right in your browser may send different metadata to a preview fetcher.</p>
+	<h2 id="missing">Missing title or image</h2>
+	<p>Missing metadata is returned as <code>null</code>. The fast preset reads up to 30,000 decoded bytes and stops after the head. If metadata lives in body JSON-LD, try <code>presets.quality</code>, which allows 200,000 bytes and body fallbacks.</p>
+	<pre><code>import { preview, presets } from "linkpeek";
+
+const result = await preview(url, presets.quality);
+const title = result.title ?? result.siteName;</code></pre>
+	<p>Quality mode still does not execute JavaScript. If the initial HTML contains no metadata, a browser-rendering service or a provider API may be necessary. For HTML you already own, use <a href="{{base}}guides/open-graph-parser/"><code>parseHTML()</code></a> to isolate parsing from fetching.</p>
+	<h2 id="http">HTTP errors and bot blocks</h2>
+	<p>An HTML response with a 403, 404 or 500 status can still produce metadata. <code>preview()</code> resolves with that status; an HTTP error alone does not throw. Check <code>statusCode</code> before caching a preview.</p>
+	<pre><code>const result = await preview(url);
+if (result.statusCode >= 400) {
+  // Show a hostname fallback and skip caching this response.
+}</code></pre>
+	<p>Bot challenges, rate limits and access restrictions can prevent server-side fetching. Respect the target’s access policy, use an appropriate <code>userAgent</code>, and cache successful results. Do not send user cookies or service credentials to a target URL.</p>
+	<h2 id="timeout">Timeouts and cancellation</h2>
+	<p>The default timeout is 8,000 milliseconds. A timeout throws <code>LinkpeekError</code> with code <code>TIMEOUT</code>. Set a budget that fits your endpoint; do not retry indefinitely. Caller aborts and network failures propagate separately.</p>
+	<pre><code>import { LinkpeekError, preview } from "linkpeek";
+
+try {
+  const result = await preview(url, { timeout: 5_000 });
+  console.log(result.title);
+} catch (error) {
+  if (error instanceof LinkpeekError) {
+    console.log(error.code);
+  }
+  // Return your application's fallback card.
+}</code></pre>
+	<h2 id="blocked">Blocked URLs</h2>
+	<p><code>PRIVATE_NETWORK_BLOCKED</code> means the target matched a blocked hostname or literal address. Keep private access disabled on public endpoints. For an intentionally internal, trusted workflow, review <a href="{{base}}security/">the security model</a> before using <code>allowPrivateIPs</code>.</p>
+	<p><code>SENSITIVE_HEADER</code> means a custom header carries credentials. Remove it. A custom <code>fetch</code> must honor manual redirects and abort signals so target checks remain effective.</p>
+	<h2 id="browser">Browser or server?</h2>
+	<p>Run URL fetching with <code>preview()</code> on a server or edge worker. Browser cross-origin restrictions prevent arbitrary page retrieval. The synchronous <code>parseHTML()</code> function can parse an HTML string without fetching; the <a href="{{base}}guides/open-graph-parser/#try-title">parser example</a> uses it locally.</p>
+	<h2 id="report">Report a metadata mismatch</h2>
+	<p>Include the package version, options, expected fields and a minimal HTML sample. Remove credentials and private content. Reproducible fixtures help distinguish parser issues from a target changing its response.</p>
+	<p><a href="https://github.com/thegruber/linkpeek/issues/new/choose">Open an issue</a> or check the <a href="{{base}}api/">API reference</a>.</p>
+</article>

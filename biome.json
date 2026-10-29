@@ -30,6 +30,8 @@
 			"!**/coverage",
 			"!website/dist",
 			"!**/.context",
+			"!**/.taste-skill",
+			"!output",
 			"!test/fixtures",
 			"!**/.claude",
 			"!**/.DS_Store",

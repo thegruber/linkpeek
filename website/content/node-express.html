@@ -1,6 +1,5 @@
 <article class="doc">
-		<p class="eyebrow">Integration</p>
-		<h1>Build a link preview API with Express.</h1>
+		<h1>Link previews in Express</h1>
 		<p class="doc-lede">Keep URL fetching on the server, return typed metadata to the browser, and cache successful previews so repeated page views do not repeat outbound work.</p>
 
 		<h2 id="endpoint">Create the endpoint</h2>
@@ -30,7 +29,7 @@ app.get(<span class="code-value">"/api/preview"</span>, <span class="code-keywor
 });</code></pre>
 		<p>The endpoint accepts one URL and returns the stable <code>PreviewResult</code> shape used by a client-side preview card.</p>
 
-		<h2 id="cache">Cache successes by normalized URL</h2>
+		<h2 id="cache">Cache successful responses</h2>
 		<p>The response header helps browsers and shared proxies, but a server-side cache avoids the outbound fetch even when clients miss. Normalize equivalent URLs into one key, coalesce concurrent misses, choose a product-appropriate TTL, and cache only when <code>statusCode</code> is between 200 and 299.</p>
 		<div class="note"><strong>Keep errors local.</strong> A failed metadata request should produce a hostname-only fallback card rather than block the parent page or message.</div>
 
@@ -42,5 +41,5 @@ app.get(<span class="code-value">"/api/preview"</span>, <span class="code-keywor
 			<li>Treat returned titles, descriptions, images, and links as untrusted data.</li>
 			<li>Use infrastructure egress rules when the endpoint faces hostile traffic.</li>
 		</ul>
-		<div class="next-links"><a href="https://www.npmjs.com/package/linkpeek">Install from npm →</a><a href="https://github.com/thegruber/linkpeek/tree/main/examples/express-api">Complete example on GitHub →</a><a href="{{base}}security/">Security model →</a></div>
+		<div class="next-links"><a href="https://www.npmjs.com/package/linkpeek">Install from npm</a><a href="https://github.com/thegruber/linkpeek/tree/main/examples/express-api">Complete example on GitHub</a><a href="{{base}}security/">Security model</a></div>
 	</article>

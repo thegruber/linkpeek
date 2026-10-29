@@ -1,36 +1,45 @@
 <article class="doc">
-		<p class="eyebrow">linkpeek</p>
-		<h1>Fast, safe link previews for TypeScript</h1>
-		<p class="doc-lede">Fetch a URL and extract typed Open Graph, Twitter Card, JSON-LD, favicon, and canonical metadata with one runtime dependency. Literal private and non-global addresses are blocked by default; platform fetch still owns final DNS resolution.</p>
-		<p><a class="button" href="https://www.npmjs.com/package/linkpeek">Install from npm</a> <a class="button" href="https://github.com/thegruber/linkpeek">View on GitHub</a></p>
+	<h1>linkpeek</h1>
+	<p>A TypeScript link preview library that extracts Open Graph, Twitter Card and JSON-LD metadata from URLs.</p>
 
-		<h2 id="install">Install</h2>
-		<pre><code>npm install linkpeek</code></pre>
-		<p>Requires Node.js 22 or newer. CI also covers Bun and Deno; the fetch-native API is designed for compatible edge runtimes.</p>
+	<h2 id="install">Installation</h2>
+	<pre><code>npm install linkpeek</code></pre>
+	<p>Use it on Node.js 22.12+, Bun, Deno or fetch-compatible edge runtimes. The package provides ESM and CommonJS exports with TypeScript declarations and one runtime dependency.</p>
 
-		<h2 id="example">Example</h2>
-		<pre><code><span class="code-keyword">import</span> { preview } <span class="code-keyword">from</span> <span class="code-value">"linkpeek"</span>;
+	<h2 id="example">Usage</h2>
+	<pre><code><span class="code-keyword">import</span> { preview } <span class="code-keyword">from</span> <span class="code-value">"linkpeek"</span>;
 
-<span class="code-keyword">const</span> result = <span class="code-keyword">await</span> preview(<span class="code-value">"https://example.com/article"</span>);
+<span class="code-keyword">const</span> result = <span class="code-keyword">await</span> preview(
+  <span class="code-value">"https://example.com/article"</span>
+);
 
-console.log(result.title);
-console.log(result.description);
-console.log(result.image);</code></pre>
+<span class="code-keyword">if</span> (result.statusCode &lt; <span class="code-number">400</span>) {
+  console.log(result.title);
+  console.log(result.description);
+  console.log(result.image);
+}</code></pre>
+	<p>Run <code>preview()</code> on a server or edge endpoint. Missing metadata returns <code>null</code>. HTTP error pages can still return metadata, so check <code>statusCode</code> before caching a result.</p>
+	<p>The <a href="{{base}}api/">API reference</a> lists all options, result fields and error codes.</p>
 
-		<h2 id="why-linkpeek">Why linkpeek</h2>
-		<ul>
-			<li>One runtime dependency and no DOM implementation</li>
-			<li>A 30 KB fast default with early stream cancellation after the document head</li>
-			<li>Private and non-global address blocking before the initial request and every redirect</li>
-			<li>Typed ESM and CommonJS output for server and fetch-compatible edge runtimes</li>
-		</ul>
+	<h2 id="try-title">Parsing existing HTML</h2>
+	<p>Use <code>parseHTML(html, baseUrl)</code> when you already have the HTML. It runs synchronously without network requests. See the <a href="{{base}}guides/open-graph-parser/">Open Graph parser guide</a> for examples and an optional <a href="{{base}}guides/open-graph-parser/#try-title">interactive parser</a>.</p>
 
-		<h2 id="presets">Presets</h2>
-		<p>The default fast preset retains up to 30 KB, scans head metadata, and cancels the response stream after the head when possible. Use <code>presets.quality</code> when body JSON-LD, a body-image fallback, or one validated meta-refresh is worth the additional work.</p>
-		<pre><code><span class="code-keyword">import</span> { preview, presets } <span class="code-keyword">from</span> <span class="code-value">"linkpeek"</span>;
+	<h2 id="presets">Presets</h2>
+	<p>The default fast preset scans the document head and retains up to 30,000 decoded response-body bytes. The quality preset allows 200,000 bytes, scans body JSON-LD and image fallbacks, and can follow one validated meta-refresh.</p>
+	<pre><code><span class="code-keyword">import</span> { preview, presets } <span class="code-keyword">from</span> <span class="code-value">"linkpeek"</span>;
 
 <span class="code-keyword">const</span> result = <span class="code-keyword">await</span> preview(url, presets.quality);</code></pre>
+	<p>These limits apply to retained bytes, not total network traffic. See <a href="{{base}}benchmarks/">benchmarks and methodology</a> for measured behavior.</p>
 
-		<h2 id="production">Server-side use</h2>
-		<p>Keep <code>preview()</code> behind a server or edge endpoint. Cache successful results, never forward caller credentials, and treat extracted metadata as untrusted content.</p>
-	</article>
+	<h2 id="integrations">Integration guides</h2>
+	<ul>
+		<li><a href="{{base}}integrations/nextjs/">Next.js</a>: App Router endpoint.</li>
+		<li><a href="{{base}}integrations/cloudflare-workers/">Cloudflare Workers</a>: extraction and caching.</li>
+		<li><a href="{{base}}integrations/node-express/">Node.js and Express</a>: a server-side preview API.</li>
+		<li><a href="{{base}}integrations/ai-agents/">AI agents</a>: return link metadata from a tool call.</li>
+	</ul>
+
+	<h2 id="boundaries">Security and limitations</h2>
+	<p>linkpeek validates redirect targets and blocks literal private and non-global addresses by default. The runtime’s <code>fetch</code> resolves hostnames; public endpoints also need outbound network controls. Never forward caller credentials to arbitrary URLs. Read the <a href="{{base}}security/">security model</a> before exposing an endpoint.</p>
+	<p>linkpeek does not execute page JavaScript, extract full articles or fetch oEmbed payloads. See <a href="{{base}}guides/troubleshooting/">troubleshooting</a> for missing metadata and HTTP errors, or the <a href="{{base}}guides/link-preview-library-comparison/">library comparison</a> for other use cases.</p>
+</article>

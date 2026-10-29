@@ -2,6 +2,20 @@
 
 All notable changes to this project are documented here.
 
+## 2.1.7 - 2026-10-29
+
+### Fixed
+
+- Preserve spaces between inline code elements in generated Markdown documentation.
+
+### Changed
+
+- Simplify the documentation with system fonts, a shared reading layout, mobile navigation, and direct headings.
+- Complete the API reference, add troubleshooting and a local browser parser, correct runtime guidance, and improve npm README links and social previews.
+- Clarify agent examples as optional link-metadata helpers, without claims of improved model accuracy, retrieval, or built-in MCP integration.
+- Generate page-specific Markdown and a complete documentation text export from the same HTML, with build checks for links and code fidelity.
+- Update the release tooling’s Undici dependency to the patched 7.30.1 release through a scoped override. Runtime dependencies and library behavior are unchanged.
+
 ## 2.1.6 - 2026-10-23
 
 This release improves request isolation, preview reliability, and example accessibility.
