@@ -97,7 +97,7 @@
 		"@biomejs/biome": "^2.6.2",
 		"@release-it/conventional-changelog": "^12.0.2",
 		"@types/node": "^22.20.5",
-		"@vitest/coverage-v8": "^4.1.12",
+		"@vitest/coverage-v8": "^5.0.5",
 		"publint": "^0.3.25",
 		"release-it": "^21.1.1",
 		"tsup": "^8.5.1",
