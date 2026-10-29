@@ -37,9 +37,7 @@ it.each(["/linkpeek/", "/"])(
 			const alternate = elements.find(
 				(node) => node.attribs.rel === "alternate",
 			)?.attribs.href;
-			expect(alternate).toMatch(
-				new RegExp(`^${origin.replaceAll(".", "\\.")}${base}`),
-			);
+			expect(alternate).toBe(`${canonical}index.md`);
 			const markdown = readFileSync(
 				resolve(
 					output,
