@@ -8,6 +8,7 @@ on:
       - "package-lock.json"
       - "package.json"
       - "scripts/build-docs.mjs"
+      - "scripts/benchmark-charts.mjs"
       - "scripts/docs-content.mjs"
       - "src/**"
       - "website/**"

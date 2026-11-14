@@ -1,29 +1,41 @@
 <article class="doc">
 		<h1>Link preview benchmarks</h1>
-		<p class="doc-lede">These local benchmarks separate parser throughput, requested source chunks, install footprint, and same-corpus end-to-end overhead instead of collapsing them into one “fastest” claim. Live-network effects were not measured.</p>
+		<p class="doc-lede">Same-corpus measurements of linkpeek and five other link preview packages, measured on {{benchmark:date}}. They isolate library overhead on a local server; live-network latency is not measured.</p>
+
+		{{benchmark:summary}}
+
+		<h2 id="large-page">Large pages</h2>
+		<p>Each package previews the same 500 kB page whose metadata sits in the <code>&lt;head&gt;</code>. linkpeek stops reading after the head and cancels the response stream, so most of the body is never read or parsed.</p>
+		{{benchmark:large}}
+
+		<h2 id="small-pages">Small pages</h2>
+		<p>On small pages the differences are a fraction of a millisecond and real network latency dominates. <code>unfurl.js</code> was faster than linkpeek on every small fixture in this run.</p>
+		{{benchmark:small}}
+
+		<h2 id="size">Install footprint</h2>
+		<p>linkpeek has one runtime dependency, <code>htmlparser2</code>. Smaller installs matter most for serverless cold starts, container images and edge bundles.</p>
+		{{benchmark:install}}
+
+		<h2 id="stream">Bytes read from a 500 kB page</h2>
+		<p>The local stream probe serves a controlled 500 kB response in 1 kB chunks and records how much the parser requested.</p>
+		<div class="table-wrap"><table><thead><tr><th>Mode</th><th>Source bytes requested</th><th>Configured ceiling</th><th>500 kB page</th></tr></thead><tbody>
+			<tr><td><strong>Fast</strong> (default)</td><td><strong>2 kB</strong></td><td>30 kB</td><td>Stops after <code>&lt;/head&gt;</code></td></tr>
+			<tr><td>Quality</td><td>~202 kB</td><td>200 kB</td><td>Continues for body fallbacks</td></tr>
+		</tbody></table></div>
+		<p class="table-note">“Source bytes” includes one queued 1 kB stream chunk; the retained byte ceiling remains exact. These are requested chunks, not exact network wire bytes.</p>
 
 		<h2 id="method">Method</h2>
-		<p>The local harness builds the package ESM output, warms each parser mode, reports median/min/mean/max samples, and probes a controlled 500 KB response in 1 KB chunks. The competitive harness serves identical fixtures from one local HTTP server in the same Node process. The stream result below was measured on 26 August 2026 and covers the repository code released as 2.1.4 using Darwin 25.6 arm64, Node.js 24.15.0, and npm 11.12.1.</p>
-
-		<h2 id="stream">Controlled stream probe</h2>
-		<div class="table-wrap"><table><thead><tr><th>Mode</th><th>Source bytes requested</th><th>Configured ceiling</th><th>500 KB page</th></tr></thead><tbody>
-			<tr><td><strong>Fast</strong></td><td><strong>2 KB</strong></td><td>30 KB</td><td>Stops after <code>&lt;/head&gt;</code></td></tr>
-			<tr><td>Quality</td><td>~202 KB</td><td>200 KB</td><td>Continues for body fallbacks</td></tr>
-		</tbody></table></div>
-		<p class="table-note">“Source bytes” includes one queued 1 KB stream chunk; the retained byte ceiling remains exact.</p>
-
-		<h2 id="comparison">Same-corpus comparison</h2>
-		<p>The competitive harness runs pinned packages against identical fixtures on one local server. The dated <a href="https://github.com/thegruber/linkpeek/blob/main/docs/comparison.md">comparison and measurement notes</a> are the single source for exact results, package versions, security sources, and caveats. Live-network effects are deliberately not inferred from localhost timings.</p>
-
-		<h2 id="size">Package footprint</h2>
-		<p><code>npm run benchmark</code> reports the current tarball, unpacked package, entry-file, and runtime-dependency sizes. The evidence notes separately reproduce clean installs of the pinned published packages. Entry-file gzip size is not presented as a full application bundle.</p>
+		<p>{{benchmark:method}} Environment: {{benchmark:environment}}. Versions: {{benchmark:versions}}.</p>
+		<ul>{{benchmark:notes}}</ul>
+		<p>Timings depend on hardware: an earlier run on Apple silicon measured lower absolute numbers with the same ordering on the large page. The <a href="https://github.com/thegruber/linkpeek/blob/main/docs/comparison.md">comparison notes</a> keep every dated result, and the <a href="https://github.com/thegruber/linkpeek/tree/main/benchmarks/competitive/results">raw JSON runs</a> include commit and environment details.</p>
 
 		<h2 id="reproduce">Run the benchmarks</h2>
 		<pre><code>npm ci
 npm run benchmark
 
+npm run build
 cd benchmarks/competitive
 npm ci
-npm run bench</code></pre>
-		<p>The competitive lockfile pins every compared version. Exact npm-artifact and clean-install commands are documented in the <a href="https://github.com/thegruber/linkpeek/blob/main/docs/comparison.md">complete evidence notes</a>. Live benchmarks are network smoke tests, not competitive evidence.</p>
+npm run bench -- --json</code></pre>
+		<p>The competitive lockfile pins every compared version, and every timed preview must extract the expected title. Live benchmarks are network smoke tests, not competitive evidence.</p>
 	</article>

@@ -9,6 +9,7 @@ import {
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { build } from "tsup";
+import { benchmarkContent } from "./benchmark-charts.mjs";
 import { documentationContent } from "./docs-content.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -29,6 +30,10 @@ const pages = JSON.parse(
 	readFileSync(resolve(sourceDir, "pages.json"), "utf8"),
 );
 
+const benchmarks = benchmarkContent(
+	JSON.parse(readFileSync(resolve(sourceDir, "data/benchmarks.json"), "utf8")),
+);
+
 validatePages(pages);
 
 rmSync(outputDir, { force: true, recursive: true });
@@ -37,7 +42,10 @@ cpSync(resolve(sourceDir, "assets"), resolve(outputDir, "assets"), {
 	recursive: true,
 });
 await build({
-	entry: { demo: resolve(sourceDir, "demo.ts") },
+	entry: {
+		demo: resolve(sourceDir, "demo.ts"),
+		downloads: resolve(sourceDir, "downloads.ts"),
+	},
 	outDir: resolve(outputDir, "assets"),
 	format: ["esm"],
 	platform: "browser",
@@ -99,6 +107,7 @@ for (const page of pages) {
 				'<div class="table-wrap" tabindex="0" role="region" aria-label="Scrollable table">',
 			),
 		{
+			...benchmarks,
 			base: siteBase,
 		},
 	);
@@ -110,10 +119,7 @@ for (const page of pages) {
 		pageClass: "reference-page",
 		pageTools: `<div class="page-tools"><a href="${alternate}">Read Markdown</a><a href="https://github.com/thegruber/linkpeek/blob/main/website/content/${page.source}">Edit this page</a></div>`,
 		toc: `<nav class="page-toc" aria-label="On this page"><p>On this page</p>${headings.map(({ id, text }) => `<a href="#${escapeAttribute(id)}">${escapeHtml(text)}</a>`).join("")}</nav>`,
-		pageScript:
-			page.route === "guides/open-graph-parser/"
-				? `<script type="module" src="${siteBase}assets/demo.js"></script>`
-				: "",
+		pageScript: pageScript(page.route),
 		version: packageInfo.version,
 		base: siteBase,
 		breadcrumbs: renderBreadcrumbs(page),
@@ -205,6 +211,16 @@ console.log(`Built ${pages.length} documentation pages in ${outputDir}`);
 function normalizeBase(value) {
 	const path = value.replace(/^\/+|\/+$/g, "");
 	return path ? `/${path}/` : "/";
+}
+
+function pageScript(route) {
+	const script = {
+		"": "downloads.js",
+		"guides/open-graph-parser/": "demo.js",
+	}[route];
+	return script
+		? `<script type="module" src="${siteBase}assets/${script}"></script>`
+		: "";
 }
 
 function navigationGroup(page) {

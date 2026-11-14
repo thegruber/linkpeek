@@ -11,7 +11,12 @@ export function documentationContent(html, canonical) {
 
 	function render(node) {
 		if (node.type === "text") return node.data.replace(/\s+/g, " ");
-		if (node.type === "comment" || node.attribs?.role === "status") return "";
+		if (
+			node.type === "comment" ||
+			node.attribs?.role === "status" ||
+			node.attribs?.["data-markdown"] === "skip"
+		)
+			return "";
 		const name = node.name;
 		if (["script", "style", "button", "noscript"].includes(name)) return "";
 		const children = () =>
@@ -30,6 +35,8 @@ export function documentationContent(html, canonical) {
 			return `[${children().trim()}](${new URL(node.attribs.href, canonical).href})`;
 		if (name === "strong") return `**${children()}**`;
 		if (name === "li") return `\n- ${children().trim()}\n`;
+		if (name === "dt") return `\n- ${children().trim()}: `;
+		if (name === "dd") return `${children().trim()}\n`;
 		if (name === "br") return "\n";
 		if (name === "table") {
 			const rows = DomUtils.getElementsByTagName("tr", node).map((row) =>
@@ -57,6 +64,9 @@ export function documentationContent(html, canonical) {
 			"ol",
 			"details",
 			"summary",
+			"dl",
+			"figure",
+			"figcaption",
 		].includes(name)
 			? `\n\n${text.trim()}\n\n`
 			: text;

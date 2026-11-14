@@ -12,6 +12,8 @@
 	--code-bg: #15151a;
 	--value: #b9ddc5;
 	--number: #d4bde8;
+	--chart: #6b78f5;
+	--chart-wash: rgb(107 120 245 / 0.12);
 	--font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 	--code:
 		ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; /* taste-skill-ignore: literal code and HTML editor only */
@@ -481,6 +483,243 @@ input[type="checkbox"] {
 	white-space: pre-wrap;
 	overflow-wrap: anywhere;
 }
+.downloads {
+	margin: 2rem 0 0.5rem;
+	padding: 1.25rem 1.25rem 0.75rem;
+	border: 1px solid var(--border);
+	border-radius: 10px;
+	background: var(--sidebar);
+}
+.doc .downloads h2 {
+	margin: 0;
+	font-size: 1rem;
+	font-weight: 600;
+}
+.doc .downloads-note {
+	margin: 0.25rem 0 1rem;
+	color: var(--muted);
+	font-size: 0.85rem;
+	max-width: none;
+}
+.downloads-stats {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 1rem;
+	margin: 0 0 1rem;
+}
+.downloads-stats dt {
+	color: var(--muted);
+	font-size: 0.8rem;
+}
+.downloads-stats dd {
+	margin: 0.1rem 0 0;
+	font-size: 1.5rem;
+	font-weight: 600;
+	letter-spacing: -0.02em;
+	font-variant-numeric: tabular-nums;
+	line-height: 1.3;
+}
+.downloads-stats small {
+	display: block;
+	color: var(--muted);
+	font-size: 0.75rem;
+	font-weight: 400;
+	letter-spacing: 0;
+}
+.downloads-chart {
+	min-height: 220px;
+}
+.downloads[data-state="error"] .downloads-chart,
+.downloads[data-state="error"] .downloads-stats,
+.downloads[data-state="error"] .downloads-table,
+.downloads:not([data-state="ready"]) .downloads-table {
+	display: none;
+}
+.chart-surface {
+	position: relative;
+	border-radius: 6px;
+	touch-action: pan-y;
+}
+.chart-surface svg {
+	display: block;
+	overflow: visible;
+}
+.chart-grid,
+.chart-baseline {
+	stroke: var(--border);
+	stroke-width: 1;
+	opacity: 0.6;
+}
+.chart-baseline {
+	opacity: 1;
+}
+.chart-label {
+	fill: var(--muted);
+	font-size: 11px;
+	font-variant-numeric: tabular-nums;
+}
+.chart-area {
+	fill: var(--chart-wash);
+}
+.chart-line {
+	fill: none;
+	stroke: var(--chart);
+	stroke-width: 2;
+	stroke-linejoin: round;
+	stroke-linecap: round;
+}
+.chart-dot {
+	fill: var(--chart);
+	stroke: var(--sidebar);
+	stroke-width: 2;
+}
+.chart-crosshair {
+	stroke: var(--muted);
+	stroke-width: 1;
+}
+.chart-tooltip {
+	position: absolute;
+	top: 0;
+	left: 0;
+	display: grid;
+	padding: 0.4rem 0.65rem;
+	border: 1px solid var(--border);
+	border-radius: 6px;
+	background: var(--bg);
+	font-size: 0.75rem;
+	line-height: 1.4;
+	white-space: nowrap;
+	pointer-events: none;
+	box-shadow: 0 4px 16px rgb(0 0 0 / 0.35);
+}
+.chart-tooltip[hidden] {
+	display: none;
+}
+.chart-tooltip strong {
+	font-size: 0.9rem;
+	font-variant-numeric: tabular-nums;
+}
+.chart-tooltip span {
+	color: var(--muted);
+}
+.doc .downloads-status {
+	margin: 0.5rem 0 0;
+	color: var(--muted);
+	font-size: 0.8rem;
+	max-width: none;
+}
+.downloads-table summary {
+	min-height: 44px;
+	display: flex;
+	align-items: center;
+	color: var(--muted);
+	font-size: 0.8rem;
+}
+.downloads-table .table-wrap {
+	max-height: 280px;
+	overflow-y: auto;
+	margin-bottom: 0.75rem;
+}
+.downloads-table table {
+	font-size: 0.82rem;
+}
+.downloads-table th,
+.downloads-table td {
+	padding: 0.4rem 0.6rem;
+}
+.stat-row {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 1rem;
+	margin: 0 0 1rem;
+}
+.stat-row dt {
+	color: var(--muted);
+	font-size: 0.8rem;
+}
+.stat-row dd {
+	margin: 0.1rem 0 0;
+	font-size: 1.5rem;
+	font-weight: 600;
+	letter-spacing: -0.02em;
+	font-variant-numeric: tabular-nums;
+	line-height: 1.3;
+}
+.doc > .stat-row {
+	margin: 1.5rem 0 0.5rem;
+}
+.bar-chart {
+	margin: 1.25rem 0 1.75rem;
+	padding: 1.25rem;
+	border: 1px solid var(--border);
+	border-radius: 10px;
+	background: var(--sidebar);
+}
+.bar-chart figcaption {
+	display: grid;
+	gap: 0.15rem;
+	margin-bottom: 1rem;
+}
+.bar-chart figcaption strong {
+	font-size: 0.95rem;
+	font-weight: 600;
+}
+.bar-chart figcaption span {
+	color: var(--muted);
+	font-size: 0.8rem;
+}
+.bar-chart table {
+	table-layout: fixed;
+	font-size: 0.85rem;
+}
+.bar-chart th,
+.bar-chart td {
+	padding: 0.3rem 0;
+	border: 0;
+	vertical-align: middle;
+}
+.bar-chart col.bar-label {
+	width: 13rem;
+}
+.bar-chart tbody th {
+	padding-right: 1rem;
+	color: var(--muted);
+	font-weight: 400;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.bar-chart tbody th span {
+	opacity: 0.7;
+	font-size: 0.75rem;
+}
+.bar-chart td {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	min-height: 28px;
+}
+.bar-chart .bar {
+	flex: 0 0 auto;
+	width: max(3px, calc((100% - 10.5rem) * var(--value)));
+	height: 14px;
+	border-radius: 0 4px 4px 0;
+	background: var(--border);
+}
+.bar-chart .bar-value {
+	flex: 0 0 auto;
+	color: var(--muted);
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+.bar-chart .is-self th,
+.bar-chart .is-self .bar-value {
+	color: var(--text);
+	font-weight: 600;
+}
+.bar-chart .is-self .bar {
+	background: var(--chart);
+}
 @media (max-width: 1240px) {
 	.docs-shell {
 		grid-template-columns: 220px minmax(0, 1fr);
@@ -535,6 +774,25 @@ input[type="checkbox"] {
 	.comparison-pair {
 		grid-template-columns: 1fr;
 		gap: 1rem;
+	}
+	.downloads {
+		padding: 1rem 0.875rem 0.5rem;
+	}
+	.downloads-stats dd,
+	.stat-row dd {
+		font-size: 1.2rem;
+	}
+	.bar-chart {
+		padding: 1rem 0.875rem;
+	}
+	.bar-chart col.bar-label {
+		width: 7.5rem;
+	}
+	.bar-chart tbody th {
+		padding-right: 0.6rem;
+	}
+	.bar-chart tbody th span {
+		display: none;
 	}
 	.site-footer {
 		padding: 1.5rem 1.25rem;
