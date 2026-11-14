@@ -36,7 +36,14 @@ export const metadata: Metadata = {
 		"typescript",
 		"edge runtime",
 	],
-	icons: { icon: { url: `${basePath}favicon.svg`, type: "image/svg+xml" } },
+	icons: {
+		icon: [
+			{ url: `${basePath}favicon.svg`, type: "image/svg+xml" },
+			{ url: `${basePath}icon-512.png`, type: "image/png", sizes: "512x512" },
+		],
+		apple: { url: `${basePath}apple-touch-icon.png`, sizes: "180x180" },
+	},
+	manifest: `${basePath}manifest.webmanifest`,
 	openGraph: { siteName: appName, type: "website", locale: "en_US" },
 	twitter: { card: "summary_large_image" },
 	robots: { index: true, follow: true, "max-image-preview": "large" },

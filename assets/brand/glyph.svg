@@ -1,0 +1,1 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><title>linkpeek</title><mask id="m"><rect width="64" height="64" fill="#fff"/><circle cx="24.5" cy="30" r="4"/><circle cx="46.5" cy="30" r="4"/></mask><path mask="url(#m)" fill="currentColor" d="M12 36h40a4 4 0 0 1 0 8H12a4 4 0 0 1 0-8zM10 36a11 11 0 0 1 22 0zM32 36a11 11 0 0 1 22 0z"/></svg>

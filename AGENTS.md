@@ -28,6 +28,10 @@
 - Benchmark numbers on the site come only from `website/data/benchmarks.json`; charts and Markdown exports render from it.
 - `npm run build --prefix website` also runs `scripts/check-site.mjs` (one H1, canonical, social tags, JSON-LD, Markdown twins, links, sitemap). Keep it passing.
 
+## Brand
+- The mark is two eyes peeking over an edge: the edge is `</head>`, where linkpeek stops reading; the pupils look up and right, toward the link. Sources live in `assets/brand/` (`mark.svg`, `glyph.svg`, outlined `lockup-*.svg`, a bolder `favicon.svg` for 16–32 px, `mark-256.png`, `social-preview.png`).
+- Signal blue `#165dff` marks the one thing that matters on a surface; everything else stays neutral. Type is Schibsted Grotesk (UI, headings) and JetBrains Mono (code only).
+
 ## Demo preview endpoint
 - `demo-api/` is the Vercel project `gubastudio/linkpeek-playground` (`https://linkpeek-playground.vercel.app/api/preview`), used by the homepage's "try any URL" demo. It deploys from Git with root directory `demo-api` (production from `main`); builds are skipped when the last commit does not touch `demo-api/`.
 - Keep its defenses together: docs-origin allowlist, per-hop DNS check in `lib/guard.ts` (tested in `test/demo-api.test.ts`), 5 s timeout, metadata-only JSON, day-long edge cache, and the Vercel firewall rate limits (20/min and 200/h per IP on `/api/preview`).

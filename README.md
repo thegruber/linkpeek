@@ -1,9 +1,17 @@
-# linkpeek
+<p align="center">
+  <a href="https://thegruber.github.io/linkpeek/"><img src="https://raw.githubusercontent.com/thegruber/linkpeek/main/assets/brand/mark-256.png" width="88" height="88" alt=""></a>
+</p>
 
-[![npm version](https://img.shields.io/npm/v/linkpeek)](https://www.npmjs.com/package/linkpeek)
-[![npm downloads](https://img.shields.io/npm/dw/linkpeek)](https://www.npmjs.com/package/linkpeek)
-[![CI](https://github.com/thegruber/linkpeek/actions/workflows/ci.yml/badge.svg)](https://github.com/thegruber/linkpeek/actions/workflows/ci.yml)
-[![install size](https://packagephobia.com/badge?p=linkpeek)](https://packagephobia.com/result?p=linkpeek)
+<h1 align="center">linkpeek</h1>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/linkpeek"><img src="https://img.shields.io/npm/v/linkpeek" alt="npm version"></a>
+  <a href="https://www.npmjs.com/package/linkpeek"><img src="https://img.shields.io/npm/dw/linkpeek" alt="npm downloads"></a>
+  <a href="https://github.com/thegruber/linkpeek/actions/workflows/ci.yml"><img src="https://github.com/thegruber/linkpeek/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://packagephobia.com/result?p=linkpeek"><img src="https://packagephobia.com/badge?p=linkpeek" alt="install size"></a>
+</p>
+
+<p align="center"><a href="https://thegruber.github.io/linkpeek/">Website</a> · <a href="https://thegruber.github.io/linkpeek/quick-start/">Quick start</a> · <a href="https://thegruber.github.io/linkpeek/api/">API</a> · <a href="https://thegruber.github.io/linkpeek/benchmarks/">Benchmarks</a></p>
 
 **A fast, safe-by-default link preview library for TypeScript, Node.js, Bun, Deno, and edge runtimes. One runtime dependency.**
 

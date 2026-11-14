@@ -167,7 +167,7 @@ export function UnfurlDemo() {
 	return (
 		<div className="relative min-w-0">
 			<form
-				className="mb-3 flex gap-2"
+				className="mb-9 flex gap-2"
 				onSubmit={(event) => {
 					event.preventDefault();
 					if (input.trim()) void submit(input);
@@ -197,9 +197,10 @@ export function UnfurlDemo() {
 				</button>
 			</form>
 			<div
-				className="rounded-2xl border bg-fd-card p-4 shadow-[0_1px_0_rgb(0_0_0/0.02),0_24px_48px_-24px_rgb(18_20_26/0.18)] sm:p-5"
+				className="relative rounded-2xl border bg-fd-card p-4 shadow-[0_1px_0_rgb(0_0_0/0.02),0_24px_48px_-24px_rgb(18_20_26/0.18)] sm:p-5"
 				aria-busy={remote.state === "loading"}
 			>
+				<Peekers looking={remote.state !== "idle"} />
 				<p className="mb-3 w-fit max-w-full truncate rounded-2xl rounded-bl-md bg-fd-secondary px-3.5 py-2 text-sm">
 					Have you seen{" "}
 					<span className="text-signal">
@@ -252,6 +253,30 @@ export function UnfurlDemo() {
 				{status}
 			</p>
 		</div>
+	);
+}
+
+// The brand's eyes, peeking over the top edge of the chat card. They look up
+// and right at rest and down at the card once a visitor previews a URL.
+function Peekers({ looking }: { looking: boolean }) {
+	return (
+		<svg
+			viewBox="0 0 48 24"
+			aria-hidden="true"
+			className="absolute -top-[23px] right-8 w-12 text-signal"
+		>
+			<path
+				fill="currentColor"
+				d="M0 24a12 12 0 0 1 24 0zM24 24a12 12 0 0 1 24 0z"
+			/>
+			<g
+				className="transition-transform duration-300 ease-out motion-reduce:transition-none"
+				style={{ transform: looking ? "translate(-3px, 3px)" : "none" }}
+			>
+				<circle cx="15.5" cy="17" r="3.6" className="fill-fd-background" />
+				<circle cx="39.5" cy="17" r="3.6" className="fill-fd-background" />
+			</g>
+		</svg>
 	);
 }
 

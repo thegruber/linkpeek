@@ -81,6 +81,17 @@ body {
 	background: var(--color-signal-wash);
 }
 
+/* The mark's pupils glance back toward the reader when the logo is hovered. */
+@media (prefers-reduced-motion: no-preference) {
+	.peek-pupils {
+		transition: transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+	}
+}
+.peek-look .peek-pupils,
+.group\/logo:hover .peek-pupils {
+	transform: translate(-5px, 1.5px);
+}
+
 /* The one orchestrated moment: the hero URL unfurls into its card. */
 @keyframes unfurl {
 	from {

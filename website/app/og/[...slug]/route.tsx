@@ -1,6 +1,5 @@
 import { ImageResponse } from "next/og";
 import { highlights } from "@/lib/benchmarks";
-import { home } from "@/lib/shared";
 import { source } from "@/lib/source";
 
 export const dynamic = "force-static";
@@ -19,7 +18,9 @@ export async function GET(
 	const title = page
 		? (page.data.heading ?? page.data.metaTitle ?? page.data.title)
 		: "Fast, safe link previews for TypeScript";
-	const description = page?.data.description ?? home.description;
+	const description =
+		page?.data.description ??
+		"Open Graph, Twitter Card and JSON-LD metadata from any URL. Reads only the head, blocks private addresses, one dependency.";
 	const section = page
 		? page.slugs[0] === "integrations"
 			? "Integration guide"
@@ -39,53 +40,90 @@ export async function GET(
 				height: "100%",
 				display: "flex",
 				flexDirection: "column",
-				justifyContent: "space-between",
-				padding: "72px 80px",
+				position: "relative",
+				padding: "64px 80px 0",
 				background: "#0d0f14",
 				color: "#eceef3",
 				fontFamily: fonts.length ? "Grotesk" : undefined,
 			}}
 		>
-			<div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-				<svg width="56" height="56" viewBox="0 0 64 64" aria-hidden="true">
-					<rect width="64" height="64" rx="12" fill="#165dff" />
-					<path
-						d="m26 18-14 14 14 14m12-28 14 14-14 14"
-						fill="none"
-						stroke="#fff"
-						strokeWidth="7"
-					/>
+			<div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+				<svg width="52" height="52" viewBox="0 0 64 64" aria-hidden="true">
+					<rect width="64" height="64" rx="16" fill="#165dff" />
+					<path fill="#fff" d={EYES} />
+					<circle cx="24.5" cy="30" r="4" fill="#165dff" />
+					<circle cx="46.5" cy="30" r="4" fill="#165dff" />
 				</svg>
-				<span style={{ fontSize: 34, fontWeight: 600 }}>linkpeek</span>
-				<span style={{ fontSize: 26, color: "#9aa1b0", marginLeft: 12 }}>
+				<span
+					style={{ fontSize: 34, fontWeight: 600, letterSpacing: "-0.035em" }}
+				>
+					linkpeek
+				</span>
+				<span style={{ fontSize: 26, color: "#9aa1b0", marginLeft: 14 }}>
 					{section}
 				</span>
 			</div>
-			<div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+			<div
+				style={{
+					display: "flex",
+					flexDirection: "column",
+					gap: 22,
+					marginTop: 64,
+				}}
+			>
 				<div
 					style={{
-						fontSize: title.length > 34 ? 66 : 80,
+						fontSize: title.length > 34 ? 64 : 78,
 						fontWeight: 600,
-						lineHeight: 1.05,
-						letterSpacing: "-0.03em",
-						maxWidth: 980,
+						lineHeight: 1.04,
+						letterSpacing: "-0.035em",
+						maxWidth: 900,
 					}}
 				>
 					{title}
 				</div>
 				<div
 					style={{
-						fontSize: 28,
+						fontSize: 27,
 						lineHeight: 1.4,
 						color: "#9aa1b0",
-						maxWidth: 940,
+						maxWidth: 820,
 					}}
 				>
 					{description}
 				</div>
 			</div>
+			{/* The </head> edge with the eyes peeking over it. */}
+			<svg
+				width="176"
+				height="88"
+				viewBox="0 0 48 24"
+				aria-hidden="true"
+				style={{ position: "absolute", right: 96, bottom: 102 }}
+			>
+				<path
+					fill="#165dff"
+					d="M0 24a12 12 0 0 1 24 0zM24 24a12 12 0 0 1 24 0z"
+				/>
+				<circle cx="15.5" cy="17" r="3.6" fill="#0d0f14" />
+				<circle cx="39.5" cy="17" r="3.6" fill="#0d0f14" />
+			</svg>
 			<div
 				style={{
+					position: "absolute",
+					left: 0,
+					right: 0,
+					bottom: 96,
+					height: 6,
+					background: "#165dff",
+				}}
+			/>
+			<div
+				style={{
+					position: "absolute",
+					left: 80,
+					right: 80,
+					bottom: 34,
 					display: "flex",
 					justifyContent: "space-between",
 					fontSize: 24,
@@ -99,6 +137,9 @@ export async function GET(
 		{ width: 1200, height: 630, fonts },
 	);
 }
+
+const EYES =
+	"M12 36h40a4 4 0 0 1 0 8H12a4 4 0 0 1 0-8zM10 36a11 11 0 0 1 22 0zM32 36a11 11 0 0 1 22 0z";
 
 export function generateStaticParams() {
 	return [
