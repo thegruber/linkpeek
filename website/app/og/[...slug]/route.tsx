@@ -48,11 +48,48 @@ export async function GET(
 			}}
 		>
 			<div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-				<svg width="52" height="52" viewBox="0 0 64 64" aria-hidden="true">
-					<rect width="64" height="64" rx="16" fill="#165dff" />
-					<path fill="#fff" d={EYES} />
-					<circle cx="24.5" cy="30" r="4" fill="#165dff" />
-					<circle cx="46.5" cy="30" r="4" fill="#165dff" />
+				<svg width="56" height="56" viewBox="0 0 64 64" aria-hidden="true">
+					<rect width="64" height="64" rx="15" fill="#165dff" />
+					<g transform="translate(0 -2) rotate(-8 32 40)">
+						<circle cx="35" cy="26" r="7.5" fill="#fff" />
+						<circle cx="50.5" cy="26" r="7.5" fill="#fff" />
+						<circle cx="33.4" cy="28.2" r="3.2" fill="#0a1a4f" />
+						<circle cx="48.9" cy="28.2" r="3.2" fill="#0a1a4f" />
+						<rect
+							x="7"
+							y="29.5"
+							width="50"
+							height="26"
+							rx="6"
+							fill="#fff"
+							stroke="#165dff"
+							strokeWidth="3"
+						/>
+						<rect
+							x="12.5"
+							y="35"
+							width="12"
+							height="15"
+							rx="3"
+							fill="#b4c8ff"
+						/>
+						<rect
+							x="28.5"
+							y="36.5"
+							width="21"
+							height="4"
+							rx="2"
+							fill="#165dff"
+						/>
+						<rect
+							x="28.5"
+							y="44"
+							width="13"
+							height="3.5"
+							rx="1.75"
+							fill="#b4c8ff"
+						/>
+					</g>
 				</svg>
 				<span
 					style={{ fontSize: 34, fontWeight: 600, letterSpacing: "-0.035em" }}
@@ -102,11 +139,13 @@ export async function GET(
 				style={{ position: "absolute", right: 96, bottom: 102 }}
 			>
 				<path
-					fill="#165dff"
-					d="M0 24a12 12 0 0 1 24 0zM24 24a12 12 0 0 1 24 0z"
+					fill="#fff"
+					stroke="#165dff"
+					strokeWidth="2.5"
+					d="M1.5 24a10.5 10.5 0 0 1 21 0zM25.5 24a10.5 10.5 0 0 1 21 0z"
 				/>
-				<circle cx="15.5" cy="17" r="3.6" fill="#0d0f14" />
-				<circle cx="39.5" cy="17" r="3.6" fill="#0d0f14" />
+				<circle cx="10" cy="20" r="3.8" fill="#0a1a4f" />
+				<circle cx="34" cy="20" r="3.8" fill="#0a1a4f" />
 			</svg>
 			<div
 				style={{
@@ -137,9 +176,6 @@ export async function GET(
 		{ width: 1200, height: 630, fonts },
 	);
 }
-
-const EYES =
-	"M12 36h40a4 4 0 0 1 0 8H12a4 4 0 0 1 0-8zM10 36a11 11 0 0 1 22 0zM32 36a11 11 0 0 1 22 0z";
 
 export function generateStaticParams() {
 	return [

@@ -1,13 +1,13 @@
 import { HomeLayout } from "fumadocs-ui/layouts/home";
 import Link from "next/link";
-import { Glyph } from "@/components/logo";
+import { Mark } from "@/components/logo";
 import { baseOptions } from "@/lib/layout.shared";
 
 export default function NotFound() {
 	return (
 		<HomeLayout {...baseOptions()}>
 			<main className="mx-auto grid max-w-xl flex-1 content-center justify-items-start gap-4 px-6 py-24">
-				<Glyph className="peek-look w-28 text-signal" />
+				<Mark className="size-24" />
 				<p className="text-fd-muted-foreground text-sm">HTTP 404</p>
 				<h1 className="font-semibold text-3xl tracking-tight">
 					Nothing to peek at here

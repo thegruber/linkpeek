@@ -29,7 +29,7 @@
 - `npm run build --prefix website` also runs `scripts/check-site.mjs` (one H1, canonical, social tags, JSON-LD, Markdown twins, links, sitemap). Keep it passing.
 
 ## Brand
-- The mark is two eyes peeking over an edge: the edge is `</head>`, where linkpeek stops reading; the pupils look up and right, toward the link. Sources live in `assets/brand/` (`mark.svg`, `glyph.svg`, outlined `lockup-*.svg`, a bolder `favicon.svg` for 16–32 px, `mark-256.png`, `social-preview.png`).
+- The mark is a link preview card, tilted as if just pasted, with two eyes peeking over its top edge and looking down at it. Sources live in `assets/brand/` (`mark.svg`, one-color `glyph.svg`, outlined `lockup-*.svg`, a simplified `favicon.svg` for 16–24 px, `mark-256.png`, `social-preview.png`).
 - Signal blue `#165dff` marks the one thing that matters on a surface; everything else stays neutral. Type is Schibsted Grotesk (UI, headings) and JetBrains Mono (code only).
 
 ## Demo preview endpoint

@@ -1,1 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><title>linkpeek</title><rect width="64" height="64" rx="16" fill="#165dff"/><path fill="#fff" d="M7 37h50a5 5 0 0 1 0 10H7a5 5 0 0 1 0-10zM7.5 37a12.5 12.5 0 0 1 25 0zM31.5 37a12.5 12.5 0 0 1 25 0z"/><circle cx="24" cy="31" r="5" fill="#165dff"/><circle cx="48" cy="31" r="5" fill="#165dff"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><title>linkpeek</title><defs><clipPath id="lp-tile"><rect width="64" height="64" rx="15"/></clipPath></defs><g clip-path="url(#lp-tile)"><rect width="64" height="64" fill="#165dff"/><g transform="translate(0 -2) rotate(-8 32 40)">
+<circle cx="35" cy="26" r="8.5" fill="#fff"/><circle cx="50.5" cy="26" r="8.5" fill="#fff"/>
+<circle cx="33.4" cy="28.2" r="3.8" fill="#0a1a4f"/><circle cx="48.9" cy="28.2" r="3.8" fill="#0a1a4f"/>
+<rect x="7" y="29.5" width="50" height="26" rx="6" fill="#fff" stroke="#165dff" stroke-width="3"/>
+<rect x="13" y="38.5" width="30" height="6" rx="3" fill="#165dff"/>
+</g></g></svg>

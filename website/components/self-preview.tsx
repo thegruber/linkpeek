@@ -96,6 +96,7 @@ export function UnfurlDemo() {
 	const { fields, ms } = useLivePreview();
 	const [remote, setRemote] = useState<Remote>({ state: "idle" });
 	const [input, setInput] = useState("");
+	const [typing, setTyping] = useState(false);
 
 	const own: CardData = {
 		url: fields.canonicalUrl,
@@ -186,6 +187,8 @@ export function UnfurlDemo() {
 					placeholder="Try any URL, like github.com"
 					value={input}
 					onChange={(event) => setInput(event.target.value)}
+					onFocus={() => setTyping(true)}
+					onBlur={() => setTyping(false)}
 					className="min-h-11 min-w-0 flex-1 rounded-xl border bg-fd-background px-4 text-sm outline-none transition-colors placeholder:text-fd-muted-foreground focus-visible:border-signal focus-visible:ring-2 focus-visible:ring-signal-wash"
 				/>
 				<button
@@ -200,7 +203,7 @@ export function UnfurlDemo() {
 				className="relative rounded-2xl border bg-fd-card p-4 shadow-[0_1px_0_rgb(0_0_0/0.02),0_24px_48px_-24px_rgb(18_20_26/0.18)] sm:p-5"
 				aria-busy={remote.state === "loading"}
 			>
-				<Peekers looking={remote.state !== "idle"} />
+				<Peekers looking={typing ? "input" : "card"} />
 				<p className="mb-3 w-fit max-w-full truncate rounded-2xl rounded-bl-md bg-fd-secondary px-3.5 py-2 text-sm">
 					Have you seen{" "}
 					<span className="text-signal">
@@ -256,25 +259,29 @@ export function UnfurlDemo() {
 	);
 }
 
-// The brand's eyes, peeking over the top edge of the chat card. They look up
-// and right at rest and down at the card once a visitor previews a URL.
-function Peekers({ looking }: { looking: boolean }) {
+// The brand's eyes, peeking over the top edge of the chat card like the
+// mark's eyes over its card. They look down at the card and up at the URL
+// field while a visitor types.
+function Peekers({ looking }: { looking: "card" | "input" }) {
 	return (
 		<svg
 			viewBox="0 0 48 24"
 			aria-hidden="true"
-			className="absolute -top-[23px] right-8 w-12 text-signal"
+			className="absolute -top-[22px] right-10 w-12"
 		>
 			<path
-				fill="currentColor"
-				d="M0 24a12 12 0 0 1 24 0zM24 24a12 12 0 0 1 24 0z"
+				d="M1.5 24a10.5 10.5 0 0 1 21 0zM25.5 24a10.5 10.5 0 0 1 21 0z"
+				className="fill-fd-background stroke-signal"
+				strokeWidth="2.5"
 			/>
 			<g
 				className="transition-transform duration-300 ease-out motion-reduce:transition-none"
-				style={{ transform: looking ? "translate(-3px, 3px)" : "none" }}
+				style={{
+					transform: looking === "input" ? "translate(1px, -6px)" : "none",
+				}}
 			>
-				<circle cx="15.5" cy="17" r="3.6" className="fill-fd-background" />
-				<circle cx="39.5" cy="17" r="3.6" className="fill-fd-background" />
+				<circle cx="10" cy="20" r="3.8" className="fill-fd-foreground" />
+				<circle cx="34" cy="20" r="3.8" className="fill-fd-foreground" />
 			</g>
 		</svg>
 	);
