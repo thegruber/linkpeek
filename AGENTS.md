@@ -29,8 +29,8 @@
 - `npm run build --prefix website` also runs `scripts/check-site.mjs` (one H1, canonical, social tags, JSON-LD, Markdown twins, links, sitemap). Keep it passing.
 
 ## Brand
-- The mark is a link preview card, tilted as if just pasted, with two eyes peeking over its top edge and looking down at it. Sources live in `assets/brand/` (`mark.svg`, one-color `glyph.svg`, outlined `lockup-*.svg`, a simplified `favicon.svg` for 16–24 px, `mark-256.png`, `social-preview.png`).
-- Signal blue `#165dff` marks the one thing that matters on a surface; everything else stays neutral. Type is Geist (UI, headings, tracked tight) and Geist Mono (code, data, routes). The site is a Swiss grid: 1px rules forming rectangles, square corners, halftone dots as the only texture.
+- The mark is a link preview card, tilted as if just pasted, with two eyes peeking over its top edge and looking down at it. Sources live in `assets/brand/` (`mark.svg`, one-color `glyph.svg`, outlined `lockup-*.svg`, a simplified `favicon.svg` for 16–24 px, `mark-256.png`, `social-preview.png`, `readme-hero.png`).
+- Paper `#ffffff` and ink `#111111`, with one highlighter yellow `#ffe14d` that marks what linkpeek reads: the `<head>`. Yellow is a fill only (black text on it), never text on white. Type is Geist (UI, headings, tracked tight) and Geist Mono (code and data only). The site is a Swiss grid: 1px rules forming rectangles, square corners, halftone dots as the only texture. Use the eyes at most twice per page, and only where they look at something.
 
 ## Demo preview endpoint
 - `demo-api/` is the Vercel project `gubastudio/linkpeek-playground` (`https://linkpeek-playground.vercel.app/api/preview`), used by the homepage's "try any URL" demo. It deploys from Git with root directory `demo-api` (production from `main`); builds are skipped when the last commit does not touch `demo-api/`.
