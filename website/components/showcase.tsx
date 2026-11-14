@@ -1,52 +1,43 @@
-import { type ShowcaseCard, showcase } from "@/lib/showcase";
+import { ShowcaseStrip } from "@/components/showcase-strip";
+import { capturedLabel, type ShowcaseCard, showcase } from "@/lib/showcase";
 
-// A slow strip of real link previews, built by linkpeek when this page was
-// generated. It pauses on hover and stands still under reduced motion.
+// Real link previews, captured by linkpeek when this site was built. A
+// swipeable strip: scroll, drag on touch, or use the arrow buttons.
 export async function Showcase() {
 	const cards = await showcase();
 	if (cards.length < 4) return null;
 	return (
-		<section aria-labelledby="showcase-title" className="border-rule border-b">
-			<div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-rule border-b px-5 py-4 sm:px-8">
-				<h2
-					id="showcase-title"
-					className="font-normal text-xl tracking-[-0.03em]"
-				>
-					Real previews, built with linkpeek
-				</h2>
-				<p className="font-mono text-fd-muted-foreground text-xs">
-					highlighted: the share of each page linkpeek reads
-				</p>
-			</div>
-			<div className="marquee group/marquee overflow-hidden">
-				<ul className="marquee-track flex w-max">
-					{/* The second copy makes the loop seamless; it is hidden from
-					    assistive tech and the tab order. */}
-					{(["first", "copy"] as const).flatMap((pass) =>
-						cards.map((card) => (
-							<Card
-								key={`${pass}-${card.url}`}
-								card={card}
-								hidden={pass === "copy"}
-							/>
-						)),
-					)}
-				</ul>
-			</div>
+		<section aria-labelledby="showcase-title" className="border-ink border-b">
+			<ShowcaseStrip
+				title={
+					<>
+						<h2
+							id="showcase-title"
+							className="font-normal text-xl tracking-[-0.03em]"
+						>
+							Real previews, captured with linkpeek
+						</h2>
+						<p className="font-mono text-fd-muted-foreground text-xs">
+							Snapshot from {capturedLabel}. Orange bar: the share of each page
+							linkpeek read.
+						</p>
+					</>
+				}
+			>
+				{cards.map((card) => (
+					<Card key={card.url} card={card} />
+				))}
+			</ShowcaseStrip>
 		</section>
 	);
 }
 
-function Card({ card, hidden }: { card: ShowcaseCard; hidden: boolean }) {
+function Card({ card }: { card: ShowcaseCard }) {
 	return (
-		<li
-			className="w-[19rem] shrink-0 border-rule border-r"
-			aria-hidden={hidden || undefined}
-		>
+		<li className="w-[19rem] shrink-0 snap-start border-ink border-r last:border-r-0">
 			<a
 				href={card.url}
 				rel="nofollow noopener noreferrer"
-				tabIndex={hidden ? -1 : undefined}
 				className="group/card block h-full transition-colors hover:bg-fd-card"
 			>
 				<span className="block overflow-hidden border-rule border-b bg-fd-muted">

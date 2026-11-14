@@ -22,7 +22,7 @@ import {
 	repository,
 	siteUrl,
 } from "@/lib/shared";
-import { showcase } from "@/lib/showcase";
+import { capturedLabel, showcase } from "@/lib/showcase";
 import { packageVersion } from "@/lib/version";
 
 const image = {
@@ -77,8 +77,8 @@ const runtimes = [
 	["Node.js", "/integrations/node-express/"],
 	["Next.js", "/integrations/nextjs/"],
 	["Cloudflare Workers", "/integrations/cloudflare-workers/"],
-	["Bun", "/quick-start/"],
-	["Deno", "/quick-start/"],
+	["Bun", "/quick-start/#install"],
+	["Deno", "/quick-start/#install"],
 	["AI agents", "/integrations/ai-agents/"],
 ];
 
@@ -114,7 +114,7 @@ export default async function HomePage() {
 					<p className="font-mono text-[0.72rem] uppercase tracking-[0.06em]">
 						TypeScript link preview library
 					</p>
-					<h1 className="max-w-[12ch] font-normal text-[clamp(3rem,6.2vw,6.25rem)] leading-[0.92] tracking-[-0.05em]">
+					<h1 className="max-w-[12ch] text-balance font-normal text-[clamp(3rem,6.2vw,6.25rem)] leading-[0.92] tracking-[-0.05em]">
 						Turn any URL into{" "}
 						<span className="whitespace-nowrap">
 							a <span className="highlight">link preview</span>.
@@ -122,7 +122,7 @@ export default async function HomePage() {
 					</h1>
 				</div>
 				<div className="border-ink border-b lg:col-span-2">
-					<HeroDemo examples={cards} />
+					<HeroDemo examples={cards} capturedLabel={capturedLabel} />
 				</div>
 				<div className="relative min-h-64 border-ink border-b lg:col-span-2 lg:border-r lg:border-b-0">
 					<Dither className="absolute inset-0" />
@@ -141,7 +141,7 @@ export default async function HomePage() {
 					</Link>
 				</div>
 				<div className="flex flex-col justify-between gap-8 bg-block px-5 py-7 sm:px-8">
-					<div className="grid gap-3">
+					<div className="grid min-w-0 grid-cols-1 gap-3">
 						<p className="text-[1.35rem] leading-[1.2] tracking-[-0.02em]">
 							Install
 						</p>
@@ -182,13 +182,13 @@ export default async function HomePage() {
 			{/* Measured figures as tiles. */}
 			<section
 				aria-label="Measured results"
-				className="grid border-ink border-b sm:grid-cols-2 lg:grid-cols-4"
+				className="grid grid-cols-2 border-ink border-b lg:grid-cols-4"
 			>
 				{stats.map((item, index) => (
 					<Link
 						key={item.label}
 						href="/benchmarks/"
-						className={`flex min-h-56 flex-col justify-between gap-6 border-ink px-5 py-6 sm:px-8 ${index === 0 ? "bg-block" : ""} border-b sm:border-r lg:border-b-0`}
+						className={`flex min-h-40 flex-col justify-between gap-6 border-ink px-5 py-6 sm:min-h-56 sm:px-8 ${index === 0 ? "bg-block" : ""} ${index % 2 === 0 ? "border-r" : "lg:border-r"} ${index < 2 ? "border-b lg:border-b-0" : ""}`}
 					>
 						<RollingFigure
 							value={item.figure}
@@ -201,7 +201,7 @@ export default async function HomePage() {
 				))}
 				<Link
 					href="/api/#presets"
-					className="flex min-h-56 flex-col justify-between gap-6 px-5 py-6 sm:px-8"
+					className="flex min-h-40 flex-col justify-between gap-6 px-5 py-6 sm:min-h-56 sm:px-8"
 				>
 					<RollingFigure
 						value={30}
@@ -233,7 +233,7 @@ export default async function HomePage() {
 						<ServerCodeBlock code={usage} lang="ts" />
 					</div>
 					<div className="min-w-0">
-						<LiveResult />
+						<LiveResult className="h-full" />
 					</div>
 				</div>
 			</section>
@@ -338,6 +338,18 @@ export default async function HomePage() {
 					</Link>
 					<Link href="/benchmarks/" className="py-1.5 hover:underline">
 						Benchmarks
+					</Link>
+					<Link
+						href="/guides/troubleshooting/"
+						className="py-1.5 hover:underline"
+					>
+						Troubleshooting
+					</Link>
+					<Link
+						href="/guides/link-preview-library-comparison/"
+						className="py-1.5 hover:underline"
+					>
+						Compare libraries
 					</Link>
 					<Link href="/security/" className="py-1.5 hover:underline">
 						Security

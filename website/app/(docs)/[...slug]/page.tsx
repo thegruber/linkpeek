@@ -21,8 +21,6 @@ import {
 } from "@/lib/shared";
 import { pagePath, source } from "@/lib/source";
 
-const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
-
 interface Props {
 	params: Promise<{ slug: string[] }>;
 }
@@ -53,10 +51,8 @@ export default async function Page({ params }: Props) {
 			<DocsDescription className="mb-0">
 				{page.data.description}
 			</DocsDescription>
-			<div className="flex min-h-11 flex-row items-center gap-2 border-ink border-b pb-6">
-				<MarkdownCopyButton
-					markdownUrl={`${basePath}${pagePath(page)}index.md`}
-				/>
+			<div className="page-actions flex min-h-11 flex-row items-center gap-2 border-ink border-b pb-6">
+				<MarkdownCopyButton markdownUrl={`${pagePath(page)}index.md`} />
 				<ViewOptionsPopover
 					markdownUrl={`${url}index.md`}
 					githubUrl={`${repository}/blob/main/website/content/docs/${page.path}`}

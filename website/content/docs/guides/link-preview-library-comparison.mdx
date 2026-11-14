@@ -1,5 +1,5 @@
 ---
-title: "Library comparison"
+title: "All libraries"
 metaTitle: "TypeScript link preview library comparison"
 description: "Compare linkpeek with link-preview-js, open-graph-scraper, metascraper, unfurl.js, and url-metadata by use case, API shape, security, and footprint."
 heading: "Compare preview libraries"
@@ -9,7 +9,7 @@ linkpeek is a focused choice for server-side preview cards with typed output and
 
 Comparing two specific packages? [linkpeek vs link-preview-js](/guides/link-preview-js-alternative/) and [linkpeek vs open-graph-scraper](/guides/open-graph-scraper-alternative/) put the measured numbers side by side and show the migration code.
 
-## Supported features [#fit]
+## Good fit [#fit]
 
 | Package | Good fit | Tradeoff versus linkpeek |
 | --- | --- | --- |
@@ -24,11 +24,7 @@ This is a fit comparison, not a universal ranking. Verify the linked dated evide
 
 ## Speed and install size [#speed]
 
-Measured on
-
-<BenchmarkDate />
-
- with the same pages and a local server, so the numbers show library overhead rather than network latency. On small pages the packages are within about two milliseconds of each other; the [benchmarks](/benchmarks/) include those results and the method.
+Measured on <BenchmarkDate /> with the same pages and a local server, so the numbers show library overhead rather than network latency. On small pages the packages are within about two milliseconds of each other; the [benchmarks](/benchmarks/) include those results and the method.
 
 <BenchmarkChart kind="large" />
 
@@ -40,7 +36,7 @@ The packages expose similar concepts through different keys. In the benchmarked 
 
 | Package | Typical title access | Fetch ownership |
 | --- | --- | --- |
-| linkpeek | `result.title` | `preview()` fetches; `parseHTML()` parses existing HTML |
+| `linkpeek` | `result.title` | `preview()` fetches; `parseHTML()` parses existing HTML |
 | `link-preview-js` | `result.title` | URL and content APIs |
 | `open-graph-scraper` | `response.result.ogTitle` | Main package fetches |
 | `metascraper` | `result.title` | Your application supplies HTML |
@@ -89,7 +85,7 @@ const card = {
 
 - Discovered oEmbed endpoints are returned in `oEmbedUrl` but are not fetched.
 
-- The default preset scans the head with a 30 KB ceiling. Use `presets.quality` when body JSON-LD or body-image fallback is worth more work.
+- The default preset scans the head with a 30 kB ceiling. Use `presets.quality` when body JSON-LD or body-image fallback is worth more work.
 
 - Keep preview fetching on the server; browser CORS and untrusted outbound requests make this a poor client-side boundary.
 
@@ -97,4 +93,11 @@ const card = {
 
 Same-corpus latency, package footprint, competitor versions, known runtime constraints, security sources, and reproduction commands live in the dated comparison notes; refresh that evidence before quoting it later.
 
-[Install linkpeek from npm](https://www.npmjs.com/package/linkpeek), read the [detailed comparison](https://github.com/thegruber/linkpeek/blob/main/docs/comparison.md), or start with the [quick start](/quick-start/).
+<Related
+	items={[
+		["Benchmarks", "/benchmarks/"],
+		["Quick start", "/quick-start/"],
+		["Security model", "/security/"],
+		["Detailed comparison notes", "https://github.com/thegruber/linkpeek/blob/main/docs/comparison.md"],
+	]}
+/>

@@ -38,7 +38,7 @@ Run `preview()` on a server or edge endpoint. Missing metadata returns `null`. H
 
 The [API reference](/api/) lists all options, result fields and error codes.
 
-## Parsing existing HTML [#try-title]
+## Parsing existing HTML [#parse-html]
 
 Use `parseHTML(html, baseUrl)` when you already have the HTML. It runs synchronously without network requests. See the [Open Graph parser guide](/guides/open-graph-parser/) for examples and an optional [interactive parser](/guides/open-graph-parser/#try-title).
 
@@ -77,3 +77,11 @@ On small pages the packages are within about two milliseconds of each other, and
 linkpeek validates redirect targets and blocks literal private and non-global addresses by default. The runtime’s `fetch` resolves hostnames; public endpoints also need outbound network controls. Never forward caller credentials to arbitrary URLs. Read the [security model](/security/) before exposing an endpoint.
 
 linkpeek does not execute page JavaScript, extract full articles or fetch oEmbed payloads. See [troubleshooting](/guides/troubleshooting/) for missing metadata and HTTP errors, or the [library comparison](/guides/link-preview-library-comparison/) for other use cases.
+
+<Related
+	items={[
+		["API reference", "/api/"],
+		["Security model", "/security/"],
+		["Troubleshooting", "/guides/troubleshooting/"],
+	]}
+/>

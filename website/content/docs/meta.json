@@ -1,13 +1,18 @@
 {
 	"pages": [
-		"---Reference---",
+		"---Get started---",
 		"quick-start",
 		"api",
 		"security",
-		"---Integrations---",
+		"---Use it with---",
 		"...integrations",
 		"---Guides---",
-		"...guides",
-		"benchmarks"
+		"guides/open-graph-parser",
+		"guides/troubleshooting",
+		"---Compare---",
+		"benchmarks",
+		"guides/link-preview-library-comparison",
+		"guides/link-preview-js-alternative",
+		"guides/open-graph-scraper-alternative"
 	]
 }

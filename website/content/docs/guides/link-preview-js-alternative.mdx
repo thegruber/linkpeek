@@ -50,3 +50,11 @@ const card = {
 linkpeek resolves HTTP error pages with their metadata and a `statusCode` instead of throwing, so check `result.statusCode < 400` before caching. Errors you should branch on carry a `code` such as `PRIVATE_NETWORK_BLOCKED` or `TIMEOUT`; the [API reference](/api/) lists them.
 
 For a public preview endpoint on Node.js, pair linkpeek with outbound network rules, as the [security model](/security/) explains.
+
+<Related
+	items={[
+		["Benchmarks", "/benchmarks/"],
+		["All libraries", "/guides/link-preview-library-comparison/"],
+		["vs open-graph-scraper", "/guides/open-graph-scraper-alternative/"],
+	]}
+/>

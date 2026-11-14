@@ -26,7 +26,14 @@ const ROTATE_MS = 3600;
  * the visitor touches it; any URL they enter goes to the rate-limited demo
  * endpoint.
  */
-export function HeroDemo({ examples }: { examples: ShowcaseCard[] }) {
+export function HeroDemo({
+	examples,
+	capturedLabel,
+}: {
+	examples: ShowcaseCard[];
+	/** When the examples were captured, i.e. when the site was built. */
+	capturedLabel: string;
+}) {
 	const [state, setState] = useState<State>(
 		examples.length
 			? { kind: "example", index: 0 }
@@ -126,7 +133,7 @@ export function HeroDemo({ examples }: { examples: ShowcaseCard[] }) {
 			: state.kind === "error"
 				? state.message
 				: state.kind === "result"
-					? `Fetched and parsed in ${state.ms} ms`
+					? `Live: fetched and parsed just now in ${state.ms} ms`
 					: example
 						? `Read ${kb(example.headBytes)} of ${kb(example.pageBytes)}, then stopped`
 						: "";
@@ -158,13 +165,14 @@ export function HeroDemo({ examples }: { examples: ShowcaseCard[] }) {
 					autoComplete="url"
 					spellCheck={false}
 					maxLength={2048}
-					placeholder="Paste any URL"
+					placeholder="Paste any URL to preview it live"
 					value={shownUrl}
-					onFocus={() => {
+					onFocus={(event) => {
 						touched.current = true;
+						event.currentTarget.select();
 					}}
 					onChange={(event) => setInput(event.target.value)}
-					className="min-h-14 min-w-0 flex-1 bg-transparent px-4 font-mono text-[0.95rem] outline-none placeholder:text-fd-muted-foreground focus-visible:bg-fd-card"
+					className="min-h-14 min-w-0 flex-1 bg-transparent px-4 font-mono text-[0.95rem] placeholder:text-fd-muted-foreground focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ink"
 				/>
 				<button
 					type="submit"
@@ -260,7 +268,7 @@ export function HeroDemo({ examples }: { examples: ShowcaseCard[] }) {
 				{state.kind === "example" && (
 					<>
 						<span className="hidden sm:inline">
-							example {state.index + 1}/{examples.length}, built with linkpeek
+							snapshot {state.index + 1}/{examples.length} · {capturedLabel}
 						</span>
 						{/* Time until the next example; it stops once the visitor takes over. */}
 						<span

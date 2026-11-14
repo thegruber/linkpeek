@@ -50,6 +50,13 @@ const replacements: [RegExp, (...groups: string[]) => string][] = [
 	],
 	[/<(ParserDemo|LiveResult) \/>\n*/g, () => ""],
 	[
+		/<Related\s+items=\{\[([\s\S]*?)\]\}\s*\/>/g,
+		(_, body: string) =>
+			`Related: ${[...body.matchAll(/\[\s*"([^"]+)"\s*,\s*"([^"]+)"/g)]
+				.map(([, label, href]) => `[${label}](${href})`)
+				.join(" · ")}`,
+	],
+	[
 		/```package-install\n(.+)\n```/g,
 		(_, name) => `\`\`\`bash\nnpm install ${name}\n\`\`\``,
 	],

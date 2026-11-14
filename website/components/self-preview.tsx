@@ -71,10 +71,12 @@ function useLivePreview() {
 }
 
 /** The same live result as JSON, next to the code that produces it. */
-export function LiveResult() {
+export function LiveResult({ className = "" }: { className?: string }) {
 	const { fields } = useLivePreview();
 	return (
-		<pre className="m-0 h-full whitespace-pre-wrap break-all border border-rule bg-fd-card p-5 font-mono text-[0.8rem] leading-relaxed">
+		<pre
+			className={`not-prose m-0 whitespace-pre-wrap [overflow-wrap:anywhere] border border-ink bg-fd-card p-5 font-mono text-[0.8rem] leading-relaxed ${className}`}
+		>
 			<code>{JSON.stringify(fields, null, 2)}</code>
 		</pre>
 	);

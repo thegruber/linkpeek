@@ -1,9 +1,3 @@
 {
-	"pages": [
-		"open-graph-parser",
-		"link-preview-library-comparison",
-		"link-preview-js-alternative",
-		"open-graph-scraper-alternative",
-		"troubleshooting"
-	]
+	"pages": ["open-graph-parser", "troubleshooting"]
 }

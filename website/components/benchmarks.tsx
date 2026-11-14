@@ -21,7 +21,7 @@ export function BenchmarkChart({ kind }: { kind: ChartKind }) {
 	const ceiling = Math.max(...rows.map((row) => row.value));
 	return (
 		<Reveal className="not-prose my-6">
-			<figure className="m-0 border border-rule bg-fd-background">
+			<figure className="m-0 border border-ink bg-fd-background">
 				<figcaption className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-rule border-b px-5 py-4">
 					<strong className="font-medium text-[0.95rem] text-fd-foreground tracking-tight">
 						{title}
@@ -32,7 +32,7 @@ export function BenchmarkChart({ kind }: { kind: ChartKind }) {
 				</figcaption>
 				<table className="figures w-full table-fixed border-collapse text-sm">
 					<colgroup>
-						<col className="w-[8rem] sm:w-[14rem]" />
+						<col className="w-[7.5rem] sm:w-[14rem]" />
 						<col />
 					</colgroup>
 					<thead className="sr-only">
@@ -51,14 +51,21 @@ export function BenchmarkChart({ kind }: { kind: ChartKind }) {
 								>
 									<th
 										scope="row"
-										className={`truncate border-rule border-r px-5 py-2.5 text-left font-normal ${self ? "font-medium text-fd-foreground" : "text-fd-muted-foreground"}`}
+										className={`border-rule border-r px-3 py-2.5 leading-tight [overflow-wrap:anywhere] sm:px-5 text-left font-normal ${self ? "font-medium text-fd-foreground" : "text-fd-muted-foreground"}`}
 									>
 										{row.name}{" "}
 										<span className="hidden font-mono text-[0.7rem] sm:inline">
 											{row.version}
 										</span>
 									</th>
-									<td className="px-4 py-2.5">
+									<td
+										className="px-3 py-2.5 sm:px-4 sm:[--reserve:10.5rem]!"
+										style={
+											{
+												"--reserve": `${Math.max(...rows.map((r) => r.label.length)) * 0.5 + 1}rem`,
+											} as React.CSSProperties
+										}
+									>
 										<div className="flex items-center gap-3">
 											<span
 												aria-hidden="true"
@@ -66,7 +73,7 @@ export function BenchmarkChart({ kind }: { kind: ChartKind }) {
 												style={
 													{
 														"--i": index,
-														width: `max(2px, calc((100% - 10.5rem) * ${(row.value / ceiling).toFixed(4)}))`,
+														width: `max(2px, calc((100% - var(--reserve)) * ${(row.value / ceiling).toFixed(4)}))`,
 													} as React.CSSProperties
 												}
 											/>
@@ -89,11 +96,11 @@ export function BenchmarkChart({ kind }: { kind: ChartKind }) {
 
 export function BenchmarkHighlights() {
 	return (
-		<dl className="not-prose my-6 grid border-rule border-t border-l sm:grid-cols-3">
+		<dl className="not-prose my-6 grid border-ink border-t border-l sm:grid-cols-3">
 			{highlights().map((item) => (
 				<div
 					key={item.label}
-					className="flex flex-col-reverse justify-end border-rule border-r border-b px-5 py-5"
+					className="flex flex-col-reverse justify-end border-ink border-r border-b px-5 py-5"
 				>
 					<dt className="mt-2 text-fd-muted-foreground text-sm">
 						{item.label}
@@ -110,7 +117,7 @@ export function BenchmarkHighlights() {
 export function VersusTable({ other }: { other: string }) {
 	const rows = versus(other);
 	return (
-		<div className="not-prose my-6 overflow-x-auto border border-rule">
+		<div className="not-prose my-6 overflow-x-auto border border-ink">
 			<table className="figures w-full border-collapse text-sm">
 				<caption className="border-rule border-b px-4 py-3 text-left font-mono text-fd-muted-foreground text-xs">
 					Same corpus, same local server, measured on {benchmarkDate}
@@ -119,14 +126,20 @@ export function VersusTable({ other }: { other: string }) {
 					<tr className="border-rule border-b text-left">
 						<th
 							scope="col"
-							className="px-4 py-2.5 font-normal text-fd-muted-foreground"
+							className="px-4 py-2.5 font-mono text-[0.7rem] uppercase tracking-[0.06em] font-normal text-fd-muted-foreground"
 						>
 							Metric
 						</th>
-						<th scope="col" className="px-4 py-2.5 font-medium">
+						<th
+							scope="col"
+							className="px-4 py-2.5 font-mono text-[0.7rem] uppercase tracking-[0.06em] font-medium"
+						>
 							linkpeek {versionOf(SELF)}
 						</th>
-						<th scope="col" className="px-4 py-2.5 font-normal">
+						<th
+							scope="col"
+							className="px-4 py-2.5 font-mono text-[0.7rem] uppercase tracking-[0.06em] font-normal"
+						>
 							{other} {versionOf(other)}
 						</th>
 					</tr>

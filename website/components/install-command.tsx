@@ -13,7 +13,7 @@ export function InstallCommand({
 	const signal = tone === "dark";
 	return (
 		<div
-			className={`flex w-full items-stretch border font-mono text-sm ${signal ? "border-white/40 text-white" : tone === "block" ? "border-ink bg-white" : "border-rule bg-fd-background"}`}
+			className={`flex w-full min-w-0 items-stretch border font-mono text-sm ${signal ? "border-white/40 text-white" : tone === "block" ? "border-ink bg-white" : "border-rule bg-fd-background"}`}
 		>
 			<span
 				aria-hidden="true"
@@ -21,7 +21,7 @@ export function InstallCommand({
 			>
 				$
 			</span>
-			<code className="flex flex-1 items-center truncate px-3 py-3">
+			<code className="flex min-w-0 flex-1 items-center px-3 py-3 [overflow-wrap:anywhere] xl:whitespace-nowrap">
 				{command}
 			</code>
 			<button

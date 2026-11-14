@@ -74,14 +74,14 @@ export function ParserDemo() {
 					rows={9}
 					value={html}
 					onChange={(event) => setHtml(event.target.value)}
-					className="w-full resize-y rounded-xl border bg-fd-card p-4 font-mono text-[0.8rem] leading-relaxed outline-none focus-visible:border-signal focus-visible:ring-2 focus-visible:ring-signal-wash"
+					className="w-full resize-y border border-ink bg-fd-background p-4 font-mono text-[0.8rem] leading-relaxed outline-none focus-visible:outline-2 focus-visible:outline-mark"
 				/>
 				<label className="flex min-h-11 items-center gap-2 text-sm">
 					<input
 						type="checkbox"
 						checked={includeBody}
 						onChange={(event) => setIncludeBody(event.target.checked)}
-						className="size-4 accent-signal"
+						className="size-4 rounded-none accent-[#ff5b1f]"
 					/>
 					Include body JSON-LD and image fallback
 				</label>
@@ -97,7 +97,7 @@ export function ParserDemo() {
 						{status}
 					</span>
 				</p>
-				<pre className="overflow-x-auto rounded-xl border bg-fd-card p-4 font-mono text-[0.8rem] leading-relaxed">
+				<pre className="whitespace-pre-wrap [overflow-wrap:anywhere] border border-ink bg-fd-background p-4 font-mono text-[0.8rem] leading-relaxed">
 					<code>{output}</code>
 				</pre>
 				<p className="text-fd-muted-foreground text-xs">

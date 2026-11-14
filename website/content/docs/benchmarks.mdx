@@ -17,7 +17,7 @@ Each package previews the same 500 kB page whose metadata sits in the `<head>`. 
 
 ## Small pages [#small-pages]
 
-On small pages the differences are a fraction of a millisecond and real network latency dominates. `unfurl.js` was faster than linkpeek on every small fixture in this run.
+On small pages the packages are within about two milliseconds of each other, and real network latency dominates. `unfurl.js` was faster than linkpeek on every small fixture in this run.
 
 <BenchmarkChart kind="small" />
 
@@ -65,3 +65,11 @@ npm run bench -- --json
 ```
 
 The competitive lockfile pins every compared version, and every timed preview must extract the expected title. Live benchmarks are network smoke tests, not competitive evidence.
+
+<Related
+	items={[
+		["All libraries", "/guides/link-preview-library-comparison/"],
+		["vs link-preview-js", "/guides/link-preview-js-alternative/"],
+		["vs open-graph-scraper", "/guides/open-graph-scraper-alternative/"],
+	]}
+/>

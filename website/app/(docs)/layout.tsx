@@ -11,6 +11,7 @@ export default function Layout({ children }: { children: ReactNode }) {
 			{...baseOptions({ docs: true })}
 			nav={{ enabled: false }}
 			sidebar={{ collapsible: false }}
+			searchToggle={{ enabled: false }}
 			slots={{ container: DocsContainer }}
 		>
 			{children}

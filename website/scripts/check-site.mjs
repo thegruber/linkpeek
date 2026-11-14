@@ -124,6 +124,8 @@ for (const file of pages) {
 	)
 		fail("sitemap.xml", `does not list ${file}`);
 }
+const full = readFileSync(join(out, "llms-full.txt"), "utf8");
+if (/^Related:\s*$/m.test(full)) fail("llms-full.txt", "empty Related line");
 const llms = readFileSync(join(out, "llms.txt"), "utf8");
 for (const link of llms.matchAll(/\]\((https?:[^)]+)\)/g)) {
 	const path = target(link[1]);

@@ -18,7 +18,7 @@ export default function NotFound() {
 					<p className="font-mono text-[0.72rem] uppercase tracking-[0.06em]">
 						HTTP 404
 					</p>
-					<h1 className="font-normal text-[clamp(2.5rem,5vw,4.5rem)] leading-[0.95] tracking-[-0.045em]">
+					<h1 className="text-balance font-normal text-[clamp(2.5rem,5vw,4.5rem)] leading-[0.95] tracking-[-0.045em]">
 						Nothing to peek at here.
 					</h1>
 				</div>

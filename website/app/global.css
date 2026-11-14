@@ -160,33 +160,6 @@ body {
 	transform: scale(0.97);
 }
 
-/* Showcase strip: one slow, linear loop that pauses on hover. */
-@media (prefers-reduced-motion: no-preference) {
-	.marquee-track {
-		animation: marquee 70s linear infinite;
-	}
-	.marquee:focus-within .marquee-track {
-		animation-play-state: paused;
-	}
-}
-@media (prefers-reduced-motion: no-preference) and (hover: hover) and (
-		pointer: fine
-	) {
-	.marquee:hover .marquee-track {
-		animation-play-state: paused;
-	}
-}
-@media (prefers-reduced-motion: reduce) {
-	.marquee {
-		overflow-x: auto;
-	}
-}
-@keyframes marquee {
-	to {
-		transform: translateX(-50%);
-	}
-}
-
 @keyframes bar-grow {
 	from {
 		transform: scaleX(0);
@@ -274,19 +247,23 @@ body {
  * Docs pages: the same spec-sheet grid as the homepage. Charcoal rules,
  * small uppercase mono labels, orange only for the current place.
  */
-#nd-sidebar > div {
+#nd-sidebar {
 	border-color: var(--color-ink);
 	background: var(--color-paper);
+}
+#nd-sidebar-mobile {
+	box-shadow: none;
+	border-color: var(--color-ink);
 }
 #nd-toc {
 	border-inline-start: 1px solid var(--color-ink);
 	padding-inline-start: 1.5rem;
 }
-#nd-sidebar a[data-active] {
+:is(#nd-sidebar, #nd-sidebar-mobile) a[data-active] {
 	min-height: 40px;
 	border-radius: 0;
 }
-#nd-sidebar a[data-active="true"] {
+:is(#nd-sidebar, #nd-sidebar-mobile) a[data-active="true"] {
 	background: var(--color-block);
 	color: var(--color-ink);
 	box-shadow: inset 2px 0 var(--color-mark);
@@ -323,6 +300,9 @@ body {
 	text-underline-offset: 4px;
 }
 .prose table:not(:where(.not-prose *)) {
+	border: 1px solid var(--color-ink);
+}
+.prose table:has(th:nth-child(3)):not(:where(.not-prose *)) {
 	min-width: 36rem;
 	border: 1px solid var(--color-ink);
 }
@@ -349,4 +329,84 @@ figure.shiki {
 #nd-page h1 {
 	font-weight: 450;
 	letter-spacing: -0.04em;
+}
+.prose td {
+	vertical-align: top;
+}
+.prose td:first-child code {
+	white-space: nowrap;
+}
+figure.shiki > div:has(> button) {
+	background: var(--color-paper);
+	border: 1px solid var(--color-ink);
+	backdrop-filter: none;
+}
+div:has(> [role="tablist"]) {
+	border-color: var(--color-ink);
+	background: var(--color-paper);
+	border-radius: 0;
+}
+div:has(> [role="tablist"]) figure.shiki {
+	border-width: 1px;
+}
+/* Prev/next: two cells in the grid instead of two soft cards. */
+#nd-page > .\@container {
+	gap: 0;
+	border-top: 1px solid var(--color-ink);
+	border-left: 1px solid var(--color-ink);
+}
+#nd-page > .\@container > a {
+	border: 0;
+	border-right: 1px solid var(--color-ink);
+	border-bottom: 1px solid var(--color-ink);
+	border-radius: 0;
+	box-shadow: none;
+}
+#nd-page > .\@container > a:hover {
+	background: var(--color-block);
+}
+[data-toc-popover-content],
+#nd-tocnav {
+	box-shadow: none;
+	border-bottom: 1px solid var(--color-ink);
+}
+.page-actions > button,
+.page-actions [aria-haspopup] {
+	min-height: 2.75rem;
+	border: 1px solid var(--color-ink);
+	border-radius: 0;
+	background: var(--color-paper);
+	font: 500 0.7rem var(--font-mono);
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+.page-actions > button:hover,
+.page-actions [aria-haspopup]:hover {
+	background: var(--color-block);
+}
+#nd-sidebar a:empty {
+	display: none;
+}
+a[href="#nd-page"].sr-only:focus-visible {
+	position: fixed;
+	top: 0.5rem;
+	left: 0.5rem;
+	z-index: 60;
+	width: auto;
+	height: auto;
+	padding: 0.75rem 1rem;
+	clip: auto;
+	clip-path: none;
+	overflow: visible;
+	white-space: normal;
+	background: var(--color-ink);
+	color: #fff;
+}
+/* The header carries GitHub and npm on wide screens; the sidebar keeps them
+   only for the mobile drawer and narrower layouts. */
+@media (min-width: 80rem) {
+	#nd-sidebar a[href^="https://github.com/thegruber"],
+	#nd-sidebar a[href^="https://www.npmjs.com"] {
+		display: none;
+	}
 }

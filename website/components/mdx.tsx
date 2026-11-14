@@ -8,6 +8,7 @@ import {
 	VersusTable,
 } from "@/components/benchmarks";
 import { ParserDemo } from "@/components/parser-demo";
+import { Related } from "@/components/related";
 import { LiveResult } from "@/components/self-preview";
 
 export function getMDXComponents(components?: MDXComponents) {
@@ -19,6 +20,7 @@ export function getMDXComponents(components?: MDXComponents) {
 		BenchmarkMethod,
 		LiveResult,
 		ParserDemo,
+		Related,
 		VersusTable,
 		...components,
 	} satisfies MDXComponents;

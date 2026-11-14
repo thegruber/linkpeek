@@ -2,7 +2,7 @@
 import { useSearchContext } from "fumadocs-ui/contexts/search";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { Downloads } from "@/components/downloads";
 import { Mark } from "@/components/logo";
 import { npmUrl, repository } from "@/lib/shared";
@@ -24,7 +24,17 @@ export function SiteHeader({
 	menu?: ReactNode;
 }) {
 	const search = useSearchContext();
+	const [shortcut, setShortcut] = useState("Ctrl K");
+	useEffect(() => {
+		if (/Mac|iPhone|iPad/.test(navigator.userAgent)) setShortcut("⌘K");
+	}, []);
 	const pathname = usePathname();
+	const compareRoutes = [
+		"/benchmarks",
+		"/guides/link-preview-library-comparison",
+		"/guides/link-preview-js-alternative",
+		"/guides/open-graph-scraper-alternative",
+	];
 	const docsRoutes = [
 		"/quick-start",
 		"/api",
@@ -32,14 +42,15 @@ export function SiteHeader({
 		"/integrations",
 		"/guides",
 	];
+	const isCompare = compareRoutes.some((route) => pathname.startsWith(route));
 	const section = (href: string) => {
 		if (href === "/quick-start/") {
 			return (
-				docsRoutes.some((route) => pathname.startsWith(route)) &&
-				!pathname.startsWith("/guides/link-preview-library-comparison")
+				!isCompare && docsRoutes.some((route) => pathname.startsWith(route))
 			);
 		}
-		return pathname.startsWith(href.replace(/\/$/, ""));
+		if (href === "/benchmarks/") return pathname.startsWith("/benchmarks");
+		return isCompare && !pathname.startsWith("/benchmarks");
 	};
 	const action = (
 		<Link
@@ -62,7 +73,7 @@ export function SiteHeader({
 	);
 
 	return (
-		<header className="sticky top-0 z-40 grid h-14 grid-cols-[3.5rem_1fr_auto_auto] border-ink border-b bg-fd-background sm:grid-cols-[3.5rem_minmax(0,1fr)_minmax(0,1fr)_auto_auto] lg:grid-cols-[3.5rem_minmax(0,1fr)_minmax(0,1fr)_auto]">
+		<header className="sticky top-0 z-40 grid h-14 grid-cols-[3.5rem_1fr_auto_auto] border-ink border-b bg-fd-background sm:grid-cols-[3.5rem_minmax(0,1fr)_minmax(0,1fr)_auto_auto] xl:grid-cols-[3.5rem_minmax(0,1fr)_minmax(0,1fr)_auto]">
 			<Link
 				href="/"
 				aria-label="linkpeek home"
@@ -101,13 +112,13 @@ export function SiteHeader({
 				))}
 				<a
 					href={repository}
-					className="hidden whitespace-nowrap hover:underline hover:underline-offset-4 md:inline"
+					className="hidden whitespace-nowrap hover:underline hover:underline-offset-4 xl:inline"
 				>
 					GitHub
 				</a>
 				<a
 					href={npmUrl}
-					className="hidden whitespace-nowrap hover:underline hover:underline-offset-4 md:inline"
+					className="hidden whitespace-nowrap hover:underline hover:underline-offset-4 xl:inline"
 				>
 					npm
 				</a>
@@ -115,9 +126,9 @@ export function SiteHeader({
 					<button
 						type="button"
 						onClick={() => search.setOpenSearch(true)}
-						className="ml-auto hidden items-center gap-2 font-mono text-fd-muted-foreground text-xs hover:text-fd-foreground lg:flex"
+						className="ml-auto hidden items-center gap-2 font-mono text-fd-muted-foreground text-xs hover:text-fd-foreground xl:flex"
 					>
-						Search <kbd className="border border-rule px-1.5">⌘K</kbd>
+						Search <kbd className="border border-rule px-1.5">{shortcut}</kbd>
 					</button>
 				)}
 			</nav>
@@ -126,7 +137,7 @@ export function SiteHeader({
 					type="button"
 					aria-label="Search the docs"
 					onClick={() => search.setOpenSearch(true)}
-					className="grid w-14 place-items-center border-ink border-l lg:hidden"
+					className="grid w-14 place-items-center border-ink border-l xl:hidden"
 				>
 					<svg
 						viewBox="0 0 16 16"

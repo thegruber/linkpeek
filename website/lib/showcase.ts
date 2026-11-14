@@ -31,6 +31,15 @@ export interface ShowcaseCard {
 
 let cached: Promise<ShowcaseCard[]> | undefined;
 
+/** When the previews were captured: the time this site was built. */
+export const capturedAt = new Date();
+export const capturedLabel = new Intl.DateTimeFormat("en", {
+	day: "numeric",
+	month: "short",
+	year: "numeric",
+	timeZone: "UTC",
+}).format(capturedAt);
+
 export function showcase(): Promise<ShowcaseCard[]> {
 	cached ??= Promise.all(
 		SITES.map(async (url): Promise<ShowcaseCard | null> => {
