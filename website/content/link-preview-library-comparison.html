@@ -13,6 +13,11 @@
 		</tbody></table></div>
 		<p class="table-note">This is a fit comparison, not a universal ranking. Verify the linked dated evidence before using it in an architectural decision.</p>
 
+		<h2 id="speed">Speed and install size</h2>
+		<p>Measured on {{benchmark:date}} with the same pages and a local server, so the numbers show library overhead rather than network latency. On small pages the packages are within about two milliseconds of each other; the <a href="{{base}}benchmarks/">benchmarks</a> include those results and the method.</p>
+		{{benchmark:large}}
+		{{benchmark:install}}
+
 		<h2 id="shape">Result fields</h2>
 		<p>The packages expose similar concepts through different keys. In the benchmarked APIs, title access commonly looks like this:</p>
 		<div class="table-wrap"><table><thead><tr><th>Package</th><th>Typical title access</th><th>Fetch ownership</th></tr></thead><tbody>

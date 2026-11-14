@@ -22,11 +22,7 @@ export function benchmarkContent(data) {
 	const smallRange = `${formatKB(Math.min(...small.map((f) => f.bytes)))}–${formatKB(Math.max(...small.map((f) => f.bytes)))}`;
 	return {
 		"benchmark:date": formatDate(data.date),
-		"benchmark:summary": `<dl class="stat-row">
-			<div><dt>${formatKB(large.bytes)} page, median</dt><dd>${formatMs(large.medianMs[SELF])}</dd></div>
-			<div><dt>Installed packages</dt><dd>${self.installedPackages}</dd></div>
-			<div><dt>Install size</dt><dd>${formatMiB(self.nodeModulesKiB)}</dd></div>
-		</dl>`,
+		"benchmark:summary": highlights(data, large),
 		"benchmark:large": barChart({
 			title: `${formatKB(large.bytes)} page with a normal head`,
 			subtitle:
@@ -77,6 +73,46 @@ export function benchmarkContent(data) {
 			)
 			.join(""),
 	};
+}
+
+// Headline ratios against the closest competitor. If linkpeek ever stops
+// leading a metric, the stat falls back to its absolute value instead of
+// printing a misleading ratio.
+function highlights(data, large) {
+	const others = (values) =>
+		Object.entries(values).filter(([name]) => name !== SELF);
+	const fastest = Math.min(...others(large.medianMs).map(([, value]) => value));
+	const own = large.medianMs[SELF];
+	const sizes = Object.fromEntries(
+		data.install.packages.map((entry) => [entry.name, entry.nodeModulesKiB]),
+	);
+	const smallest = Math.min(...others(sizes).map(([, value]) => value));
+	const page = `${formatKB(large.bytes)} page`;
+	const stats = [
+		own < fastest
+			? [
+					`${page}, vs the next-fastest package`,
+					`${formatRatio(fastest / own)} faster`,
+				]
+			: [`${page}, median`, formatMs(own)],
+		sizes[SELF] < smallest
+			? [
+					"Install size, vs the next-smallest package",
+					`${formatRatio(smallest / sizes[SELF])} smaller`,
+				]
+			: ["Install size", formatMiB(sizes[SELF])],
+		["Runtime dependencies", "1"],
+	];
+	return `<dl class="stat-row">${stats
+		.map(
+			([label, value]) =>
+				`<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`,
+		)
+		.join("")}</dl>`;
+}
+
+function formatRatio(ratio) {
+	return `${ratio < 10 ? ratio.toFixed(1) : Math.round(ratio)}×`;
 }
 
 function barChart({ title, subtitle, unit, rows, max }) {

@@ -1,24 +1,9 @@
 <article class="doc">
 	<h1>linkpeek</h1>
-	<p>A TypeScript link preview library that extracts Open Graph, Twitter Card and JSON-LD metadata from URLs.</p>
-
-	<section class="downloads" aria-labelledby="downloads" data-downloads="linkpeek">
-		<h2 id="downloads">npm downloads</h2>
-		<p class="downloads-note">Download requests from the <a href="https://www.npmjs.com/package/linkpeek">npm registry</a>, loaded live from the public npm downloads API. Requests are not unique users.</p>
-		<div data-markdown="skip">
-			<dl class="downloads-stats">
-				<div><dt>Last 7 days</dt><dd><span data-stat="week">–</span><small data-change></small></dd></div>
-				<div><dt>Last 30 days</dt><dd><span data-stat="month">–</span></dd></div>
-				<div><dt>Last 365 days</dt><dd><span data-stat="year">–</span></dd></div>
-			</dl>
-			<div class="downloads-chart" data-chart></div>
-			<p class="downloads-status" role="status" data-status>Loading download data…</p>
-			<details class="downloads-table" data-table>
-				<summary>Weekly data table</summary>
-				<div class="table-wrap"><table><thead><tr><th scope="col">Week</th><th scope="col">Downloads</th></tr></thead><tbody></tbody></table></div>
-			</details>
-		</div>
-	</section>
+	<p class="doc-lede">Fast, safe link previews for TypeScript. Turn a URL into its title, description, image and favicon from Open Graph, Twitter Card and JSON-LD metadata, on Node.js, Bun, Deno and edge runtimes.</p>
+	<p class="downloads" data-downloads="linkpeek" data-markdown="skip" hidden><a href="https://www.npmjs.com/package/linkpeek"><span class="downloads-spark" data-spark></span><span><strong data-week></strong> downloads last week</span><span class="downloads-total" data-total></span></a></p>
+	{{benchmark:summary}}
+	<p class="table-note">Measured on {{benchmark:date}} against five other link preview packages. See the <a href="{{base}}benchmarks/">benchmarks</a>.</p>
 
 	<h2 id="install">Installation</h2>
 	<pre><code>npm install linkpeek</code></pre>
@@ -50,9 +35,9 @@
 	<p>These limits apply to retained bytes, not total network traffic.</p>
 
 	<h2 id="performance">Performance</h2>
-	<p>Because the default preset stops reading after <code>&lt;/head&gt;</code>, large pages cost little more than small ones. Measured on {{benchmark:date}} against five other preview packages on a local server:</p>
+	<p>Most metadata lives in the <code>&lt;head&gt;</code>. The default preset stops reading there and cancels the rest of the response, so a large page costs about as much as a small one.</p>
 	{{benchmark:large}}
-	<p>On small pages the packages are within about two milliseconds of each other. See <a href="{{base}}benchmarks/">all benchmarks and the method</a>, including install size.</p>
+	<p>On small pages the packages are within about two milliseconds of each other, and network latency dominates. The <a href="{{base}}benchmarks/">benchmarks</a> cover small pages, install size and the method.</p>
 
 	<h2 id="integrations">Integration guides</h2>
 	<ul>

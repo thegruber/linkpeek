@@ -483,149 +483,50 @@ input[type="checkbox"] {
 	white-space: pre-wrap;
 	overflow-wrap: anywhere;
 }
-.downloads {
-	margin: 2rem 0 0.5rem;
-	padding: 1.25rem 1.25rem 0.75rem;
+.downloads a {
+	display: inline-flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.35rem 0.75rem;
+	padding: 0.4rem 0.85rem 0.4rem 0.5rem;
 	border: 1px solid var(--border);
-	border-radius: 10px;
+	border-radius: 999px;
 	background: var(--sidebar);
-}
-.doc .downloads h2 {
-	margin: 0;
-	font-size: 1rem;
-	font-weight: 600;
-}
-.doc .downloads-note {
-	margin: 0.25rem 0 1rem;
 	color: var(--muted);
 	font-size: 0.85rem;
-	max-width: none;
+	text-decoration: none;
+	font-variant-numeric: tabular-nums;
+	transition: border-color 150ms ease;
 }
-.downloads-stats {
-	display: grid;
-	grid-template-columns: repeat(3, minmax(0, 1fr));
-	gap: 1rem;
-	margin: 0 0 1rem;
+.downloads a:hover {
+	border-color: var(--chart);
 }
-.downloads-stats dt {
-	color: var(--muted);
-	font-size: 0.8rem;
-}
-.downloads-stats dd {
-	margin: 0.1rem 0 0;
-	font-size: 1.5rem;
+.downloads strong {
+	color: var(--text);
 	font-weight: 600;
-	letter-spacing: -0.02em;
-	font-variant-numeric: tabular-nums;
-	line-height: 1.3;
 }
-.downloads-stats small {
+.downloads-total::before {
+	content: "·";
+	margin-right: 0.75rem;
+}
+.downloads-spark svg {
 	display: block;
-	color: var(--muted);
-	font-size: 0.75rem;
-	font-weight: 400;
-	letter-spacing: 0;
+	width: 132px;
+	height: 32px;
 }
-.downloads-chart {
-	min-height: 220px;
-}
-.downloads[data-state="error"] .downloads-chart,
-.downloads[data-state="error"] .downloads-stats,
-.downloads[data-state="error"] .downloads-table,
-.downloads:not([data-state="ready"]) .downloads-table {
-	display: none;
-}
-.chart-surface {
-	position: relative;
-	border-radius: 6px;
-	touch-action: pan-y;
-}
-.chart-surface svg {
-	display: block;
-	overflow: visible;
-}
-.chart-grid,
-.chart-baseline {
-	stroke: var(--border);
-	stroke-width: 1;
-	opacity: 0.6;
-}
-.chart-baseline {
-	opacity: 1;
-}
-.chart-label {
-	fill: var(--muted);
-	font-size: 11px;
-	font-variant-numeric: tabular-nums;
-}
-.chart-area {
+.spark-area {
 	fill: var(--chart-wash);
 }
-.chart-line {
+.spark-line {
 	fill: none;
 	stroke: var(--chart);
-	stroke-width: 2;
+	stroke-width: 1.5;
 	stroke-linejoin: round;
 	stroke-linecap: round;
+	vector-effect: non-scaling-stroke;
 }
-.chart-dot {
+.spark-dot {
 	fill: var(--chart);
-	stroke: var(--sidebar);
-	stroke-width: 2;
-}
-.chart-crosshair {
-	stroke: var(--muted);
-	stroke-width: 1;
-}
-.chart-tooltip {
-	position: absolute;
-	top: 0;
-	left: 0;
-	display: grid;
-	padding: 0.4rem 0.65rem;
-	border: 1px solid var(--border);
-	border-radius: 6px;
-	background: var(--bg);
-	font-size: 0.75rem;
-	line-height: 1.4;
-	white-space: nowrap;
-	pointer-events: none;
-	box-shadow: 0 4px 16px rgb(0 0 0 / 0.35);
-}
-.chart-tooltip[hidden] {
-	display: none;
-}
-.chart-tooltip strong {
-	font-size: 0.9rem;
-	font-variant-numeric: tabular-nums;
-}
-.chart-tooltip span {
-	color: var(--muted);
-}
-.doc .downloads-status {
-	margin: 0.5rem 0 0;
-	color: var(--muted);
-	font-size: 0.8rem;
-	max-width: none;
-}
-.downloads-table summary {
-	min-height: 44px;
-	display: flex;
-	align-items: center;
-	color: var(--muted);
-	font-size: 0.8rem;
-}
-.downloads-table .table-wrap {
-	max-height: 280px;
-	overflow-y: auto;
-	margin-bottom: 0.75rem;
-}
-.downloads-table table {
-	font-size: 0.82rem;
-}
-.downloads-table th,
-.downloads-table td {
-	padding: 0.4rem 0.6rem;
 }
 .stat-row {
 	display: grid;
@@ -645,8 +546,20 @@ input[type="checkbox"] {
 	font-variant-numeric: tabular-nums;
 	line-height: 1.3;
 }
+.stat-row > div {
+	display: flex;
+	flex-direction: column-reverse;
+	justify-content: flex-end;
+}
 .doc > .stat-row {
-	margin: 1.5rem 0 0.5rem;
+	margin: 1.75rem 0 0.5rem;
+	padding: 1.1rem 1.25rem;
+	border: 1px solid var(--border);
+	border-radius: 10px;
+	background: var(--sidebar);
+}
+.doc > .stat-row + .table-note {
+	margin-top: 0.6rem;
 }
 .bar-chart {
 	margin: 1.25rem 0 1.75rem;
@@ -775,10 +688,10 @@ input[type="checkbox"] {
 		grid-template-columns: 1fr;
 		gap: 1rem;
 	}
-	.downloads {
-		padding: 1rem 0.875rem 0.5rem;
+	.stat-row {
+		grid-template-columns: 1fr;
+		gap: 0.75rem;
 	}
-	.downloads-stats dd,
 	.stat-row dd {
 		font-size: 1.2rem;
 	}
@@ -796,6 +709,17 @@ input[type="checkbox"] {
 	}
 	.site-footer {
 		padding: 1.5rem 1.25rem;
+	}
+}
+@media (max-width: 560px) {
+	.downloads-spark svg {
+		width: 72px;
+	}
+	.spark-dot {
+		display: none;
+	}
+	.downloads-total {
+		display: none;
 	}
 }
 @media (max-width: 440px) {
