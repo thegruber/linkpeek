@@ -50,7 +50,7 @@ export async function GET(
 			<div style={{ display: "flex", alignItems: "center", gap: 18 }}>
 				<svg width="56" height="56" viewBox="0 0 64 64" aria-hidden="true">
 					<rect width="64" height="64" fill="#232323" />
-					<rect y="45" width="64" height="19" fill="#3ddc84" />
+					<rect y="45" width="64" height="19" fill="#ff5b1f" />
 					<path
 						d="M8 45a11.5 11.5 0 0 1 23 0zM33 45a11.5 11.5 0 0 1 23 0z"
 						fill="#ffffff"
@@ -90,7 +90,7 @@ export async function GET(
 					) : (
 						<span style={{ display: "flex", flexWrap: "wrap" }}>
 							Turn any URL into a&nbsp;
-							<span style={{ background: "#3ddc84", padding: "0 10px" }}>
+							<span style={{ background: "#ff5b1f", padding: "0 10px" }}>
 								link preview
 							</span>
 							.
@@ -132,7 +132,7 @@ export async function GET(
 					right: 0,
 					bottom: 96,
 					height: 6,
-					background: "#3ddc84",
+					background: "#ff5b1f",
 				}}
 			/>
 			<div
@@ -150,7 +150,7 @@ export async function GET(
 				<span
 					style={{
 						color: "#232323",
-						background: "#3ddc84",
+						background: "#ff5b1f",
 						padding: "2px 8px",
 					}}
 				>

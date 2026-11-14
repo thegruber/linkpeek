@@ -25,7 +25,12 @@ export function SiteHeader({ version }: { version: string }) {
 				<Mark className="size-14" />
 			</Link>
 			<div className="hidden items-center gap-3 px-5 sm:flex">
-				<span className="font-medium tracking-[-0.03em]">linkpeek</span>
+				<span className="font-medium tracking-[-0.03em]">
+					<span className="underline decoration-[#ff5b1f] decoration-[0.14em] underline-offset-[0.18em]">
+						link
+					</span>
+					peek
+				</span>
 				<span className="font-mono text-fd-muted-foreground text-xs">
 					v{version}
 				</span>

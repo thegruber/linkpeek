@@ -29,8 +29,8 @@
 - `npm run build --prefix website` also runs `scripts/check-site.mjs` (one H1, canonical, social tags, JSON-LD, Markdown twins, links, sitemap). Keep it passing.
 
 ## Brand
-- The mark is two white eyes peeking over a mint `#3ddc84` band (the `<head>`) on a charcoal `#232323` square. Geometry lives in `website/lib/mark.json` and drives the logo, favicon and the giant dithered art. Brand files are in `assets/brand/`.
-- Light only, like a printed spec sheet (inspired by aspensearch.com, not copied): white paper, charcoal ink `#232323`, 1px charcoal rules cutting the page into rectangles, light grey `#d9d9d9` for big shapes, pale mint `#d9f7e6` blocks and mint `#3ddc84` as the only colour (it marks what linkpeek reads). Ordered-dither canvas art is the only texture. Geist for text, Geist Mono for small uppercase labels, code and data. Square corners.
+- The mark is two white eyes peeking over a signal-orange `#ff5b1f` band (the `<head>`) on a charcoal `#232323` square; in the wordmark "link" is underlined in the same orange, like a hyperlink. Orange is ours: blue is the category default and green belongs to the similarly named getlinkpeek.com. Geometry lives in `website/lib/mark.json` and drives the logo, favicon and the giant dithered art. Brand files are in `assets/brand/`.
+- Light only, like a printed spec sheet (inspired by aspensearch.com, not copied): white paper, charcoal ink `#232323`, 1px charcoal rules cutting the page into rectangles, light grey `#d9d9d9` for big shapes, pale orange `#ffe6dc` blocks and signal orange `#ff5b1f` as the only colour (it marks what linkpeek reads). Ordered-dither canvas art is the only texture. Geist for text, Geist Mono for small uppercase labels, code and data. Square corners.
 
 ## Demo preview endpoint
 - `demo-api/` is the Vercel project `gubastudio/linkpeek-playground` (`https://linkpeek-playground.vercel.app/api/preview`), used by the homepage's "try any URL" demo. It deploys from Git with root directory `demo-api` (production from `main`); builds are skipped when the last commit does not touch `demo-api/`.

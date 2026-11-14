@@ -8,8 +8,9 @@
 /*
  * linkpeek, light only, like a printed spec sheet: white paper, charcoal
  * ink, 1px charcoal rules that cut the page into rectangles, light grey for
- * large shapes, and one mint: pale for blocks, clear for what linkpeek reads
- * (the <head>, the band the eyes in the mark peek over). Ordered-dither art is the
+ * large shapes, and one signal orange: pale for blocks, full for what linkpeek
+ * reads (the <head>, the band the eyes in the mark peek over, the underline
+ * under "link" in the wordmark). Ordered-dither art is the
  * only texture. Square corners everywhere.
  */
 @theme {
@@ -37,22 +38,22 @@
 	--color-fd-primary-foreground: #ffffff;
 	--color-fd-secondary: #f2f2f1;
 	--color-fd-secondary-foreground: #232323;
-	--color-fd-accent: #d9f7e6;
+	--color-fd-accent: #ffe6dc;
 	--color-fd-accent-foreground: #232323;
 	--color-fd-ring: #232323;
 
 	--color-ink: #232323;
 	--color-paper: #ffffff;
 	--color-shape: #d9d9d9;
-	--color-block: #d9f7e6;
-	--color-mark: #3ddc84;
+	--color-block: #ffe6dc;
+	--color-mark: #ff5b1f;
 	--color-mark-ink: #232323;
 	--color-rule: #dcdcdc;
 	--color-bar: #d9d9d9;
 	--color-signal: #232323;
 	--color-signal-ink: #ffffff;
 	--color-signal-text: #232323;
-	--color-signal-wash: rgb(61 220 132 / 0.35);
+	--color-signal-wash: rgb(255 91 31 / 0.25);
 }
 
 html {
@@ -199,7 +200,7 @@ body {
 	}
 }
 
-/* Hero demo: a mint line fills until the next example. */
+/* Hero demo: an orange line fills until the next example. */
 .rotate-progress {
 	width: 0;
 }
