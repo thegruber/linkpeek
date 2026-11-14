@@ -29,7 +29,7 @@
 - `npm run build --prefix website` also runs `scripts/check-site.mjs` (one H1, canonical, social tags, JSON-LD, Markdown twins, links, sitemap). Keep it passing.
 
 ## Demo preview endpoint
-- `demo-api/` is the Vercel project `gubastudio/linkpeek-playground` (`https://linkpeek-playground.vercel.app/api/preview`), used by the homepage's "try any URL" demo. Deploy with `vercel deploy --prod` from `demo-api/`.
+- `demo-api/` is the Vercel project `gubastudio/linkpeek-playground` (`https://linkpeek-playground.vercel.app/api/preview`), used by the homepage's "try any URL" demo. It deploys from Git with root directory `demo-api` (production from `main`); builds are skipped when the last commit does not touch `demo-api/`.
 - Keep its defenses together: docs-origin allowlist, per-hop DNS check in `lib/guard.ts` (tested in `test/demo-api.test.ts`), 5 s timeout, metadata-only JSON, day-long edge cache, and the Vercel firewall rate limits (20/min and 200/h per IP on `/api/preview`).
 
 ## Design Rules
