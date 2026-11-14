@@ -1,0 +1,51 @@
+---
+title: "Next.js"
+metaTitle: "Link previews in Next.js"
+description: "Build a server-side link preview endpoint with linkpeek and the Next.js App Router."
+heading: "Link previews in Next.js"
+---
+
+Keep arbitrary outbound fetches in a Route Handler, validate caller input, and make failures local to the preview card.
+
+## Create the route handler [#route]
+
+```bash
+npm install linkpeek
+```
+
+```ts
+// app/api/preview/route.ts
+import { preview } from "linkpeek";
+import { type NextRequest, NextResponse } from "next/server";
+
+export async function GET(request: NextRequest) {
+	const url = request.nextUrl.searchParams.get("url");
+	if (!url) {
+		return NextResponse.json({ error: "Missing url" }, { status: 400 });
+	}
+
+	try {
+		const result = await preview(url);
+		return NextResponse.json(result, {
+			headers: {
+				"Cache-Control":
+					result.statusCode >= 200 && result.statusCode < 300 ? "public, s-maxage=3600" : "no-store",
+			},
+		});
+	} catch {
+		return NextResponse.json({ error: "Preview unavailable" }, { status: 422 });
+	}
+}
+```
+
+## Cache successful responses [#cache]
+
+The response cache prevents repeated network fetches from dominating render latency. Cache only successful previews, choose a TTL that fits your product, and consider request coalescing when many users share the same URL at once.
+
+**Do not forward** cookies, authorization headers, internal tokens, or caller-provided credentials to the target URL.
+
+## Render metadata as untrusted data [#render]
+
+React escapes text by default. Keep it that way. Allow images only from origins covered by your image policy, treat canonical and media URLs as untrusted links, and provide a hostname-only fallback card when extraction fails.
+
+[Install from npm](https://www.npmjs.com/package/linkpeek)[Complete example on GitHub](https://github.com/thegruber/linkpeek/tree/main/examples/nextjs-app-router)[API reference](/api/)

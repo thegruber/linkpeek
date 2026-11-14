@@ -1,0 +1,50 @@
+---
+title: "Security"
+metaTitle: "Link preview security and SSRF limits"
+description: "Understand linkpeek's redirect validation, private-address blocking, credential handling, and DNS-rebinding limits."
+heading: "Link preview security"
+---
+
+A public link-preview endpoint turns user input into outbound network traffic. linkpeek narrows that risk, but the runtime and deployment network remain part of the security boundary.
+
+## What is blocked by default [#model]
+
+- Non-HTTP(S) protocols and URLs with embedded credentials
+
+- localhost and literal private, link-local, multicast, documentation, and other non-global IP ranges
+
+- IPv4 embedded through mapped IPv6, NAT64, and 6to4 forms
+
+- Common credential-bearing custom request headers
+
+- Extracted media, canonical, and oEmbed URLs outside HTTP(S)
+
+## Redirect validation [#redirects]
+
+Platform fetch runs with `redirect: "manual"`. Each Location target is resolved and validated before another request starts. Custom headers are dropped when a redirect crosses origins.
+
+## Cookies and credentials [#credentials]
+
+Do not attach user cookies, authorization headers, cloud tokens, or internal service credentials to arbitrary preview URLs. linkpeek rejects common secret-bearing headers, but deployments should also keep the preview worker isolated from internal credentials.
+
+## DNS resolution and rebinding [#dns]
+
+**The runtime resolves hostnames.** Hostnames are not resolved and pinned by linkpeek. DNS rebinding protection therefore varies by runtime and network path.
+
+For hostile public input, add outbound firewall or platform egress policy so the worker cannot reach metadata services or internal networks even if DNS changes between validation and connection.
+
+## Production checklist [#checklist]
+
+- Keep `allowPrivateIPs` false.
+
+- Rate-limit public endpoints and cap concurrency.
+
+- Cache successful results; do not cache target errors.
+
+- Render all returned strings and URLs as untrusted input.
+
+- Require custom fetch implementations to honor manual redirects and abort signals.
+
+- Use network-level egress policy for high-risk deployments.
+
+[Full policy on GitHub](https://github.com/thegruber/linkpeek/blob/main/SECURITY.md)[Benchmarks](/benchmarks/)

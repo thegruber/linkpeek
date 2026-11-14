@@ -1,0 +1,112 @@
+{
+	"date": "2026-11-14",
+	"environment": {
+		"platform": "Linux x64, 2 vCPU Intel Xeon 2.20 GHz",
+		"node": "24.22.2",
+		"npm": "11.21.1"
+	},
+	"method": "Median of three runs. Each run reports the median end-to-end preview time per fixture from a local HTTP server in the same Node.js process, after 5 warmups. Every timed result must extract the expected title.",
+	"source": "benchmarks/competitive/bench.mjs",
+	"versions": {
+		"linkpeek": "2.1.7",
+		"unfurl.js": "6.4.0",
+		"link-preview-js": "6.0.0",
+		"open-graph-scraper": "6.13.0",
+		"url-metadata": "6.3.1",
+		"metascraper": "5.58.6"
+	},
+	"notes": {
+		"link-preview-js": "Measured as native fetch plus getPreviewFromContent(); its URL API rejects the private IP-literal benchmark host.",
+		"open-graph-scraper": "Measured as native fetch plus ogs({ html }); since 6.13.0 its URL API rejects non-public addresses with no opt-out.",
+		"metascraper": "Native fetch plus metascraper with 7 rule packages; metascraper does not fetch."
+	},
+	"fixtures": [
+		{
+			"fixture": "og-standard.html",
+			"bytes": 611,
+			"iterations": 150,
+			"medianMs": {
+				"unfurl.js": 1.02,
+				"linkpeek": 1.36,
+				"open-graph-scraper": 1.96,
+				"link-preview-js": 1.94,
+				"url-metadata": 2.96,
+				"metascraper": 3.33
+			}
+		},
+		{
+			"fixture": "all-fields.html",
+			"bytes": 2320,
+			"iterations": 150,
+			"medianMs": {
+				"unfurl.js": 0.78,
+				"linkpeek": 1.23,
+				"metascraper": 1.9,
+				"link-preview-js": 1.92,
+				"open-graph-scraper": 2,
+				"url-metadata": 3.08
+			}
+		},
+		{
+			"fixture": "recipe-blog.html",
+			"bytes": 724,
+			"iterations": 150,
+			"medianMs": {
+				"unfurl.js": 0.53,
+				"linkpeek": 0.71,
+				"link-preview-js": 1.23,
+				"open-graph-scraper": 1.58,
+				"url-metadata": 2.28,
+				"metascraper": 2.52
+			}
+		},
+		{
+			"fixture": "large-500kb.html",
+			"bytes": 500871,
+			"iterations": 40,
+			"medianMs": {
+				"linkpeek": 2.8,
+				"unfurl.js": 11.01,
+				"url-metadata": 47.61,
+				"metascraper": 59.82,
+				"link-preview-js": 51.73,
+				"open-graph-scraper": 384.28
+			}
+		}
+	],
+	"install": {
+		"note": "Clean npm install --ignore-scripts of the pinned published version; metascraper includes the same 7 rule packages.",
+		"packages": [
+			{
+				"name": "linkpeek",
+				"installedPackages": 7,
+				"nodeModulesKiB": 1360
+			},
+			{
+				"name": "unfurl.js",
+				"installedPackages": 16,
+				"nodeModulesKiB": 3236
+			},
+			{
+				"name": "link-preview-js",
+				"installedPackages": 18,
+				"nodeModulesKiB": 8108
+			},
+			{
+				"name": "open-graph-scraper",
+				"installedPackages": 27,
+				"nodeModulesKiB": 11316
+			},
+			{
+				"name": "url-metadata",
+				"installedPackages": 30,
+				"nodeModulesKiB": 10692
+			},
+			{
+				"name": "metascraper",
+				"installedPackages": 128,
+				"nodeModulesKiB": 83088
+			}
+		]
+	}
+}

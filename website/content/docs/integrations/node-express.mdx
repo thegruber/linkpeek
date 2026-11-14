@@ -1,0 +1,62 @@
+---
+title: "Node.js + Express"
+metaTitle: "Link preview API with Node.js and Express"
+description: "Build a link preview and URL metadata API with linkpeek, Node.js, and Express."
+heading: "Link previews in Express"
+---
+
+Keep URL fetching on the server, return typed metadata to the browser, and cache successful previews so repeated page views do not repeat outbound work.
+
+## Create the endpoint [#endpoint]
+
+```bash
+npm install express linkpeek
+```
+
+```ts
+import express from "express";
+import { preview } from "linkpeek";
+
+const app = express();
+
+app.get("/api/preview", async (request, response) => {
+	const url = request.query.url;
+	if (typeof url !== "string") {
+		response.status(400).json({ error: "Missing url" });
+		return;
+	}
+
+	try {
+		const result = await preview(url);
+		response
+			.set("Cache-Control", result.statusCode >= 200 && result.statusCode < 300
+				? "public, max-age=300"
+				: "no-store")
+			.json(result);
+	} catch {
+		response.status(422).json({ error: "Preview unavailable" });
+	}
+});
+```
+
+The endpoint accepts one URL and returns the stable `PreviewResult` shape used by a client-side preview card.
+
+## Cache successful responses [#cache]
+
+The response header helps browsers and shared proxies, but a server-side cache avoids the outbound fetch even when clients miss. Normalize equivalent URLs into one key, coalesce concurrent misses, choose a product-appropriate TTL, and cache only when `statusCode` is between 200 and 299.
+
+**Keep errors local.** A failed metadata request should produce a hostname-only fallback card rather than block the parent page or message.
+
+## Protect a public preview route [#production]
+
+- Add authentication or rate limiting before accepting public traffic.
+
+- Keep `allowPrivateIPs` disabled for untrusted input.
+
+- Never forward caller cookies, authorization headers, or internal tokens.
+
+- Treat returned titles, descriptions, images, and links as untrusted data.
+
+- Use infrastructure egress rules when the endpoint faces hostile traffic.
+
+[Install from npm](https://www.npmjs.com/package/linkpeek)[Complete example on GitHub](https://github.com/thegruber/linkpeek/tree/main/examples/express-api)[Security model](/security/)

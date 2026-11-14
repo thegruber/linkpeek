@@ -4,12 +4,7 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/docs.yml"
-      - "assets/preview.png"
-      - "package-lock.json"
       - "package.json"
-      - "scripts/build-docs.mjs"
-      - "scripts/docs-content.mjs"
-      - "src/**"
       - "website/**"
   workflow_dispatch:
 
@@ -31,13 +26,14 @@ jobs:
         with:
           node-version: 24
           cache: npm
+          cache-dependency-path: website/package-lock.json
       - run: npm install --global npm@11.21.1
-      - run: npm ci
-      - run: npm run docs:build
+      - run: npm ci --prefix website
+      - run: npm run build --prefix website
       - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
-          path: website/dist
+          path: website/out
 
   deploy:
     environment:

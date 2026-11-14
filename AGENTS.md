@@ -12,6 +12,7 @@
 - Benchmark: `npm run benchmark`
 - Live benchmark: `npm run benchmark:live`
 - Full local gate: `npm run quality`
+- Docs site: `npm ci --prefix website`, then `npm run docs:dev` or `npm run docs:build`
 
 ## Architecture
 - `src/types.ts`: public TypeScript interfaces
@@ -20,6 +21,12 @@
 - `src/parse.ts`: SAX parser using `htmlparser2` (entities are decoded exactly once, by htmlparser2; never re-decode its output)
 - `src/fetch.ts`: streaming fetch, byte limit, redirect validation, SSRF host checks, charset detection
 - `src/index.ts`: public API (`preview`, `parseHTML`, `presets`, `validateUrl`, `isPrivateHost`, `LinkpeekError`)
+
+## Documentation site
+- `website/` is a separate private Next.js + Fumadocs package with its own lockfile, exported statically to GitHub Pages under `/linkpeek/`. It never adds dependencies to the published package.
+- Pages are MDX in `website/content/docs`; sidebar order lives in the `meta.json` files. Keep existing routes and their trailing slashes: they are indexed URLs.
+- Benchmark numbers on the site come only from `website/data/benchmarks.json`; charts and Markdown exports render from it.
+- `npm run build --prefix website` also runs `scripts/check-site.mjs` (one H1, canonical, social tags, JSON-LD, Markdown twins, links, sitemap). Keep it passing.
 
 ## Design Rules
 - Runtime dependency policy: keep `htmlparser2` as the only runtime dependency.

@@ -1,7 +1,7 @@
 {
 	"name": "linkpeek",
 	"version": "2.1.7",
-	"description": "Fast, safe TypeScript link preview library and URL metadata extractor for Open Graph, Twitter Cards, and JSON-LD on Node.js, Bun, Deno, and edge runtimes.",
+	"description": "Fast, safe TypeScript link preview library, URL metadata extractor, and Open Graph scraper. Unfurls links into Open Graph, Twitter Card, and JSON-LD metadata on Node.js, Bun, Deno, and edge runtimes.",
 	"type": "module",
 	"exports": {
 		".": {
@@ -29,8 +29,8 @@
 		"build": "tsup",
 		"benchmark": "npm run build --silent && node scripts/benchmark.mjs",
 		"benchmark:live": "npm run build --silent && LINKPEEK_LIVE_TESTS=1 node scripts/benchmark.mjs --live",
-		"docs:build": "node scripts/build-docs.mjs",
-		"docs:preview": "npm run docs:build && node scripts/serve-docs.mjs",
+		"docs:build": "npm run build --prefix website",
+		"docs:dev": "npm run dev --prefix website",
 		"downloads": "node scripts/downloads.mjs",
 		"test": "vitest run",
 		"test:coverage": "vitest run --coverage",
@@ -40,8 +40,8 @@
 		"lint:fix": "biome check --write .",
 		"audit": "npm audit --omit=dev && npm audit --audit-level=high && npm audit --prefix benchmarks/competitive --package-lock-only",
 		"package:check": "npm run build --silent && node test/package-smoke.mjs && publint && attw --pack . && npm pack --dry-run",
-		"publish:check": "npm run lint && npm run typecheck && npm run test && npm run audit && npm run build --silent && npm run docs:build",
-		"quality": "npm run lint && npm run typecheck && npm run test && npm run audit && npm run docs:build && npm run package:check",
+		"publish:check": "npm run lint && npm run typecheck && npm run test && npm run audit && npm run build --silent",
+		"quality": "npm run lint && npm run typecheck && npm run test && npm run audit && npm run package:check",
 		"typecheck": "tsc --noEmit && tsc -p tsconfig.test.json",
 		"prepublishOnly": "npm run publish:check",
 		"release": "release-it"
@@ -106,7 +106,7 @@
 	},
 	"overrides": {
 		"get-uri": {
-			"basic-ftp": "^6.2.3"
+			"basic-ftp": "^6.2.6"
 		},
 		"release-it": {
 			"undici": "^7.30.1"
