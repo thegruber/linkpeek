@@ -11,11 +11,11 @@
   <a href="https://packagephobia.com/result?p=linkpeek"><img src="https://packagephobia.com/badge?p=linkpeek" alt="install size"></a>
 </p>
 
-<p align="center"><a href="https://thegruber.github.io/linkpeek/">Website</a> · <a href="https://thegruber.github.io/linkpeek/quick-start/">Quick start</a> · <a href="https://thegruber.github.io/linkpeek/api/">API</a> · <a href="https://thegruber.github.io/linkpeek/benchmarks/">Benchmarks</a></p>
+<p align="center"><a href="https://thegruber.github.io/linkpeek/">Website</a> · <a href="https://thegruber.github.io/linkpeek/quick-start/">Quick start</a> · <a href="https://thegruber.github.io/linkpeek/api/">API</a> · <a href="https://thegruber.github.io/linkpeek/benchmarks/">Benchmarks</a> · <a href="https://thegruber.github.io/linkpeek/security/">Security</a> · <a href="https://github.com/thegruber/linkpeek/tree/main/examples">Examples</a> · <a href="https://github.com/thegruber/linkpeek/blob/main/CHANGELOG.md">Changelog</a></p>
 
 **A fast, safe-by-default link preview library for TypeScript, Node.js, Bun, Deno, and edge runtimes. One runtime dependency.**
 
-<p align="center"><a href="https://thegruber.github.io/linkpeek/"><img src="https://raw.githubusercontent.com/thegruber/linkpeek/main/assets/brand/readme-hero.png" alt="Calling preview(url) in TypeScript returns a typed result and a link preview card; measured 3.9 times faster than the next package on a 500 kB page, a 2.4 times smaller install, one runtime dependency, and at most 30 kB read by default." width="800"></a></p>
+<p align="center"><a href="https://thegruber.github.io/linkpeek/"><img src="https://raw.githubusercontent.com/thegruber/linkpeek/main/assets/brand/readme-hero.png" alt="Calling preview(url) in TypeScript returns a typed result and a link preview card; measured 3.9 times faster than the next package on a 500 kB page, a 2.4 times smaller install, one runtime dependency, and at most 30 kB read by default (benchmarks measured 14 November 2026)." width="800"></a></p>
 
 linkpeek turns a URL into typed Open Graph, Twitter Card, JSON-LD, and URL metadata. It is a lightweight link-unfurling alternative to `link-preview-js` and `open-graph-scraper`, with streaming extraction and SSRF-aware fetching built in. Requires **Node.js 22.12+**; see the [runtime support](#runtime-support) table for other environments.
 
@@ -35,7 +35,6 @@ result.siteName;     // string
 result.canonicalUrl; // absolute final/canonical URL
 ```
 
-[Documentation](https://thegruber.github.io/linkpeek/) · [Quick start](https://thegruber.github.io/linkpeek/quick-start/) · [API reference](https://thegruber.github.io/linkpeek/api/) · [Try the parser](https://thegruber.github.io/linkpeek/guides/open-graph-parser/#try-title) · [Troubleshooting](https://thegruber.github.io/linkpeek/guides/troubleshooting/) · [Security](https://thegruber.github.io/linkpeek/security/) · [Examples](https://github.com/thegruber/linkpeek/tree/main/examples) · [Benchmarks](https://thegruber.github.io/linkpeek/benchmarks/) · [Changelog](https://github.com/thegruber/linkpeek/blob/main/CHANGELOG.md)
 
 ## Runtime support
 
@@ -375,29 +374,9 @@ validateUrl("http://169.254.169.254/"); // throws PRIVATE_NETWORK_BLOCKED
 
 If linkpeek saves you time, [star the repository](https://github.com/thegruber/linkpeek) so other developers can find it too.
 
-## Development
+## Examples and contributing
 
-```bash
-npm ci
-npm run lint
-npm run typecheck
-npm run test
-npm run build
-npm audit
-npm run package:check
-npm run benchmark
-npm run downloads
-```
-
-`npm run downloads` reads the official npm download API, compares the latest 7- and 28-day windows with their preceding periods, and shows the last week's per-version mix. Registry downloads are tarball requests—not unique users or confirmed installations—so evaluate them alongside current-version share, distinct dependent repositories, and GitHub's unique traffic.
-
-Live network tests are opt-in:
-
-```bash
-LINKPEEK_LIVE_TESTS=1 npm run test
-```
-
-Framework examples are in [examples](https://github.com/thegruber/linkpeek/tree/main/examples): Next.js, Express, Cloudflare Workers, React, Supabase Edge Functions, and Bun.
+Framework examples are in [examples](https://github.com/thegruber/linkpeek/tree/main/examples): Next.js, Express, Cloudflare Workers, React, Supabase Edge Functions, and Bun. To work on linkpeek itself, see the [contribution guide](https://github.com/thegruber/linkpeek/blob/main/CONTRIBUTING.md).
 
 ## License
 
