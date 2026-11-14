@@ -14,7 +14,7 @@ const SHAPE = "#d9d9d9";
 export function Dither({
 	className,
 	/** Mark position and scale relative to the cell height. */
-	place = { x: 0.08, y: -0.22, scale: 1.55 },
+	place = { x: -0.05, y: -0.45, scale: 1.6 },
 	showMark = true,
 	tone = 0,
 }: {
@@ -34,8 +34,7 @@ export function Dither({
 		const finePointer = matchMedia(
 			"(hover: hover) and (pointer: fine)",
 		).matches;
-		const bracket = new Path2D(mark.bracket);
-		const eye = new Path2D(mark.eye);
+		const eyes = new Path2D(mark.eyes);
 		const small = document.createElement("canvas");
 		const smallContext = small.getContext("2d");
 		if (!smallContext) return;
@@ -104,26 +103,17 @@ export function Dither({
 				context.save();
 				context.translate(width * place.x, height * place.y);
 				context.scale(s, s);
-				context.strokeStyle = SHAPE;
 				context.fillStyle = SHAPE;
-				context.lineWidth = 6.5;
-				context.lineCap = "square";
-				context.lineJoin = "miter";
-				context.stroke(bracket);
-				context.fill(eye);
-				// The pupil, clipped to the eye, looking toward the pointer.
+				context.fill(eyes);
+				// Pupils, clipped to the eyes, looking toward the pointer.
 				context.save();
-				context.clip(eye);
+				context.clip(eyes);
 				context.fillStyle = `rgb(${INK.join(",")})`;
-				context.beginPath();
-				context.arc(
-					mark.pupil.cx + pupil.x,
-					mark.pupil.cy + pupil.y,
-					mark.pupil.r,
-					0,
-					Math.PI * 2,
-				);
-				context.fill();
+				for (const p of mark.pupils) {
+					context.beginPath();
+					context.arc(p.cx + pupil.x, p.cy + pupil.y, p.r, 0, Math.PI * 2);
+					context.fill();
+				}
 				context.restore();
 				context.restore();
 			}
@@ -148,14 +138,14 @@ export function Dither({
 			pointer.y = event.clientY - box.top;
 			// Eye center in canvas space.
 			const s = (height * place.scale) / 64;
-			const ex = width * place.x + 43 * s;
-			const ey = height * place.y + 31 * s;
+			const ex = width * place.x + 32 * s;
+			const ey = height * place.y + 40 * s;
 			const dx = pointer.x - ex;
 			const dy = pointer.y - ey;
 			const distance = Math.hypot(dx, dy) || 1;
 			const pull = Math.min(1, distance / 400);
 			target.x = (dx / distance) * 5.5 * pull;
-			target.y = Math.min(2.5, (dy / distance) * 5.5 * pull);
+			target.y = Math.min(1.5, (dy / distance) * 5.5 * pull);
 		};
 
 		resize();

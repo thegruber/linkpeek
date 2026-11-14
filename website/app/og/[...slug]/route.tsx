@@ -50,15 +50,13 @@ export async function GET(
 			<div style={{ display: "flex", alignItems: "center", gap: 18 }}>
 				<svg width="56" height="56" viewBox="0 0 64 64" aria-hidden="true">
 					<rect width="64" height="64" fill="#232323" />
+					<rect y="45" width="64" height="19" fill="#3ddc84" />
 					<path
-						d="M31 15 15 32l16 17"
-						fill="none"
-						stroke="#ffffff"
-						strokeWidth="6.5"
-						strokeLinecap="square"
+						d="M8 45a11.5 11.5 0 0 1 23 0zM33 45a11.5 11.5 0 0 1 23 0z"
+						fill="#ffffff"
 					/>
-					<path d="M30 38a13 13 0 0 1 26 0z" fill="#9fd8f7" />
-					<circle cx="47" cy="31" r="4.6" fill="#232323" />
+					<circle cx="23.5" cy="38.5" r="4.6" fill="#232323" />
+					<circle cx="48.5" cy="38.5" r="4.6" fill="#232323" />
 				</svg>
 				<span
 					style={{ fontSize: 34, fontWeight: 500, letterSpacing: "-0.035em" }}
@@ -92,7 +90,7 @@ export async function GET(
 					) : (
 						<span style={{ display: "flex", flexWrap: "wrap" }}>
 							Turn any URL into a&nbsp;
-							<span style={{ background: "#9fd8f7", padding: "0 10px" }}>
+							<span style={{ background: "#3ddc84", padding: "0 10px" }}>
 								link preview
 							</span>
 							.
@@ -118,8 +116,14 @@ export async function GET(
 				aria-hidden="true"
 				style={{ position: "absolute", right: 96, bottom: 102 }}
 			>
-				<path d="M11 24a13 13 0 0 1 26 0z" fill="#9fd8f7" />
-				<circle cx="28" cy="17" r="4.6" fill="#232323" />
+				<path
+					d="M1.5 24a10.5 10.5 0 0 1 21 0zM25.5 24a10.5 10.5 0 0 1 21 0z"
+					fill="#ffffff"
+					stroke="#232323"
+					strokeWidth="2"
+				/>
+				<circle cx="15" cy="17.5" r="4" fill="#232323" />
+				<circle cx="39" cy="17.5" r="4" fill="#232323" />
 			</svg>
 			<div
 				style={{
@@ -128,7 +132,7 @@ export async function GET(
 					right: 0,
 					bottom: 96,
 					height: 6,
-					background: "#9fd8f7",
+					background: "#3ddc84",
 				}}
 			/>
 			<div
@@ -146,7 +150,7 @@ export async function GET(
 				<span
 					style={{
 						color: "#232323",
-						background: "#9fd8f7",
+						background: "#3ddc84",
 						padding: "2px 8px",
 					}}
 				>

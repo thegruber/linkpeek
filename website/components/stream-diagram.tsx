@@ -34,7 +34,7 @@ export function StreamDiagram({ page }: { page: ShowcaseCard }) {
 						aria-hidden="true"
 					/>
 					<PeekingEyes
-						outline="var(--color-fd-foreground)"
+						outline="var(--color-ink)"
 						className="absolute bottom-full w-14 -translate-x-1/2 translate-y-[1px]"
 						style={{ left: width }}
 					/>
