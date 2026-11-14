@@ -70,7 +70,13 @@
 		"og-parser",
 		"web-metadata",
 		"bun",
-		"deno"
+		"deno",
+		"meta-tags",
+		"og-tags",
+		"link-unfurl",
+		"html-metadata",
+		"nextjs",
+		"vercel-edge"
 	],
 	"author": "Adrian Gruber",
 	"license": "MIT",

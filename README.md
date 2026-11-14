@@ -15,6 +15,8 @@
 
 **A fast, safe-by-default link preview library for TypeScript, Node.js, Bun, Deno, and edge runtimes. One runtime dependency.**
 
+<p align="center"><a href="https://thegruber.github.io/linkpeek/"><img src="https://raw.githubusercontent.com/thegruber/linkpeek/main/assets/brand/readme-hero.png" alt="Calling preview(url) in TypeScript returns a typed result and a link preview card; measured 3.9 times faster than the next package on a 500 kB page, a 2.4 times smaller install, one runtime dependency, and at most 30 kB read by default." width="800"></a></p>
+
 linkpeek turns a URL into typed Open Graph, Twitter Card, JSON-LD, and URL metadata. It is a lightweight link-unfurling alternative to `link-preview-js` and `open-graph-scraper`, with streaming extraction and SSRF-aware fetching built in. Requires **Node.js 22.12+**; see the [runtime support](#runtime-support) table for other environments.
 
 ```bash
@@ -95,6 +97,8 @@ Quick comparison:
 | `open-graph-scraper` | Node Open Graph/Twitter Card scraping with broader options | Node-oriented and larger dependency surface |
 | `metascraper` | Rule-based article metadata extraction | More powerful framework; more setup and dependencies |
 | `unfurl.js` | Rich nested metadata with fetched oEmbed support | Richer output; not focused on small edge-runtime preview cards |
+
+Side-by-side numbers and migration code: [linkpeek vs link-preview-js](https://thegruber.github.io/linkpeek/guides/link-preview-js-alternative/) · [linkpeek vs open-graph-scraper](https://thegruber.github.io/linkpeek/guides/open-graph-scraper-alternative/)
 
 ## Presets
 
