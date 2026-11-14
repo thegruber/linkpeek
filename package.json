@@ -1,7 +1,7 @@
 {
 	"name": "linkpeek",
 	"version": "2.1.7",
-	"description": "Fast, safe TypeScript link preview library and URL metadata extractor for Open Graph, Twitter Cards, and JSON-LD on Node.js, Bun, Deno, and edge runtimes.",
+	"description": "Fast, safe TypeScript link preview library, URL metadata extractor, and Open Graph scraper. Unfurls links into Open Graph, Twitter Card, and JSON-LD metadata on Node.js, Bun, Deno, and edge runtimes.",
 	"type": "module",
 	"exports": {
 		".": {

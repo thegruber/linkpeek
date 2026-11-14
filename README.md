@@ -23,7 +23,7 @@ result.canonicalUrl; // absolute final/canonical URL
 [![npm](https://img.shields.io/npm/v/linkpeek)](https://www.npmjs.com/package/linkpeek)
 [![weekly downloads](https://img.shields.io/npm/dw/linkpeek)](https://www.npmjs.com/package/linkpeek)
 [![CI](https://github.com/thegruber/linkpeek/actions/workflows/ci.yml/badge.svg)](https://github.com/thegruber/linkpeek/actions/workflows/ci.yml)
-[![bundle size](https://img.shields.io/bundlephobia/minzip/linkpeek)](https://bundlephobia.com/package/linkpeek)
+[![install size](https://packagephobia.com/badge?p=linkpeek)](https://packagephobia.com/result?p=linkpeek)
 [![types](https://img.shields.io/npm/types/linkpeek)](https://www.npmjs.com/package/linkpeek)
 [![license](https://img.shields.io/npm/l/linkpeek)](https://github.com/thegruber/linkpeek/blob/main/LICENSE)
 
@@ -52,6 +52,21 @@ linkpeek focuses on server-side preview cards: fetch a URL, read only enough HTM
 
 > linkpeek is intended for server-side use. Put it behind an API route and return only the metadata your client needs.
 
+## Benchmarks
+
+Same-corpus benchmark against five other preview packages, measured on 14 November 2026 (Linux x64, Node.js 24.22, median of three runs, local server, so library overhead only):
+
+| Package | 500 kB page | Small pages (0.6–2.3 kB) | Clean install |
+| --- | ---: | ---: | ---: |
+| **linkpeek** 2.1.7 | **2.80 ms** | 1.10 ms | **1.3 MB, 7 packages** |
+| unfurl.js 6.4.0 | 11.0 ms | 0.78 ms | 3.2 MB, 16 packages |
+| url-metadata 6.3.1 | 47.6 ms | 2.77 ms | 10.4 MB, 30 packages |
+| link-preview-js 6.0.0 | 51.7 ms | 1.70 ms | 7.9 MB, 18 packages |
+| metascraper 5.58.6 (+7 rules) | 59.8 ms | 2.58 ms | 81.1 MB, 128 packages |
+| open-graph-scraper 6.13.0 | 384 ms | 1.85 ms | 11.1 MB, 27 packages |
+
+On large pages linkpeek stops after `</head>` and cancels the stream. On small pages the differences are fractions of a millisecond, and `unfurl.js` was faster in this run. Charts, method and raw runs: [benchmarks](https://thegruber.github.io/linkpeek/benchmarks/).
+
 ## Use cases
 
 - Chat and messaging apps that need Slack-style link cards
@@ -69,7 +84,7 @@ Quick comparison:
 
 | Package | Good fit | Tradeoff vs linkpeek |
 | --- | --- | --- |
-| `link-preview-js` | Extracting previews from a URL or first URL in text | Broader text-input API; less focused on edge-runtime and safe-by-default fetching |
+| `link-preview-js` | Extracting previews from a URL or first URL in text | Broader text-input API; Node.js fetch path with DNS pinning, larger install |
 | `open-graph-scraper` | Node Open Graph/Twitter Card scraping with broader options | Node-oriented and larger dependency surface |
 | `metascraper` | Rule-based article metadata extraction | More powerful framework; more setup and dependencies |
 | `unfurl.js` | Rich nested metadata with fetched oEmbed support | Richer output; not focused on small edge-runtime preview cards |
