@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { appName, home, ogImagePath, siteUrl } from "@/lib/shared";
+import { appName, home, ogImagePath, previewApi, siteUrl } from "@/lib/shared";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
@@ -72,53 +72,184 @@ function useLivePreview() {
 	return state;
 }
 
-/** The hero: this page's URL, unfurled into the card an app would render. */
+interface CardData {
+	url: string;
+	title: string | null;
+	description: string | null;
+	image: string | null;
+	host: string;
+	local: boolean;
+}
+
+type Remote =
+	| { state: "idle" }
+	| { state: "loading"; url: string }
+	| { state: "error"; message: string }
+	| { state: "done"; card: CardData; ms: number };
+
+/**
+ * The hero: a URL in a chat message, unfurled into the card an app would
+ * render. It starts with this page, parsed in the browser; visitors can try
+ * any URL, which the rate-limited playground endpoint previews on Vercel.
+ */
 export function UnfurlDemo() {
 	const { fields, ms } = useLivePreview();
-	const host = new URL(fields.canonicalUrl).host;
+	const [remote, setRemote] = useState<Remote>({ state: "idle" });
+	const [input, setInput] = useState("");
+
+	const own: CardData = {
+		url: fields.canonicalUrl,
+		title: fields.title,
+		description: fields.description,
+		image: `${basePath}${ogImagePath([])}`,
+		host: new URL(fields.canonicalUrl).host,
+		local: true,
+	};
+	const card = remote.state === "done" ? remote.card : own;
+
+	async function submit(value: string) {
+		const url = /^https?:\/\//i.test(value.trim())
+			? value.trim()
+			: `https://${value.trim()}`;
+		setRemote({ state: "loading", url });
+		try {
+			const response = await fetch(
+				`${previewApi}?url=${encodeURIComponent(url)}`,
+			);
+			if (response.status === 429) {
+				setRemote({
+					state: "error",
+					message:
+						"Too many previews from your network. Try again in a minute.",
+				});
+				return;
+			}
+			const data = await response.json();
+			if (!response.ok) {
+				setRemote({
+					state: "error",
+					message: data?.message ?? "This URL could not be previewed.",
+				});
+				return;
+			}
+			const canonical = String(data.canonicalUrl ?? url);
+			setRemote({
+				state: "done",
+				ms: Number(data.ms) || 0,
+				card: {
+					url: canonical,
+					title: data.title ?? null,
+					description: data.description ?? null,
+					image: data.image ?? null,
+					host: new URL(canonical).host,
+					local: false,
+				},
+			});
+		} catch {
+			setRemote({
+				state: "error",
+				message: "The preview service could not be reached.",
+			});
+		}
+	}
+
+	const status =
+		remote.state === "loading"
+			? "Fetching with linkpeek…"
+			: remote.state === "error"
+				? remote.message
+				: remote.state === "done"
+					? `Fetched and parsed by linkpeek in ${remote.ms} ms on a Vercel function. Results are cached for a day.`
+					: ms === null
+						? "\u00a0"
+						: `Parsed from this page by linkpeek in ${ms < 1 ? ms.toFixed(2) : ms.toFixed(1)} ms (median of 9 runs), in your browser.`;
+
 	return (
-		<div className="relative">
-			<div className="rounded-2xl border bg-fd-card p-4 shadow-[0_1px_0_rgb(0_0_0/0.02),0_24px_48px_-24px_rgb(18_20_26/0.18)] sm:p-5">
+		<div className="relative min-w-0">
+			<form
+				className="mb-3 flex gap-2"
+				onSubmit={(event) => {
+					event.preventDefault();
+					if (input.trim()) void submit(input);
+				}}
+			>
+				<label htmlFor="try-url" className="sr-only">
+					URL to preview
+				</label>
+				<input
+					id="try-url"
+					type="text"
+					inputMode="url"
+					autoComplete="url"
+					spellCheck={false}
+					maxLength={2048}
+					placeholder="Try any URL, like github.com"
+					value={input}
+					onChange={(event) => setInput(event.target.value)}
+					className="min-h-11 min-w-0 flex-1 rounded-xl border bg-fd-background px-4 text-sm outline-none transition-colors placeholder:text-fd-muted-foreground focus-visible:border-signal focus-visible:ring-2 focus-visible:ring-signal-wash"
+				/>
+				<button
+					type="submit"
+					disabled={remote.state === "loading"}
+					className="min-h-11 rounded-xl border bg-fd-background px-4 font-medium text-sm transition-colors hover:border-signal active:translate-y-px disabled:opacity-60"
+				>
+					Preview
+				</button>
+			</form>
+			<div
+				className="rounded-2xl border bg-fd-card p-4 shadow-[0_1px_0_rgb(0_0_0/0.02),0_24px_48px_-24px_rgb(18_20_26/0.18)] sm:p-5"
+				aria-busy={remote.state === "loading"}
+			>
 				<p className="mb-3 w-fit max-w-full truncate rounded-2xl rounded-bl-md bg-fd-secondary px-3.5 py-2 text-sm">
 					Have you seen{" "}
-					<a
-						href={fields.canonicalUrl}
-						className="text-signal underline-offset-2 hover:underline"
-					>
-						{fields.canonicalUrl.replace(/^https:\/\//, "")}
-					</a>
+					<span className="text-signal">
+						{(remote.state === "loading" ? remote.url : card.url).replace(
+							/^https?:\/\//,
+							"",
+						)}
+					</span>
 					?
 				</p>
 				<a
-					href={fields.canonicalUrl}
-					className="unfurl group block overflow-hidden rounded-[14px] border bg-fd-background transition-colors hover:border-signal"
+					key={card.url}
+					href={card.url}
+					rel={card.local ? undefined : "nofollow noopener noreferrer ugc"}
+					className={`unfurl group block overflow-hidden rounded-[14px] border bg-fd-background transition-[border-color,opacity] hover:border-signal ${remote.state === "loading" ? "opacity-50" : ""}`}
 				>
-					{/* biome-ignore lint/performance/noImgElement: static export, no image optimizer */}
-					<img
-						src={`${basePath}${ogImagePath([])}`}
-						alt=""
-						width={1200}
-						height={630}
-						className="aspect-[1200/630] w-full border-b object-cover"
-					/>
+					{card.image && (
+						// biome-ignore lint/performance/noImgElement: static export; remote images are third-party
+						<img
+							src={card.image}
+							alt=""
+							width={1200}
+							height={630}
+							referrerPolicy="no-referrer"
+							onError={(event) => {
+								event.currentTarget.hidden = true;
+							}}
+							className="aspect-[1200/630] w-full border-b bg-fd-muted object-cover"
+						/>
+					)}
 					<span className="grid gap-1 px-4 py-3.5">
-						<span className="text-fd-muted-foreground text-xs">{host}</span>
-						<strong className="font-semibold text-[0.95rem] leading-snug">
-							{fields.title ?? host}
-						</strong>
-						<span className="line-clamp-2 text-fd-muted-foreground text-sm leading-snug">
-							{fields.description}
+						<span className="text-fd-muted-foreground text-xs">
+							{card.host}
 						</span>
+						<strong className="line-clamp-2 font-semibold text-[0.95rem] leading-snug">
+							{card.title ?? card.host}
+						</strong>
+						{card.description && (
+							<span className="line-clamp-2 text-fd-muted-foreground text-sm leading-snug">
+								{card.description}
+							</span>
+						)}
 					</span>
 				</a>
 			</div>
 			<p
-				className="mt-3 min-h-5 text-fd-muted-foreground text-xs"
+				className={`mt-3 min-h-5 text-xs ${remote.state === "error" ? "text-fd-foreground" : "text-fd-muted-foreground"}`}
 				aria-live="polite"
 			>
-				{ms === null
-					? " "
-					: `Parsed from this page by linkpeek in ${ms < 1 ? ms.toFixed(2) : ms.toFixed(1)} ms (median of 9 runs), in your browser.`}
+				{status}
 			</p>
 		</div>
 	);

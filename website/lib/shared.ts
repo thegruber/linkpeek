@@ -12,6 +12,11 @@ export const repository = "https://github.com/thegruber/linkpeek";
 export const npmUrl = "https://www.npmjs.com/package/linkpeek";
 export const author = "Adrian Gruber";
 
+/** Rate-limited preview endpoint (demo-api/ in this repository, on Vercel). */
+export const previewApi =
+	process.env.NEXT_PUBLIC_PREVIEW_API ??
+	"https://linkpeek-playground.vercel.app/api/preview";
+
 export const home = {
 	title: "TypeScript link preview library",
 	description:
