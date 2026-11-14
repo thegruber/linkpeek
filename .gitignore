@@ -10,7 +10,8 @@ website/next-env.d.ts
 .playwright-cli/
 output/
 *.tsbuildinfo
-.claude/
+.claude/*
+!.claude/skills/
 .DS_Store
 *.tgz
 pnpm-lock.yaml
