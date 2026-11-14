@@ -12,10 +12,10 @@ export async function Showcase() {
 					id="showcase-title"
 					className="font-normal text-xl tracking-[-0.03em]"
 				>
-					Previewed by linkpeek when this page was built
+					Real previews, built with linkpeek
 				</h2>
 				<p className="font-mono text-fd-muted-foreground text-xs">
-					{cards.length} sites · how much of each page is &lt;head&gt;
+					highlighted: the share of each page linkpeek reads
 				</p>
 			</div>
 			<div className="marquee group/marquee overflow-hidden">
@@ -66,7 +66,7 @@ function Card({ card, hidden }: { card: ShowcaseCard; hidden: boolean }) {
 					<span className="flex items-center justify-between gap-3 font-mono text-[0.7rem] text-fd-muted-foreground">
 						<span className="truncate">{card.host}</span>
 						<span className="figures shrink-0">
-							<span className="text-signal">{kb(card.headBytes)}</span> /{" "}
+							<span className="text-signal-text">{kb(card.headBytes)}</span> /{" "}
 							{kb(card.pageBytes)}
 						</span>
 					</span>
@@ -95,7 +95,7 @@ function HeadShare({ head, page }: { head: number; page: number }) {
 			aria-label={`The head is ${Math.round(share * 100)} percent of the page`}
 		>
 			<span
-				className="block h-full bg-signal"
+				className="block h-full bg-mark"
 				style={{ width: `${(share * 100).toFixed(1)}%` }}
 			/>
 		</span>

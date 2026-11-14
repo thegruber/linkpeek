@@ -12,10 +12,6 @@ import { npmUrl } from "@/lib/shared";
 const WIDTH = 132;
 const HEIGHT = 32;
 const INSET = 3;
-const compact = new Intl.NumberFormat("en", {
-	notation: "compact",
-	maximumFractionDigits: 1,
-});
 
 interface State {
 	week: number;
@@ -24,8 +20,8 @@ interface State {
 	weeks: WeeklyDownloads[];
 }
 
-// Weekly npm downloads as a stat cell with a small sparkline. The number is
-// live from the npm API; without it the cell shows a dash.
+// Weekly npm downloads with a tiny sparkline, live from the npm API. It
+// stays hidden when the API cannot be reached.
 export function Downloads() {
 	const [state, setState] = useState<State | null>(null);
 	useEffect(() => {
@@ -46,26 +42,15 @@ export function Downloads() {
 			.catch(() => {});
 		return () => controller.abort();
 	}, []);
+	if (!state) return null;
 	return (
 		<a
 			href={npmUrl}
-			className="group flex h-full flex-col justify-between gap-6 px-5 py-6 transition-colors hover:bg-fd-card"
+			className="inline-flex items-center gap-2 hover:text-fd-foreground"
 		>
-			<RollingFigure
-				value={state?.week ?? 0}
-				className="figures block font-normal text-[clamp(2.5rem,4vw,3.75rem)] leading-none tracking-[-0.045em]"
-			/>
-			<span className="flex items-end justify-between gap-4">
-				<span className="text-fd-muted-foreground text-sm">
-					npm downloads last week
-					{state && (
-						<span className="block font-mono text-xs">
-							{compact.format(state.total)}{" "}
-							{state.sinceLaunch ? "since launch" : "in the past year"}
-						</span>
-					)}
-				</span>
-				{state && <Sparkline weeks={state.weeks} />}
+			<Sparkline weeks={state.weeks} />
+			<span>
+				<RollingFigure value={state.week} /> weekly downloads
 			</span>
 		</a>
 	);
@@ -85,7 +70,7 @@ function Sparkline({ weeks }: { weeks: WeeklyDownloads[] }) {
 			height={HEIGHT}
 			viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
 			aria-hidden="true"
-			className="h-10 w-28 shrink-0"
+			className="h-4 w-12 shrink-0"
 			preserveAspectRatio="none"
 		>
 			<path

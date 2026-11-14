@@ -35,7 +35,7 @@ export function InstallCommand({
 					}
 				}}
 				aria-label={copied ? "Copied" : "Copy install command"}
-				className={`press relative grid min-w-[5.5rem] place-items-center border-l px-4 font-mono text-xs transition-[background-color,color,transform] ${signal ? "border-white/40 hover:bg-white hover:text-signal" : "border-rule text-fd-muted-foreground hover:bg-fd-foreground hover:text-fd-background"}`}
+				className={`press relative grid min-w-[5.5rem] place-items-center border-l px-4 font-mono text-xs transition-[background-color,color,transform] ${signal ? "border-white/40 hover:bg-white hover:text-signal-text" : "border-rule text-fd-muted-foreground hover:bg-fd-foreground hover:text-fd-background"}`}
 			>
 				{/* Both labels share one cell; a short blur bridges the swap. */}
 				<span

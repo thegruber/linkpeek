@@ -144,12 +144,12 @@ export function VersusTable({ other }: { other: string }) {
 								{row.metric}
 							</th>
 							<td
-								className={`px-4 py-2.5 font-mono ${row.selfWins ? "text-signal" : ""}`}
+								className={`px-4 py-2.5 font-mono ${row.selfWins ? "text-signal-text" : ""}`}
 							>
 								{row.self}
 							</td>
 							<td
-								className={`px-4 py-2.5 font-mono ${row.selfWins ? "" : "text-signal"}`}
+								className={`px-4 py-2.5 font-mono ${row.selfWins ? "" : "text-signal-text"}`}
 							>
 								{row.other}
 							</td>

@@ -1,14 +1,7 @@
 "use client";
 import NumberFlow from "@number-flow/react";
 import { useInView, useReducedMotion } from "motion/react";
-import {
-	type CSSProperties,
-	createElement,
-	type ElementType,
-	useEffect,
-	useRef,
-	useState,
-} from "react";
+import { useEffect, useRef, useState } from "react";
 
 // Both components render their final state on the server and without
 // JavaScript. Only content that starts below the fold is armed to animate
@@ -61,34 +54,5 @@ export function RollingFigure({
 				willChange
 			/>
 		</span>
-	);
-}
-
-/** A heading whose words rise out of their own masks, once, in reading order. */
-export function WordReveal({
-	text,
-	as = "h2",
-	className,
-	id,
-}: {
-	text: string;
-	as?: ElementType;
-	className?: string;
-	id?: string;
-}) {
-	const ref = useRef<HTMLElement>(null);
-	const { armed, inView } = useArmed(ref);
-	const state = !armed ? undefined : inView ? "in" : "pending";
-	const words = text.split(" ");
-	return createElement(
-		as,
-		{ ref, id, className, "data-reveal": state },
-		words.flatMap((word, index) => [
-			// biome-ignore lint/suspicious/noArrayIndexKey: the words of a fixed heading never reorder
-			<span key={`${word}-${index}`} className="reveal-word">
-				<span style={{ "--i": index } as CSSProperties}>{word}</span>
-			</span>,
-			index < words.length - 1 ? " " : null,
-		]),
 	);
 }

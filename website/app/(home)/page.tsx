@@ -1,17 +1,15 @@
 import { ServerCodeBlock } from "fumadocs-ui/components/codeblock.rsc";
 import type { Metadata } from "next";
 import Link from "next/link";
-import type { CSSProperties, ReactNode } from "react";
 import { BenchmarkChart } from "@/components/benchmarks";
 import { Downloads } from "@/components/downloads";
-import { PeekingEyes } from "@/components/gaze";
+import { HeroDemo } from "@/components/hero-demo";
 import { InstallCommand } from "@/components/install-command";
 import { Logo } from "@/components/logo";
-import { RollingFigure, WordReveal } from "@/components/motion-text";
-import { PeekPanel } from "@/components/peek-panel";
-import { LiveResult, UnfurlDemo } from "@/components/self-preview";
+import { LiveResult } from "@/components/self-preview";
 import { Showcase } from "@/components/showcase";
-import { benchmarkDate, highlights } from "@/lib/benchmarks";
+import { StreamDiagram } from "@/components/stream-diagram";
+import { benchmarkDate } from "@/lib/benchmarks";
 import {
 	appName,
 	author,
@@ -22,6 +20,7 @@ import {
 	repository,
 	siteUrl,
 } from "@/lib/shared";
+import { showcase } from "@/lib/showcase";
 import { packageVersion } from "@/lib/version";
 
 const image = {
@@ -64,57 +63,37 @@ if (card.statusCode < 400) {
   });
 }`;
 
-const facts = [
-	{ label: "version", value: `v${packageVersion}`, href: npmUrl },
-	{ label: "license", value: "MIT", href: `${repository}/blob/main/LICENSE` },
-	{
-		label: "types",
-		value: "built in",
-		href: `${repository}/blob/main/src/types.ts`,
-	},
-	{
-		label: "node",
-		value: "≥ 22.12",
-		href: `${repository}/actions/workflows/ci.yml`,
-	},
-];
-
 const safety = [
-	[
-		"Every redirect is checked",
-		"The first URL and each redirect target are validated before the next request.",
-	],
-	[
-		"Private addresses are blocked",
-		"Loopback, link-local, cloud metadata and other non-global IP literals are refused by default.",
-	],
-	[
-		"Reads are capped",
-		"The fast preset keeps at most 30 kB and stops after the head; huge responses cannot exhaust memory.",
-	],
-	[
-		"Credentials stay home",
-		"Cookie and authorization headers are rejected, and custom headers are dropped on cross-origin redirects.",
-	],
+	"Every redirect is validated before the next request.",
+	"Private, loopback and cloud-metadata IP addresses are refused by default.",
+	"At most 30 kB is kept, so a huge response cannot exhaust memory.",
+	"Cookies and authorization headers never leave your server.",
 ];
 
 const runtimes = [
-	["Next.js", "/integrations/nextjs/", "A Route Handler that returns cards."],
-	[
-		"Cloudflare Workers",
-		"/integrations/cloudflare-workers/",
-		"Extract and cache at the edge.",
-	],
-	[
-		"Node.js and Express",
-		"/integrations/node-express/",
-		"A preview API in a few lines.",
-	],
-	["AI agents", "/integrations/ai-agents/", "Link metadata as a tool result."],
+	["Node.js", "/integrations/node-express/"],
+	["Next.js", "/integrations/nextjs/"],
+	["Cloudflare Workers", "/integrations/cloudflare-workers/"],
+	["Bun", "/quick-start/"],
+	["Deno", "/quick-start/"],
+	["AI agents", "/integrations/ai-agents/"],
 ];
 
-export default function HomePage() {
-	const stats = highlights();
+const comparisons = [
+	["linkpeek vs link-preview-js", "/guides/link-preview-js-alternative/"],
+	["linkpeek vs open-graph-scraper", "/guides/open-graph-scraper-alternative/"],
+	[
+		"All preview libraries compared",
+		"/guides/link-preview-library-comparison/",
+	],
+];
+
+export default async function HomePage() {
+	const cards = await showcase();
+	const largest = cards.reduce<(typeof cards)[number] | undefined>(
+		(best, card) => (!best || card.pageBytes > best.pageBytes ? card : best),
+		undefined,
+	);
 	return (
 		<main className="w-full">
 			<script
@@ -126,218 +105,187 @@ export default function HomePage() {
 			/>
 
 			<div className="mx-auto max-w-[1440px] border-rule border-x">
-				{/* Hero: headline and the peek, then the pitch and the live demo. */}
+				{/* Hero: what it does in one line, and the thing itself. */}
 				<section className="grid border-rule border-b lg:grid-cols-12">
-					<div className="flex flex-col justify-end border-rule px-5 pt-14 pb-8 sm:px-8 lg:col-span-8 lg:border-r lg:pt-24 lg:pb-10">
-						<h1 className="font-normal text-[clamp(3rem,7.4vw,7.25rem)] leading-[0.9] tracking-[-0.05em]">
-							<span className="reveal-line">
-								<span style={{ "--d": "0ms" } as CSSProperties}>
-									TypeScript link
-								</span>
-							</span>{" "}
-							<span className="reveal-line">
-								<span style={{ "--d": "90ms" } as CSSProperties}>
-									previews,{" "}
-									<span className="text-fd-muted-foreground">head first.</span>
-								</span>
-							</span>
+					<div className="flex flex-col gap-8 border-rule px-5 py-12 sm:px-8 lg:col-span-6 lg:border-r lg:py-16">
+						<h1 className="max-w-[13ch] font-normal text-[clamp(2.75rem,5.2vw,5rem)] leading-[0.95] tracking-[-0.045em]">
+							Turn any URL into a{" "}
+							<span className="highlight text-mark-ink">link preview</span>.
 						</h1>
-					</div>
-					<div className="border-rule border-t lg:col-span-4 lg:border-t-0">
-						<PeekPanel />
-					</div>
-				</section>
-
-				<section className="grid border-rule border-b lg:grid-cols-12">
-					<div className="flex flex-col justify-between gap-10 border-rule px-5 py-8 sm:px-8 lg:col-span-5 lg:border-r lg:py-10">
-						<p className="max-w-[44ch] text-fd-muted-foreground text-lg leading-relaxed">
-							linkpeek turns a URL into its title, description, image and
-							favicon from Open Graph, Twitter Card and JSON-LD. It reads the{" "}
-							<code className="text-fd-foreground">&lt;head&gt;</code>, stops,
-							and blocks private addresses on the way. One dependency. Node.js,
-							Bun, Deno and the edge.
+						<p className="max-w-[46ch] text-fd-muted-foreground text-lg leading-relaxed">
+							linkpeek is a TypeScript library that fetches a page, reads only
+							its <code className="text-fd-foreground">&lt;head&gt;</code>, and
+							returns a typed title, description, image and favicon. One
+							dependency. Node.js, Bun, Deno and edge runtimes.
 						</p>
-						<div className="grid gap-3">
+						<div className="grid max-w-xl gap-3">
 							<InstallCommand />
 							<div className="grid grid-cols-2">
 								<Link
 									href="/quick-start/"
-									className="flex min-h-12 items-center justify-between bg-fd-foreground px-4 font-medium text-fd-background text-sm press transition-[background-color,color,transform] hover:bg-signal hover:text-white"
+									className="press group flex min-h-12 items-center justify-between bg-fd-foreground px-4 font-medium text-fd-background text-sm transition-[background-color,color,transform] hover:bg-signal hover:text-signal-ink"
 								>
 									Quick start
 									<ArrowIcon />
 								</Link>
 								<Link
 									href="/benchmarks/"
-									className="flex min-h-12 items-center justify-between border border-rule border-l-0 press px-4 font-medium text-sm transition-[background-color,transform] hover:bg-fd-card"
+									className="press group flex min-h-12 items-center justify-between border border-rule border-l-0 px-4 font-medium text-sm transition-[background-color,transform] hover:bg-fd-card"
 								>
 									Benchmarks
 									<ArrowIcon />
 								</Link>
 							</div>
-							{/* Package facts in the site's own type instead of third-party
-							    badges; each links to its source. */}
-							<ul className="grid grid-cols-2 border-rule border-t border-l font-mono text-xs sm:grid-cols-4">
-								{facts.map((fact) => (
-									<li
-										key={fact.label}
-										className="border-rule border-r border-b"
-									>
-										<a
-											href={fact.href}
-											className="block px-3 py-2.5 transition-colors hover:bg-fd-card"
-										>
-											<span className="block text-fd-muted-foreground">
-												{fact.label}
-											</span>
-											<span className="mt-0.5 block text-fd-foreground">
-												{fact.value}
-											</span>
-										</a>
-									</li>
-								))}
-							</ul>
 						</div>
+						<p className="mt-auto flex flex-wrap gap-x-4 gap-y-1 font-mono text-fd-muted-foreground text-xs">
+							<a href={npmUrl} className="hover:text-fd-foreground">
+								v{packageVersion}
+							</a>
+							<span>MIT</span>
+							<span>1 dependency</span>
+							<span>types included</span>
+							<Downloads />
+						</p>
 					</div>
-					<div className="border-rule border-t lg:col-span-7 lg:border-t-0">
-						<UnfurlDemo />
+					<div className="border-rule border-t lg:col-span-6 lg:border-t-0">
+						<HeroDemo examples={cards} />
 					</div>
 				</section>
 
-				{/* Measured numbers, Swiss-style: big figures, small labels. */}
-				<section
-					aria-label="Measured results"
-					className="grid border-rule border-b sm:grid-cols-2 lg:grid-cols-4"
-				>
-					{stats.map((item) => (
-						<Link
-							key={item.label}
-							href="/benchmarks/"
-							className="flex flex-col justify-between gap-6 border-rule border-b px-5 py-6 transition-colors hover:bg-fd-card sm:border-r lg:border-b-0"
-						>
-							<RollingFigure
-								value={item.figure}
-								decimals={item.decimals}
-								suffix={item.suffix}
-								className="figures block font-normal text-[clamp(2.5rem,4vw,3.75rem)] leading-none tracking-[-0.045em]"
-							/>
-							<span className="text-fd-muted-foreground text-sm">
-								{item.label}
-							</span>
-						</Link>
-					))}
-					<Downloads />
+				{/* The code that produces it. */}
+				<section className="grid border-rule border-b lg:grid-cols-12">
+					<div className="px-5 pt-12 pb-6 sm:px-8 lg:col-span-4 lg:py-14">
+						<h2 className="font-normal text-[clamp(1.75rem,2.6vw,2.5rem)] leading-[1.02] tracking-[-0.04em]">
+							One call, one typed result
+						</h2>
+						<p className="mt-4 max-w-[42ch] text-fd-muted-foreground leading-relaxed">
+							Call <code>preview()</code> on your server or at the edge. Missing
+							fields are <code>null</code>; error pages keep their status code
+							so you know what to cache. The JSON is linkpeek parsing this page,
+							live in your browser.
+						</p>
+					</div>
+					<div className="grid min-w-0 gap-0 px-5 pb-12 sm:px-8 lg:col-span-8 lg:grid-cols-2 lg:py-14">
+						<div className="min-w-0 [&_figure]:my-0 [&_figure]:rounded-none">
+							<ServerCodeBlock code={usage} lang="ts" />
+						</div>
+						<div className="min-w-0">
+							<LiveResult />
+						</div>
+					</div>
+				</section>
+
+				{/* Why it is fast: a real page to scale, then the benchmark. */}
+				<section className="border-rule border-b px-5 py-12 sm:px-8 lg:py-16">
+					<div className="grid gap-6 lg:grid-cols-12">
+						<div className="lg:col-span-4">
+							<h2 className="font-normal text-[clamp(1.75rem,2.6vw,2.5rem)] leading-[1.02] tracking-[-0.04em]">
+								It stops reading at &lt;/head&gt;
+							</h2>
+							<p className="mt-4 max-w-[42ch] text-fd-muted-foreground leading-relaxed">
+								Preview metadata lives in the head. linkpeek parses the response
+								as a stream and cancels it there, so a large page costs about as
+								much as a small one. Measured on {benchmarkDate} against five
+								other packages.
+							</p>
+							<Link
+								href="/benchmarks/"
+								className="mt-5 inline-flex items-center gap-2 font-medium text-sm underline decoration-rule underline-offset-4 hover:decoration-fd-foreground"
+							>
+								Method and all results
+							</Link>
+						</div>
+						<div className="grid min-w-0 gap-6 lg:col-span-8">
+							{largest && <StreamDiagram page={largest} />}
+							<div className="[&_.bars]:my-0">
+								<BenchmarkChart kind="large" />
+							</div>
+						</div>
+					</div>
 				</section>
 
 				<Showcase />
 
-				<Row
-					path="/benchmarks"
-					href="/benchmarks/"
-					title="Reads the head, skips the rest"
-					lede={
-						<>
-							Metadata lives in the <code>&lt;head&gt;</code>. linkpeek parses
-							the response as a stream and cancels it after{" "}
-							<code>&lt;/head&gt;</code>, so a 500 kB page costs about as much
-							as a small one. Measured on {benchmarkDate}; on small pages the
-							packages are within a few milliseconds.
-						</>
-					}
-				>
-					<BenchmarkChart kind="large" />
-				</Row>
-
-				<Row
-					path="/quick-start"
-					href="/quick-start/"
-					title="From URL to card in one call"
-					lede="Call preview() on your server or at the edge and render the fields you need. Missing metadata is null; HTTP error pages still return their metadata with a status code. The JSON on the right is linkpeek parsing this page in your browser."
-				>
-					<div className="grid lg:grid-cols-2">
-						<div className="min-w-0 [&_figure]:my-0 [&_figure]:rounded-none">
-							<ServerCodeBlock code={usage} lang="ts" />
-						</div>
-						<div className="min-w-0 border-rule lg:border-l-0">
-							<LiveResult />
-						</div>
+				{/* Safety, runtimes and comparisons: short, scannable lists. */}
+				<section className="grid border-rule border-b lg:grid-cols-3">
+					<div className="border-rule border-b px-5 py-10 sm:px-8 lg:border-r lg:border-b-0">
+						<h2 className="font-medium text-lg tracking-tight">
+							Safe by default
+						</h2>
+						<ul className="mt-4 grid gap-2.5 text-fd-muted-foreground text-sm leading-relaxed">
+							{safety.map((line) => (
+								<li key={line} className="flex gap-3">
+									<span
+										aria-hidden="true"
+										className="mt-2 size-1.5 shrink-0 bg-fd-foreground"
+									/>
+									{line}
+								</li>
+							))}
+						</ul>
+						<Link
+							href="/security/"
+							className="mt-5 inline-block text-sm underline decoration-rule underline-offset-4 hover:decoration-fd-foreground"
+						>
+							Security model and limits
+						</Link>
 					</div>
-				</Row>
-
-				<Row
-					path="/security"
-					href="/security/"
-					title="Safe defaults for URLs your users paste"
-					lede="A preview endpoint turns user input into outbound requests. linkpeek checks where each request goes before it is made. Hostname resolution belongs to the runtime's fetch, so public endpoints also restrict outbound traffic."
-				>
-					<dl className="grid border-rule border-t border-l sm:grid-cols-2">
-						{safety.map(([title, body]) => (
-							<div
-								key={title}
-								className="border-rule border-r border-b px-5 py-5"
-							>
-								<dt className="font-medium tracking-tight">{title}</dt>
-								<dd className="mt-2 text-fd-muted-foreground text-sm leading-relaxed">
-									{body}
-								</dd>
-							</div>
-						))}
-					</dl>
-				</Row>
-
-				<Row
-					path="/integrations"
-					href="/integrations/nextjs/"
-					title="Runs wherever fetch runs"
-					lede="One runtime dependency, ESM and CommonJS with TypeScript declarations, on Node.js 22.12+, Bun, Deno and fetch-compatible edge runtimes."
-				>
-					<ul className="grid border-rule border-t border-l sm:grid-cols-2">
-						{runtimes.map(([name, href, body]) => (
-							<li key={name} className="border-rule border-r border-b">
-								<Link
-									href={href}
-									className="group flex h-full items-start justify-between gap-4 px-5 py-5 transition-colors hover:bg-fd-foreground hover:text-fd-background"
-								>
-									<span>
-										<span className="block font-medium tracking-tight">
-											{name}
-										</span>
-										<span className="mt-1 block text-fd-muted-foreground text-sm group-hover:text-fd-background/70">
-											{body}
-										</span>
-									</span>
-									<ArrowIcon />
-								</Link>
-							</li>
-						))}
-					</ul>
-				</Row>
-
-				<section className="relative mt-16 grid bg-signal text-white lg:grid-cols-12">
-					{/* The eyes from the hero, peeking over the closing block. */}
-					<PeekingEyes
-						outline="var(--color-signal)"
-						className="absolute right-[8%] bottom-full w-20 sm:w-28"
-					/>
-					<div
-						aria-hidden="true"
-						className="halftone pointer-events-none absolute inset-y-0 right-0 w-1/2 text-white/25 [--dot:1.8px] [--pitch:10px] [mask-image:linear-gradient(to_left,black,transparent)]"
-					/>
-					<div className="relative px-5 py-14 sm:px-8 lg:col-span-7 lg:py-20">
-						<WordReveal
-							text="Add link previews to your app."
-							className="font-normal text-[clamp(2.25rem,5vw,4.5rem)] leading-[0.95] tracking-[-0.045em]"
-						/>
-						<p className="mt-5 max-w-[46ch] text-lg text-white/80">
-							Install the package, call <code>preview()</code>, render the card.
-							The quick start walks through it in a few minutes.
+					<div className="border-rule border-b px-5 py-10 sm:px-8 lg:border-r lg:border-b-0">
+						<h2 className="font-medium text-lg tracking-tight">
+							Runs where fetch runs
+						</h2>
+						<ul className="mt-4 flex flex-wrap gap-2">
+							{runtimes.map(([name, href]) => (
+								<li key={name}>
+									<Link
+										href={href}
+										className="press inline-flex min-h-10 items-center border border-rule px-3 font-mono text-xs transition-[background-color,color,transform] hover:bg-fd-foreground hover:text-fd-background"
+									>
+										{name}
+									</Link>
+								</li>
+							))}
+						</ul>
+						<p className="mt-4 text-fd-muted-foreground text-sm leading-relaxed">
+							ESM and CommonJS with TypeScript declarations, on Node.js 22.12+
+							and any runtime with Web Streams.
 						</p>
 					</div>
-					<div className="relative flex flex-col justify-end gap-3 px-5 pb-14 sm:px-8 lg:col-span-5 lg:py-20">
-						<InstallCommand tone="signal" />
+					<div className="px-5 py-10 sm:px-8">
+						<h2 className="font-medium text-lg tracking-tight">
+							Choosing a library?
+						</h2>
+						<ul className="mt-4 grid">
+							{comparisons.map(([label, href]) => (
+								<li key={label} className="border-rule border-b first:border-t">
+									<Link
+										href={href}
+										className="group flex min-h-11 items-center justify-between gap-4 text-sm transition-colors hover:text-signal-text"
+									>
+										{label}
+										<ArrowIcon />
+									</Link>
+								</li>
+							))}
+						</ul>
+					</div>
+				</section>
+
+				{/* Close: the next step, nothing else. */}
+				<section className="grid gap-8 px-5 py-14 sm:px-8 lg:grid-cols-12 lg:py-20">
+					<div className="lg:col-span-7">
+						<h2 className="font-normal text-[clamp(2rem,4vw,3.5rem)] leading-[0.98] tracking-[-0.045em]">
+							Add link previews to your app.
+						</h2>
+						<p className="mt-4 max-w-[46ch] text-fd-muted-foreground text-lg">
+							Install, call <code>preview()</code>, render the card.
+						</p>
+					</div>
+					<div className="flex flex-col justify-end gap-3 lg:col-span-5">
+						<InstallCommand />
 						<Link
 							href="/quick-start/"
-							className="flex min-h-12 items-center justify-between bg-white press px-4 font-medium text-signal text-sm transition-[background-color,color,transform] hover:bg-fd-foreground hover:text-fd-background"
+							className="press group flex min-h-12 items-center justify-between bg-fd-foreground px-4 font-medium text-fd-background text-sm transition-[background-color,color,transform] hover:bg-signal hover:text-signal-ink"
 						>
 							Read the quick start
 							<ArrowIcon />
@@ -362,18 +310,6 @@ export default function HomePage() {
 						<Link href="/api/" className="hover:text-fd-foreground">
 							API
 						</Link>
-						<Link
-							href="/guides/link-preview-js-alternative/"
-							className="hover:text-fd-foreground"
-						>
-							vs link-preview-js
-						</Link>
-						<Link
-							href="/guides/open-graph-scraper-alternative/"
-							className="hover:text-fd-foreground"
-						>
-							vs open-graph-scraper
-						</Link>
 						<a
 							href={`${repository}/releases`}
 							className="hover:text-fd-foreground"
@@ -389,64 +325,11 @@ export default function HomePage() {
 						<a href="llms.txt" className="hover:text-fd-foreground">
 							llms.txt
 						</a>
-						<a href="sitemap.xml" className="hover:text-fd-foreground">
-							Sitemap
-						</a>
 						<span className="ml-auto">{author}</span>
 					</nav>
 				</footer>
-				<WordReveal
-					as="p"
-					text="linkpeek"
-					className="pointer-events-none select-none overflow-hidden border-rule border-t px-3 pt-4 font-medium text-[clamp(5rem,23.5vw,21.5rem)] leading-[0.74] tracking-[-0.065em]"
-				/>
 			</div>
 		</main>
-	);
-}
-
-// A section on the grid: the route it documents as a mono link, the heading
-// and lede in the left column, the content across the rest.
-function Row({
-	path,
-	href,
-	title,
-	lede,
-	children,
-}: {
-	path: string;
-	href: string;
-	title: string;
-	lede: ReactNode;
-	children: ReactNode;
-}) {
-	const id = path.slice(1);
-	return (
-		<section
-			id={id}
-			aria-labelledby={`${id}-title`}
-			className="grid border-rule border-b lg:grid-cols-12"
-		>
-			<div className="border-rule px-5 pt-10 pb-6 sm:px-8 lg:col-span-4 lg:border-r lg:py-12">
-				<Link
-					href={href}
-					className="font-mono text-fd-muted-foreground text-xs hover:text-signal"
-				>
-					{path}
-				</Link>
-				<WordReveal
-					id={`${id}-title`}
-					text={title}
-					className="mt-4 font-normal text-[clamp(1.75rem,2.6vw,2.5rem)] leading-[1.02] tracking-[-0.04em]"
-				/>
-				<p className="mt-4 max-w-[46ch] text-fd-muted-foreground leading-relaxed">
-					{lede}
-				</p>
-			</div>
-			<div className="min-w-0 px-5 pb-10 sm:px-8 lg:col-span-8 lg:py-12 [&_.bars]:my-0">
-				{children}
-			</div>
-		</section>
 	);
 }
 

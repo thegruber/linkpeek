@@ -6,6 +6,7 @@ import {
 	useReducedMotion,
 	useSpring,
 } from "motion/react";
+import type React from "react";
 import { type RefObject, useEffect, useRef } from "react";
 
 interface Point {
@@ -92,11 +93,13 @@ export function useGaze(
  */
 export function PeekingEyes({
 	className,
+	style,
 	sclera = "#ffffff",
-	pupil = "#0a1a4f",
+	pupil = "#0b0b0c",
 	outline,
 }: {
 	className?: string;
+	style?: React.CSSProperties;
 	sclera?: string;
 	pupil?: string;
 	outline?: string;
@@ -108,7 +111,13 @@ export function PeekingEyes({
 		origin: (box) => ({ x: box.left + box.width / 2, y: box.bottom }),
 	});
 	return (
-		<svg ref={ref} viewBox="0 0 48 24" aria-hidden="true" className={className}>
+		<svg
+			ref={ref}
+			viewBox="0 0 48 24"
+			aria-hidden="true"
+			className={className}
+			style={style}
+		>
 			<path
 				d="M1.5 24a10.5 10.5 0 0 1 21 0zM25.5 24a10.5 10.5 0 0 1 21 0z"
 				fill={sclera}

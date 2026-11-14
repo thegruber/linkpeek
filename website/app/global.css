@@ -7,8 +7,8 @@
 
 /*
  * linkpeek: a technical spec sheet on a Swiss grid. Paper and ink, 1px rules
- * that form rectangles, square corners, and one signal blue for the thing
- * that matters on each surface. Halftone dots are the only texture.
+ * that form rectangles, square corners. One highlighter yellow marks what
+ * linkpeek reads: the <head>. Halftone dots are the only texture.
  */
 @theme {
 	--font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
@@ -23,27 +23,33 @@
 	--radius-3xl: 0px;
 
 	--color-fd-background: #ffffff;
-	--color-fd-foreground: #111316;
+	--color-fd-foreground: #111111;
 	--color-fd-muted: #f3f4f5;
 	--color-fd-muted-foreground: #5c616b;
 	--color-fd-popover: #ffffff;
-	--color-fd-popover-foreground: #111316;
+	--color-fd-popover-foreground: #111111;
 	--color-fd-card: #f7f7f8;
-	--color-fd-card-foreground: #111316;
+	--color-fd-card-foreground: #111111;
 	--color-fd-border: #dcdde0;
-	--color-fd-primary: #165dff;
+	--color-fd-primary: #111111;
 	--color-fd-primary-foreground: #ffffff;
 	--color-fd-secondary: #eff0f2;
-	--color-fd-secondary-foreground: #111316;
-	--color-fd-accent: #e9efff;
-	--color-fd-accent-foreground: #0e3fb8;
-	--color-fd-ring: #165dff;
+	--color-fd-secondary-foreground: #111111;
+	--color-fd-accent: #fff4b8;
+	--color-fd-accent-foreground: #111111;
+	--color-fd-ring: #111111;
 
-	--color-signal: #165dff;
-	--color-signal-ink: #ffffff;
-	--color-signal-wash: rgb(22 93 255 / 0.1);
+	--color-signal: #ffe14d;
+	--color-signal-ink: #111111;
+	--color-signal-text: #7a5c00;
+	--color-signal-wash: rgb(255 225 77 / 0.35);
+	--color-mark: #ffe14d;
+	--color-mark-ink: #111111;
 	--color-bar: #d3d5da;
 	--color-rule: #dcdde0;
+	--color-logo-tile: #111111;
+	--color-logo-thumb: #ffe14d;
+	--color-logo-line: #111111;
 }
 
 .dark {
@@ -56,19 +62,23 @@
 	--color-fd-card: #111317;
 	--color-fd-card-foreground: #ececee;
 	--color-fd-border: #24272d;
-	--color-fd-primary: #5b86ff;
-	--color-fd-primary-foreground: #0b0c0e;
+	--color-fd-primary: #ffe14d;
+	--color-fd-primary-foreground: #111111;
 	--color-fd-secondary: #17191e;
 	--color-fd-secondary-foreground: #ececee;
-	--color-fd-accent: #142045;
-	--color-fd-accent-foreground: #c6d4ff;
-	--color-fd-ring: #5b86ff;
+	--color-fd-accent: #2a2508;
+	--color-fd-accent-foreground: #ffe98a;
+	--color-fd-ring: #ffe14d;
 
-	--color-signal: #3d77ff;
-	--color-signal-ink: #ffffff;
-	--color-signal-wash: rgb(61 119 255 / 0.16);
+	--color-signal: #ffe14d;
+	--color-signal-ink: #111111;
+	--color-signal-text: #ffe14d;
+	--color-signal-wash: rgb(255 225 77 / 0.2);
+	--color-mark: #ffe14d;
+	--color-mark-ink: #111111;
 	--color-bar: #2b2e35;
 	--color-rule: #24272d;
+	--color-logo-tile: #222226;
 }
 
 html {
@@ -87,11 +97,11 @@ html > body[data-scroll-locked] {
 body {
 	-webkit-font-smoothing: antialiased;
 	letter-spacing: -0.01em;
-	caret-color: var(--color-signal);
+	caret-color: var(--color-fd-foreground);
 }
 
 :focus-visible {
-	outline: 2px solid var(--color-signal);
+	outline: 2px solid var(--color-fd-ring);
 	outline-offset: 2px;
 }
 
@@ -134,17 +144,8 @@ body {
 	transform: translate(2px, -3px);
 }
 
-/*
- * The focal moment: the eyes rise over </head>, the body streams in below
- * the rule and stops, then the eyes glance down toward the live demo.
- */
+/* Benchmark bars grow once when their chart scrolls into view. */
 @media (prefers-reduced-motion: no-preference) {
-	.peek-rise {
-		animation: peek-rise 900ms cubic-bezier(0.16, 1, 0.3, 1) 250ms both;
-	}
-	.peek-body {
-		animation: peek-stream 1100ms cubic-bezier(0.16, 1, 0.3, 1) 350ms both;
-	}
 	.bars[data-visible="false"] .bar {
 		transform: scaleX(0);
 	}
@@ -169,48 +170,6 @@ body {
 	transform: scale(0.97);
 }
 
-/* Headline: each line rises out of its own mask, the lead of the hero. */
-.reveal-line {
-	display: inline-block;
-	overflow: clip;
-	overflow-clip-margin: 0.12em;
-	padding-bottom: 0.06em;
-	vertical-align: top;
-}
-.reveal-line > span {
-	display: inline-block;
-}
-@media (prefers-reduced-motion: no-preference) {
-	.reveal-line > span {
-		animation: line-rise 820ms var(--ease-out) var(--d, 0ms) both;
-	}
-}
-@keyframes line-rise {
-	from {
-		transform: translateY(105%);
-	}
-}
-
-/* Section headings: words rise from their masks in reading order. */
-.reveal-word {
-	display: inline-block;
-	overflow: clip;
-	overflow-clip-margin: 0.1em;
-	padding-bottom: 0.08em;
-	margin-bottom: -0.08em;
-	vertical-align: top;
-}
-.reveal-word > span {
-	display: inline-block;
-}
-[data-reveal="pending"] .reveal-word > span {
-	transform: translateY(110%);
-}
-[data-reveal="in"] .reveal-word > span {
-	animation: line-rise 760ms var(--ease-out) both;
-	animation-delay: calc(min(var(--i, 0), 8) * 42ms);
-}
-
 /* Showcase strip: one slow, linear loop that pauses on hover. */
 @media (prefers-reduced-motion: no-preference) {
 	.marquee-track {
@@ -232,24 +191,6 @@ body {
 	}
 }
 
-.peek-eyes {
-	transform-box: fill-box;
-	transform-origin: center;
-}
-
-@keyframes peek-rise {
-	from {
-		transform: translateY(150px);
-	}
-}
-@keyframes peek-stream {
-	from {
-		clip-path: inset(0 0 100% 0);
-	}
-	to {
-		clip-path: inset(0 0 0 0);
-	}
-}
 @keyframes bar-grow {
 	from {
 		transform: scaleX(0);
@@ -259,17 +200,42 @@ body {
 	transform-origin: left center;
 }
 
+/* The hero's one moment: a highlighter stroke across "link preview". */
+.highlight {
+	position: relative;
+	z-index: 0;
+	white-space: nowrap;
+}
+.highlight::before {
+	content: "";
+	position: absolute;
+	z-index: -1;
+	inset: 0.12em -0.08em 0.02em;
+	background: var(--color-mark);
+	transform-origin: left center;
+}
+@media (prefers-reduced-motion: no-preference) {
+	.highlight::before {
+		animation: highlight-in 720ms var(--ease-in-out) 350ms both;
+	}
+}
+@keyframes highlight-in {
+	from {
+		transform: scaleX(0);
+	}
+}
+
 /* The hero URL unfurls into its card. */
 @keyframes unfurl {
 	from {
 		opacity: 0;
 		transform: translateY(-6px) scale(0.985);
-		clip-path: inset(0 0 100% 0 round 14px);
+		clip-path: inset(0 0 100% 0);
 	}
 	to {
 		opacity: 1;
 		transform: none;
-		clip-path: inset(0 0 0 0 round 14px);
+		clip-path: inset(0 0 0 0);
 	}
 }
 

@@ -1,13 +1,15 @@
 // The linkpeek mark: a link preview card, tilted as if just pasted, with two
 // eyes peeking over its top edge and looking down at it.
-const BLUE = "#165dff";
-const NAVY = "#0a1a4f";
-const SOFT = "#b4c8ff";
+// Colors come from CSS tokens so the mark follows the site palette.
+const TILE = "var(--color-logo-tile)";
+const LINE = "var(--color-logo-line)";
+const NAVY = "#0b0b0c";
+const SOFT = "var(--color-logo-thumb)";
 
 export function Mark({ className = "size-6" }: { className?: string }) {
 	return (
 		<svg viewBox="0 0 64 64" aria-hidden="true" className={className}>
-			<rect width="64" height="64" fill={BLUE} />
+			<rect width="64" height="64" fill={TILE} />
 			<g transform="translate(0 -2) rotate(-8 32 40)">
 				<circle cx="35" cy="26" r="7.5" fill="#fff" />
 				<circle cx="50.5" cy="26" r="7.5" fill="#fff" />
@@ -22,11 +24,11 @@ export function Mark({ className = "size-6" }: { className?: string }) {
 					height="26"
 					rx="1.5"
 					fill="#fff"
-					stroke={BLUE}
+					stroke={TILE}
 					strokeWidth="3"
 				/>
 				<rect x="12.5" y="35" width="12" height="15" fill={SOFT} />
-				<rect x="28.5" y="36.5" width="21" height="4" fill={BLUE} />
+				<rect x="28.5" y="36.5" width="21" height="4" fill={LINE} />
 				<rect x="28.5" y="44" width="13" height="3.5" fill={SOFT} />
 			</g>
 		</svg>

@@ -17,7 +17,7 @@ export async function GET(
 	if (slugs.length && !page) return new Response(null, { status: 404 });
 	const title = page
 		? (page.data.heading ?? page.data.metaTitle ?? page.data.title)
-		: "Fast, safe link previews for TypeScript";
+		: "Turn any URL into a link preview.";
 	const description =
 		page?.data.description ??
 		"Open Graph, Twitter Card and JSON-LD metadata from any URL. Reads only the head, blocks private addresses, one dependency.";
@@ -42,19 +42,19 @@ export async function GET(
 				flexDirection: "column",
 				position: "relative",
 				padding: "64px 80px 0",
-				background: "#0d0f14",
-				color: "#eceef3",
+				background: "#ffffff",
+				color: "#111111",
 				fontFamily: fonts.length ? "Grotesk" : undefined,
 			}}
 		>
 			<div style={{ display: "flex", alignItems: "center", gap: 18 }}>
 				<svg width="56" height="56" viewBox="0 0 64 64" aria-hidden="true">
-					<rect width="64" height="64" fill="#165dff" />
+					<rect width="64" height="64" fill="#111111" />
 					<g transform="translate(0 -2) rotate(-8 32 40)">
 						<circle cx="35" cy="26" r="7.5" fill="#fff" />
 						<circle cx="50.5" cy="26" r="7.5" fill="#fff" />
-						<circle cx="33.4" cy="28.2" r="3.2" fill="#0a1a4f" />
-						<circle cx="48.9" cy="28.2" r="3.2" fill="#0a1a4f" />
+						<circle cx="33.4" cy="28.2" r="3.2" fill="#111111" />
+						<circle cx="48.9" cy="28.2" r="3.2" fill="#111111" />
 						<rect
 							x="7"
 							y="29.5"
@@ -62,7 +62,7 @@ export async function GET(
 							height="26"
 							rx="1.5"
 							fill="#fff"
-							stroke="#165dff"
+							stroke="#111111"
 							strokeWidth="3"
 						/>
 						<rect
@@ -71,7 +71,7 @@ export async function GET(
 							width="12"
 							height="15"
 							rx="0"
-							fill="#b4c8ff"
+							fill="#ffe14d"
 						/>
 						<rect
 							x="28.5"
@@ -79,7 +79,7 @@ export async function GET(
 							width="21"
 							height="4"
 							rx="0"
-							fill="#165dff"
+							fill="#111111"
 						/>
 						<rect
 							x="28.5"
@@ -87,7 +87,7 @@ export async function GET(
 							width="13"
 							height="3.5"
 							rx="0"
-							fill="#b4c8ff"
+							fill="#ffe14d"
 						/>
 					</g>
 				</svg>
@@ -96,7 +96,7 @@ export async function GET(
 				>
 					linkpeek
 				</span>
-				<span style={{ fontSize: 26, color: "#9aa1b0", marginLeft: 14 }}>
+				<span style={{ fontSize: 26, color: "#5c616b", marginLeft: 14 }}>
 					{section}
 				</span>
 			</div>
@@ -110,6 +110,7 @@ export async function GET(
 			>
 				<div
 					style={{
+						display: "flex",
 						fontSize: title.length > 34 ? 64 : 78,
 						fontWeight: 500,
 						lineHeight: 1.04,
@@ -117,13 +118,23 @@ export async function GET(
 						maxWidth: 900,
 					}}
 				>
-					{title}
+					{page ? (
+						title
+					) : (
+						<span style={{ display: "flex", flexWrap: "wrap" }}>
+							Turn any URL into a&nbsp;
+							<span style={{ background: "#ffe14d", padding: "0 10px" }}>
+								link preview
+							</span>
+							.
+						</span>
+					)}
 				</div>
 				<div
 					style={{
 						fontSize: 27,
 						lineHeight: 1.4,
-						color: "#9aa1b0",
+						color: "#5c616b",
 						maxWidth: 820,
 					}}
 				>
@@ -140,12 +151,12 @@ export async function GET(
 			>
 				<path
 					fill="#fff"
-					stroke="#165dff"
+					stroke="#111111"
 					strokeWidth="2.5"
 					d="M1.5 24a10.5 10.5 0 0 1 21 0zM25.5 24a10.5 10.5 0 0 1 21 0z"
 				/>
-				<circle cx="10" cy="20" r="3.8" fill="#0a1a4f" />
-				<circle cx="34" cy="20" r="3.8" fill="#0a1a4f" />
+				<circle cx="10" cy="20" r="3.8" fill="#111111" />
+				<circle cx="34" cy="20" r="3.8" fill="#111111" />
 			</svg>
 			<div
 				style={{
@@ -154,7 +165,7 @@ export async function GET(
 					right: 0,
 					bottom: 96,
 					height: 6,
-					background: "#165dff",
+					background: "#ffe14d",
 				}}
 			/>
 			<div
@@ -166,10 +177,18 @@ export async function GET(
 					display: "flex",
 					justifyContent: "space-between",
 					fontSize: 24,
-					color: "#9aa1b0",
+					color: "#5c616b",
 				}}
 			>
-				<span style={{ color: "#7b9bff" }}>npm install linkpeek</span>
+				<span
+					style={{
+						color: "#111111",
+						background: "#ffe14d",
+						padding: "2px 8px",
+					}}
+				>
+					npm install linkpeek
+				</span>
 				<span>Node.js · Bun · Deno · Edge</span>
 			</div>
 		</div>,
