@@ -24,8 +24,8 @@ interface State {
 	weeks: WeeklyDownloads[];
 }
 
-// Weekly npm downloads as a small sparkline. It is an accessory next to the
-// numbers, so it has no axes or tooltip and stays hidden if the API fails.
+// Weekly npm downloads as a stat cell with a small sparkline. The number is
+// live from the npm API; without it the cell shows a dash.
 export function Downloads() {
 	const [state, setState] = useState<State | null>(null);
 	useEffect(() => {
@@ -46,22 +46,25 @@ export function Downloads() {
 			.catch(() => {});
 		return () => controller.abort();
 	}, []);
-	if (!state) return null;
 	return (
 		<a
 			href={npmUrl}
-			className="inline-flex items-center gap-3 rounded-full border bg-fd-card py-1.5 pr-4 pl-2 text-fd-muted-foreground text-sm transition-colors hover:border-signal hover:text-fd-foreground"
+			className="group flex h-full flex-col justify-between gap-6 px-5 py-6 transition-colors hover:bg-fd-card"
 		>
-			<Sparkline weeks={state.weeks} />
-			<span>
-				<strong className="font-semibold text-fd-foreground">
-					{full.format(state.week)}
-				</strong>{" "}
-				downloads last week
+			<span className="figures block font-normal text-[clamp(2.5rem,4vw,3.75rem)] leading-none tracking-[-0.045em]">
+				{state ? full.format(state.week) : "—"}
 			</span>
-			<span className="hidden sm:inline">
-				{compact.format(state.total)}{" "}
-				{state.sinceLaunch ? "since launch" : "in the past year"}
+			<span className="flex items-end justify-between gap-4">
+				<span className="text-fd-muted-foreground text-sm">
+					npm downloads last week
+					{state && (
+						<span className="block font-mono text-xs">
+							{compact.format(state.total)}{" "}
+							{state.sinceLaunch ? "since launch" : "in the past year"}
+						</span>
+					)}
+				</span>
+				{state && <Sparkline weeks={state.weeks} />}
 			</span>
 		</a>
 	);
@@ -81,7 +84,7 @@ function Sparkline({ weeks }: { weeks: WeeklyDownloads[] }) {
 			height={HEIGHT}
 			viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
 			aria-hidden="true"
-			className="h-8 w-20 sm:w-[132px]"
+			className="h-10 w-28 shrink-0"
 			preserveAspectRatio="none"
 		>
 			<path

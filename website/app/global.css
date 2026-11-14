@@ -6,57 +6,69 @@
 @source "../content";
 
 /*
- * linkpeek palette: cool paper and ink with the favicon's signal blue. The
- * blue marks the one thing that matters on each surface (linkpeek's bar, the
- * primary action, the active page); everything else stays neutral.
+ * linkpeek: a technical spec sheet on a Swiss grid. Paper and ink, 1px rules
+ * that form rectangles, square corners, and one signal blue for the thing
+ * that matters on each surface. Halftone dots are the only texture.
  */
 @theme {
-	--font-sans: var(--font-grotesk), ui-sans-serif, system-ui, sans-serif;
-	--font-mono: var(--font-code), ui-monospace, SFMono-Regular, monospace;
+	--font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+	--font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
 
-	--color-fd-background: #fcfcfd;
-	--color-fd-foreground: #12141a;
-	--color-fd-muted: #f2f3f6;
-	--color-fd-muted-foreground: #5a6070;
+	--radius-xs: 0px;
+	--radius-sm: 0px;
+	--radius-md: 0px;
+	--radius-lg: 0px;
+	--radius-xl: 0px;
+	--radius-2xl: 0px;
+	--radius-3xl: 0px;
+
+	--color-fd-background: #ffffff;
+	--color-fd-foreground: #111316;
+	--color-fd-muted: #f3f4f5;
+	--color-fd-muted-foreground: #5c616b;
 	--color-fd-popover: #ffffff;
-	--color-fd-popover-foreground: #12141a;
-	--color-fd-card: #f6f7f9;
-	--color-fd-card-foreground: #12141a;
-	--color-fd-border: #e3e5ea;
+	--color-fd-popover-foreground: #111316;
+	--color-fd-card: #f7f7f8;
+	--color-fd-card-foreground: #111316;
+	--color-fd-border: #dcdde0;
 	--color-fd-primary: #165dff;
 	--color-fd-primary-foreground: #ffffff;
-	--color-fd-secondary: #eef0f4;
-	--color-fd-secondary-foreground: #12141a;
-	--color-fd-accent: #e8eeff;
-	--color-fd-accent-foreground: #0f3fb3;
+	--color-fd-secondary: #eff0f2;
+	--color-fd-secondary-foreground: #111316;
+	--color-fd-accent: #e9efff;
+	--color-fd-accent-foreground: #0e3fb8;
 	--color-fd-ring: #165dff;
 
 	--color-signal: #165dff;
+	--color-signal-ink: #ffffff;
 	--color-signal-wash: rgb(22 93 255 / 0.1);
-	--color-bar: #d5d8e0;
+	--color-bar: #d3d5da;
+	--color-rule: #dcdde0;
 }
 
 .dark {
-	--color-fd-background: #0d0f14;
-	--color-fd-foreground: #eceef3;
-	--color-fd-muted: #171a22;
-	--color-fd-muted-foreground: #9aa1b0;
-	--color-fd-popover: #141720;
-	--color-fd-popover-foreground: #eceef3;
-	--color-fd-card: #12151c;
-	--color-fd-card-foreground: #eceef3;
-	--color-fd-border: #252a35;
-	--color-fd-primary: #7b9bff;
-	--color-fd-primary-foreground: #0d0f14;
-	--color-fd-secondary: #1a1e27;
-	--color-fd-secondary-foreground: #eceef3;
-	--color-fd-accent: #1b2440;
-	--color-fd-accent-foreground: #c9d6ff;
-	--color-fd-ring: #7b9bff;
+	--color-fd-background: #0b0c0e;
+	--color-fd-foreground: #ececee;
+	--color-fd-muted: #15171b;
+	--color-fd-muted-foreground: #9a9fa9;
+	--color-fd-popover: #121418;
+	--color-fd-popover-foreground: #ececee;
+	--color-fd-card: #111317;
+	--color-fd-card-foreground: #ececee;
+	--color-fd-border: #24272d;
+	--color-fd-primary: #5b86ff;
+	--color-fd-primary-foreground: #0b0c0e;
+	--color-fd-secondary: #17191e;
+	--color-fd-secondary-foreground: #ececee;
+	--color-fd-accent: #142045;
+	--color-fd-accent-foreground: #c6d4ff;
+	--color-fd-ring: #5b86ff;
 
-	--color-signal: #7b9bff;
-	--color-signal-wash: rgb(123 155 255 / 0.14);
-	--color-bar: #2c313d;
+	--color-signal: #3d77ff;
+	--color-signal-ink: #ffffff;
+	--color-signal-wash: rgb(61 119 255 / 0.16);
+	--color-bar: #2b2e35;
+	--color-rule: #24272d;
 }
 
 html {
@@ -73,8 +85,39 @@ html > body[data-scroll-locked] {
 }
 
 body {
-	font-feature-settings: "ss01", "cv11";
 	-webkit-font-smoothing: antialiased;
+	letter-spacing: -0.01em;
+	caret-color: var(--color-signal);
+}
+
+:focus-visible {
+	outline: 2px solid var(--color-signal);
+	outline-offset: 2px;
+}
+
+* {
+	scrollbar-width: thin;
+	scrollbar-color: var(--color-bar) transparent;
+}
+
+/* Square corners everywhere, including the docs UI's pills and toggles. */
+.rounded-full:not(svg *) {
+	border-radius: 0;
+}
+
+/* Halftone: the only texture, used on brand surfaces. */
+.halftone {
+	background-image: radial-gradient(
+		circle at center,
+		currentColor 0 var(--dot, 1.6px),
+		transparent calc(var(--dot, 1.6px) + 0.5px)
+	);
+	background-size: var(--pitch, 8px) var(--pitch, 8px);
+}
+
+/* Data rows use figures of one width so values line up. */
+.figures {
+	font-variant-numeric: tabular-nums;
 }
 
 ::selection {
@@ -91,7 +134,61 @@ body {
 	transform: translate(2px, -3px);
 }
 
-/* The one orchestrated moment: the hero URL unfurls into its card. */
+/*
+ * The focal moment: the eyes rise over </head>, the body streams in below
+ * the rule and stops, then the eyes glance down toward the live demo.
+ */
+@media (prefers-reduced-motion: no-preference) {
+	.peek-rise {
+		animation: peek-rise 900ms cubic-bezier(0.16, 1, 0.3, 1) 250ms both;
+	}
+	.peek-body {
+		animation: peek-stream 1100ms cubic-bezier(0.16, 1, 0.3, 1) 350ms both;
+	}
+	.peek-glance {
+		animation: peek-glance 520ms cubic-bezier(0.16, 1, 0.3, 1) 1300ms both;
+	}
+	.bars[data-visible="false"] .bar {
+		transform: scaleX(0);
+	}
+	.bars[data-visible="true"] .bar {
+		animation: bar-grow 760ms cubic-bezier(0.16, 1, 0.3, 1) both;
+		animation-delay: calc(var(--i, 0) * 70ms);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.peek-glance {
+		transform: translate(-10px, 22px);
+	}
+}
+@keyframes peek-rise {
+	from {
+		transform: translateY(150px);
+	}
+}
+@keyframes peek-stream {
+	from {
+		clip-path: inset(0 0 100% 0);
+	}
+	to {
+		clip-path: inset(0 0 0 0);
+	}
+}
+@keyframes peek-glance {
+	to {
+		transform: translate(-10px, 22px);
+	}
+}
+@keyframes bar-grow {
+	from {
+		transform: scaleX(0);
+	}
+}
+.bar {
+	transform-origin: left center;
+}
+
+/* The hero URL unfurls into its card. */
 @keyframes unfurl {
 	from {
 		opacity: 0;

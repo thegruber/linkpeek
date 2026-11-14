@@ -1,18 +1,18 @@
 import type { Metadata, Viewport } from "next";
-import { JetBrains_Mono, Schibsted_Grotesk } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import type { ReactNode } from "react";
 import { Provider } from "@/components/provider";
 import { appName, basePath, home, siteUrl } from "@/lib/shared";
 import "./global.css";
 
-const grotesk = Schibsted_Grotesk({
+const sans = Geist({
 	subsets: ["latin"],
-	variable: "--font-grotesk",
+	variable: "--font-geist",
 	display: "swap",
 });
-const code = JetBrains_Mono({
+const mono = Geist_Mono({
 	subsets: ["latin"],
-	variable: "--font-code",
+	variable: "--font-geist-mono",
 	display: "swap",
 });
 
@@ -51,8 +51,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
 	themeColor: [
-		{ media: "(prefers-color-scheme: light)", color: "#fcfcfd" },
-		{ media: "(prefers-color-scheme: dark)", color: "#0d0f14" },
+		{ media: "(prefers-color-scheme: light)", color: "#ffffff" },
+		{ media: "(prefers-color-scheme: dark)", color: "#0b0c0e" },
 	],
 	colorScheme: "light dark",
 };
@@ -61,7 +61,7 @@ export default function Layout({ children }: { children: ReactNode }) {
 	return (
 		<html
 			lang="en"
-			className={`${grotesk.variable} ${code.variable}`}
+			className={`${sans.variable} ${mono.variable}`}
 			suppressHydrationWarning
 		>
 			<body className="flex min-h-screen flex-col">

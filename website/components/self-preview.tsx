@@ -96,7 +96,6 @@ export function UnfurlDemo() {
 	const { fields, ms } = useLivePreview();
 	const [remote, setRemote] = useState<Remote>({ state: "idle" });
 	const [input, setInput] = useState("");
-	const [typing, setTyping] = useState(false);
 
 	const own: CardData = {
 		url: fields.canonicalUrl,
@@ -166,16 +165,19 @@ export function UnfurlDemo() {
 						: `Parsed from this page by linkpeek in ${ms < 1 ? ms.toFixed(2) : ms.toFixed(1)} ms (median of 9 runs), in your browser.`;
 
 	return (
-		<div className="relative min-w-0">
+		<div className="flex h-full min-w-0 flex-col border border-rule bg-fd-background">
 			<form
-				className="mb-9 flex gap-2"
+				className="flex border-rule border-b"
 				onSubmit={(event) => {
 					event.preventDefault();
 					if (input.trim()) void submit(input);
 				}}
 			>
-				<label htmlFor="try-url" className="sr-only">
-					URL to preview
+				<label
+					htmlFor="try-url"
+					className="flex items-center border-rule border-r px-4 font-mono text-fd-muted-foreground text-xs"
+				>
+					url
 				</label>
 				<input
 					id="try-url"
@@ -187,24 +189,21 @@ export function UnfurlDemo() {
 					placeholder="Try any URL, like github.com"
 					value={input}
 					onChange={(event) => setInput(event.target.value)}
-					onFocus={() => setTyping(true)}
-					onBlur={() => setTyping(false)}
-					className="min-h-11 min-w-0 flex-1 rounded-xl border bg-fd-background px-4 text-sm outline-none transition-colors placeholder:text-fd-muted-foreground focus-visible:border-signal focus-visible:ring-2 focus-visible:ring-signal-wash"
+					className="min-h-12 min-w-0 flex-1 bg-transparent px-4 text-[0.95rem] outline-none placeholder:text-fd-muted-foreground focus-visible:bg-signal-wash"
 				/>
 				<button
 					type="submit"
 					disabled={remote.state === "loading"}
-					className="min-h-11 rounded-xl border bg-fd-background px-4 font-medium text-sm transition-colors hover:border-signal active:translate-y-px disabled:opacity-60"
+					className="min-h-12 bg-fd-foreground px-5 font-medium text-fd-background text-sm transition-colors hover:bg-signal hover:text-white active:translate-y-px disabled:opacity-60"
 				>
 					Preview
 				</button>
 			</form>
 			<div
-				className="relative rounded-2xl border bg-fd-card p-4 shadow-[0_1px_0_rgb(0_0_0/0.02),0_24px_48px_-24px_rgb(18_20_26/0.18)] sm:p-5"
+				className="flex-1 bg-fd-card p-4 sm:p-6"
 				aria-busy={remote.state === "loading"}
 			>
-				<Peekers looking={typing ? "input" : "card"} />
-				<p className="mb-3 w-fit max-w-full truncate rounded-2xl rounded-bl-md bg-fd-secondary px-3.5 py-2 text-sm">
+				<p className="mb-3 w-fit max-w-full truncate border border-rule bg-fd-background px-3 py-1.5 text-sm">
 					Have you seen{" "}
 					<span className="text-signal">
 						{(remote.state === "loading" ? remote.url : card.url).replace(
@@ -218,7 +217,7 @@ export function UnfurlDemo() {
 					key={card.url}
 					href={card.url}
 					rel={card.local ? undefined : "nofollow noopener noreferrer ugc"}
-					className={`unfurl group block overflow-hidden rounded-[14px] border bg-fd-background transition-[border-color,opacity] hover:border-signal ${remote.state === "loading" ? "opacity-50" : ""}`}
+					className={`unfurl group grid border border-rule bg-fd-background transition-[border-color,opacity] hover:border-signal sm:grid-cols-[minmax(0,15rem)_minmax(0,1fr)] ${remote.state === "loading" ? "opacity-50" : ""}`}
 				>
 					{card.image && (
 						// biome-ignore lint/performance/noImgElement: static export; remote images are third-party
@@ -231,14 +230,14 @@ export function UnfurlDemo() {
 							onError={(event) => {
 								event.currentTarget.hidden = true;
 							}}
-							className="aspect-[1200/630] w-full border-b bg-fd-muted object-cover"
+							className="aspect-[1200/630] h-full w-full border-rule border-b bg-fd-muted object-cover sm:border-r sm:border-b-0"
 						/>
 					)}
-					<span className="grid gap-1 px-4 py-3.5">
-						<span className="text-fd-muted-foreground text-xs">
+					<span className="grid content-center gap-1 px-4 py-3.5">
+						<span className="font-mono text-fd-muted-foreground text-xs">
 							{card.host}
 						</span>
-						<strong className="line-clamp-2 font-semibold text-[0.95rem] leading-snug">
+						<strong className="line-clamp-2 font-medium text-[0.95rem] leading-snug tracking-tight">
 							{card.title ?? card.host}
 						</strong>
 						{card.description && (
@@ -250,7 +249,7 @@ export function UnfurlDemo() {
 				</a>
 			</div>
 			<p
-				className={`mt-3 min-h-5 text-xs ${remote.state === "error" ? "text-fd-foreground" : "text-fd-muted-foreground"}`}
+				className={`min-h-11 border-rule border-t px-4 py-3 font-mono text-xs ${remote.state === "error" ? "text-fd-foreground" : "text-fd-muted-foreground"}`}
 				aria-live="polite"
 			>
 				{status}
@@ -259,39 +258,11 @@ export function UnfurlDemo() {
 	);
 }
 
-// The brand's eyes, peeking over the top edge of the chat card like the
-// mark's eyes over its card. They look down at the card and up at the URL
-// field while a visitor types.
-function Peekers({ looking }: { looking: "card" | "input" }) {
-	return (
-		<svg
-			viewBox="0 0 48 24"
-			aria-hidden="true"
-			className="absolute -top-[22px] right-10 w-12"
-		>
-			<path
-				d="M1.5 24a10.5 10.5 0 0 1 21 0zM25.5 24a10.5 10.5 0 0 1 21 0z"
-				className="fill-fd-background stroke-signal"
-				strokeWidth="2.5"
-			/>
-			<g
-				className="transition-transform duration-300 ease-out motion-reduce:transition-none"
-				style={{
-					transform: looking === "input" ? "translate(1px, -6px)" : "none",
-				}}
-			>
-				<circle cx="10" cy="20" r="3.8" className="fill-fd-foreground" />
-				<circle cx="34" cy="20" r="3.8" className="fill-fd-foreground" />
-			</g>
-		</svg>
-	);
-}
-
 /** The same live result as JSON, next to the code that produces it. */
 export function LiveResult() {
 	const { fields } = useLivePreview();
 	return (
-		<pre className="h-full whitespace-pre-wrap break-all rounded-xl border bg-fd-card p-4 font-mono text-[0.8rem] leading-relaxed">
+		<pre className="m-0 h-full whitespace-pre-wrap break-all border border-rule bg-fd-card p-5 font-mono text-[0.8rem] leading-relaxed">
 			<code>{JSON.stringify(fields, null, 2)}</code>
 		</pre>
 	);

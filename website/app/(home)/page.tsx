@@ -2,11 +2,13 @@ import { ServerCodeBlock } from "fumadocs-ui/components/codeblock.rsc";
 import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { BenchmarkChart, BenchmarkHighlights } from "@/components/benchmarks";
+import { BenchmarkChart } from "@/components/benchmarks";
 import { Downloads } from "@/components/downloads";
 import { InstallCommand } from "@/components/install-command";
+import { Logo } from "@/components/logo";
+import { PeekPanel } from "@/components/peek-panel";
 import { LiveResult, UnfurlDemo } from "@/components/self-preview";
-import { benchmarkDate } from "@/lib/benchmarks";
+import { benchmarkDate, highlights } from "@/lib/benchmarks";
 import {
 	appName,
 	author,
@@ -112,6 +114,7 @@ const runtimes = [
 ];
 
 export default function HomePage() {
+	const stats = highlights();
 	return (
 		<main className="w-full">
 			<script
@@ -122,188 +125,229 @@ export default function HomePage() {
 				}}
 			/>
 
-			<section className="mx-auto grid max-w-6xl items-center gap-12 px-5 pt-14 pb-16 sm:px-8 md:pt-20 lg:grid-cols-[1.05fr_1fr] lg:gap-16 lg:pb-24">
-				<div className="min-w-0">
-					<h1 className="max-w-[16ch] font-semibold text-[2.5rem] leading-[1.05] tracking-[-0.03em] sm:text-[3.25rem]">
-						Fast, safe link previews for TypeScript
-					</h1>
-					<p className="mt-5 max-w-[56ch] text-fd-muted-foreground text-lg leading-relaxed">
-						linkpeek turns a URL into its title, description, image and favicon
-						from Open Graph, Twitter Card and JSON-LD. It reads only the page
-						head, blocks private addresses by default, and runs on Node.js, Bun,
-						Deno and edge runtimes.
-					</p>
-					<div className="mt-8 grid gap-4">
-						<InstallCommand />
-						<div className="flex flex-wrap gap-3">
-							<Link
-								href="/quick-start/"
-								className="inline-flex min-h-11 items-center rounded-xl bg-fd-primary px-5 font-medium text-fd-primary-foreground text-sm transition-[filter,transform] hover:brightness-110 active:translate-y-px"
-							>
-								Read the quick start
-							</Link>
-							<Link
-								href="/benchmarks/"
-								className="inline-flex min-h-11 items-center rounded-xl border px-5 font-medium text-sm transition-colors hover:border-signal active:translate-y-px"
-							>
-								See the benchmarks
-							</Link>
-						</div>
+			<div className="mx-auto max-w-[1440px] border-rule border-x">
+				{/* Hero: headline and the peek, then the pitch and the live demo. */}
+				<section className="grid border-rule border-b lg:grid-cols-12">
+					<div className="flex flex-col justify-end border-rule px-5 pt-14 pb-8 sm:px-8 lg:col-span-8 lg:border-r lg:pt-24 lg:pb-10">
+						<h1 className="font-normal text-[clamp(3rem,7.4vw,7.25rem)] leading-[0.9] tracking-[-0.05em]">
+							TypeScript link previews,{" "}
+							<span className="text-fd-muted-foreground">head first.</span>
+						</h1>
 					</div>
-					<div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-3">
-						<Downloads />
-						<span className="flex flex-wrap gap-1.5">
-							{badges.map((badge) => (
-								<a
-									key={badge.alt}
-									href={badge.href}
-									className="block leading-none transition-transform hover:-translate-y-px"
+					<div className="border-rule border-t lg:col-span-4 lg:border-t-0">
+						<PeekPanel />
+					</div>
+				</section>
+
+				<section className="grid border-rule border-b lg:grid-cols-12">
+					<div className="flex flex-col justify-between gap-10 border-rule px-5 py-8 sm:px-8 lg:col-span-5 lg:border-r lg:py-10">
+						<p className="max-w-[44ch] text-fd-muted-foreground text-lg leading-relaxed">
+							linkpeek turns a URL into its title, description, image and
+							favicon from Open Graph, Twitter Card and JSON-LD. It reads the{" "}
+							<code className="text-fd-foreground">&lt;head&gt;</code>, stops,
+							and blocks private addresses on the way. One dependency. Node.js,
+							Bun, Deno and the edge.
+						</p>
+						<div className="grid gap-3">
+							<InstallCommand />
+							<div className="grid grid-cols-2">
+								<Link
+									href="/quick-start/"
+									className="flex min-h-12 items-center justify-between bg-fd-foreground px-4 font-medium text-fd-background text-sm transition-colors hover:bg-signal hover:text-white"
 								>
-									{/* biome-ignore lint/performance/noImgElement: external SVG badge */}
-									<img
-										src={badge.src}
-										alt={badge.alt}
-										height={20}
-										className="h-5 w-auto"
-									/>
-								</a>
-							))}
-						</span>
-					</div>
-				</div>
-				<UnfurlDemo />
-			</section>
-
-			<Section
-				id="performance"
-				title="Reads the head, skips the rest"
-				lede={
-					<>
-						Metadata lives in the <code>&lt;head&gt;</code>. linkpeek parses the
-						response as a stream and cancels it after <code>&lt;/head&gt;</code>
-						, so a 500 kB page costs about as much as a small one. Measured on{" "}
-						{benchmarkDate} against five other preview packages; on small pages
-						they are within a few milliseconds.
-					</>
-				}
-			>
-				<BenchmarkHighlights />
-				<BenchmarkChart kind="large" />
-				<p className="text-fd-muted-foreground text-sm">
-					Small pages, install size and the method are on the{" "}
-					<Link
-						href="/benchmarks/"
-						className="text-fd-foreground underline underline-offset-4"
-					>
-						benchmark page
-					</Link>
-					.
-				</p>
-			</Section>
-
-			<Section
-				id="usage"
-				title="From URL to card in one call"
-				lede="Call preview() on your server or at the edge and render the fields you need. Missing metadata is null; HTTP error pages still return their metadata with a status code."
-			>
-				<div className="grid gap-4 lg:grid-cols-2">
-					<div className="min-w-0 [&_figure]:my-0">
-						<ServerCodeBlock code={usage} lang="ts" />
-					</div>
-					<div className="min-w-0">
-						<LiveResult />
-					</div>
-				</div>
-				<p className="mt-4 text-fd-muted-foreground text-sm">
-					The result on the right is linkpeek parsing this page, live in your
-					browser.
-				</p>
-			</Section>
-
-			<Section
-				id="security"
-				title="Safe defaults for URLs your users paste"
-				lede={
-					<>
-						A preview endpoint turns user input into outbound requests. linkpeek
-						checks where each request goes before it is made. Hostname
-						resolution belongs to the runtime&apos;s <code>fetch</code>, so
-						public endpoints should also restrict outbound traffic; the{" "}
-						<Link
-							href="/security/"
-							className="text-fd-foreground underline underline-offset-4"
-						>
-							security model
-						</Link>{" "}
-						explains where the line is.
-					</>
-				}
-			>
-				<dl className="grid gap-x-10 gap-y-6 sm:grid-cols-2">
-					{safety.map(([title, body]) => (
-						<div key={title} className="border-t pt-4">
-							<dt className="font-medium">{title}</dt>
-							<dd className="mt-1 text-fd-muted-foreground text-sm leading-relaxed">
-								{body}
-							</dd>
+									Quick start
+									<ArrowIcon />
+								</Link>
+								<Link
+									href="/benchmarks/"
+									className="flex min-h-12 items-center justify-between border border-rule border-l-0 px-4 font-medium text-sm transition-colors hover:bg-fd-card"
+								>
+									Benchmarks
+									<ArrowIcon />
+								</Link>
+							</div>
+							<span className="flex flex-wrap gap-1.5 pt-2">
+								{badges.map((badge) => (
+									<a
+										key={badge.alt}
+										href={badge.href}
+										className="block leading-none"
+									>
+										{/* biome-ignore lint/performance/noImgElement: external SVG badge */}
+										<img
+											src={badge.src}
+											alt={badge.alt}
+											height={20}
+											className="h-5 w-auto"
+										/>
+									</a>
+								))}
+							</span>
 						</div>
-					))}
-				</dl>
-			</Section>
+					</div>
+					<div className="border-rule border-t lg:col-span-7 lg:border-t-0">
+						<UnfurlDemo />
+					</div>
+				</section>
 
-			<Section
-				id="runtimes"
-				title="Runs wherever fetch runs"
-				lede="One runtime dependency, ESM and CommonJS with TypeScript declarations, on Node.js 22.12+, Bun, Deno and fetch-compatible edge runtimes."
-			>
-				<ul className="grid gap-px overflow-hidden rounded-xl border bg-fd-border sm:grid-cols-2">
-					{runtimes.map(([name, href, body]) => (
-						<li key={name} className="bg-fd-background">
-							<Link
-								href={href}
-								className="block h-full px-5 py-4 transition-colors hover:bg-fd-card"
+				{/* Measured numbers, Swiss-style: big figures, small labels. */}
+				<section
+					aria-label="Measured results"
+					className="grid border-rule border-b sm:grid-cols-2 lg:grid-cols-4"
+				>
+					{stats.map((item) => (
+						<Link
+							key={item.label}
+							href="/benchmarks/"
+							className="flex flex-col justify-between gap-6 border-rule border-b px-5 py-6 transition-colors hover:bg-fd-card sm:border-r lg:border-b-0"
+						>
+							<span className="figures block font-normal text-[clamp(2.5rem,4vw,3.75rem)] leading-none tracking-[-0.045em]">
+								{item.value}
+							</span>
+							<span className="text-fd-muted-foreground text-sm">
+								{item.label}
+							</span>
+						</Link>
+					))}
+					<Downloads />
+				</section>
+
+				<Row
+					path="/benchmarks"
+					href="/benchmarks/"
+					title="Reads the head, skips the rest"
+					lede={
+						<>
+							Metadata lives in the <code>&lt;head&gt;</code>. linkpeek parses
+							the response as a stream and cancels it after{" "}
+							<code>&lt;/head&gt;</code>, so a 500 kB page costs about as much
+							as a small one. Measured on {benchmarkDate}; on small pages the
+							packages are within a few milliseconds.
+						</>
+					}
+				>
+					<BenchmarkChart kind="large" />
+				</Row>
+
+				<Row
+					path="/quick-start"
+					href="/quick-start/"
+					title="From URL to card in one call"
+					lede="Call preview() on your server or at the edge and render the fields you need. Missing metadata is null; HTTP error pages still return their metadata with a status code. The JSON on the right is linkpeek parsing this page in your browser."
+				>
+					<div className="grid lg:grid-cols-2">
+						<div className="min-w-0 [&_figure]:my-0 [&_figure]:rounded-none">
+							<ServerCodeBlock code={usage} lang="ts" />
+						</div>
+						<div className="min-w-0 border-rule lg:border-l-0">
+							<LiveResult />
+						</div>
+					</div>
+				</Row>
+
+				<Row
+					path="/security"
+					href="/security/"
+					title="Safe defaults for URLs your users paste"
+					lede="A preview endpoint turns user input into outbound requests. linkpeek checks where each request goes before it is made. Hostname resolution belongs to the runtime's fetch, so public endpoints also restrict outbound traffic."
+				>
+					<dl className="grid border-rule border-t border-l sm:grid-cols-2">
+						{safety.map(([title, body]) => (
+							<div
+								key={title}
+								className="border-rule border-r border-b px-5 py-5"
 							>
-								<span className="font-medium">{name}</span>
-								<span className="mt-1 block text-fd-muted-foreground text-sm">
+								<dt className="font-medium tracking-tight">{title}</dt>
+								<dd className="mt-2 text-fd-muted-foreground text-sm leading-relaxed">
 									{body}
-								</span>
-							</Link>
-						</li>
-					))}
-				</ul>
-			</Section>
+								</dd>
+							</div>
+						))}
+					</dl>
+				</Row>
 
-			<section className="mx-auto max-w-6xl px-5 pt-6 pb-20 sm:px-8">
-				<div className="grid gap-6 rounded-2xl border bg-fd-card p-6 sm:p-10 md:grid-cols-[1fr_auto] md:items-center">
-					<div>
-						<h2 className="font-semibold text-2xl tracking-tight">
-							Add link previews to your app
+				<Row
+					path="/integrations"
+					href="/integrations/nextjs/"
+					title="Runs wherever fetch runs"
+					lede="One runtime dependency, ESM and CommonJS with TypeScript declarations, on Node.js 22.12+, Bun, Deno and fetch-compatible edge runtimes."
+				>
+					<ul className="grid border-rule border-t border-l sm:grid-cols-2">
+						{runtimes.map(([name, href, body]) => (
+							<li key={name} className="border-rule border-r border-b">
+								<Link
+									href={href}
+									className="group flex h-full items-start justify-between gap-4 px-5 py-5 transition-colors hover:bg-fd-foreground hover:text-fd-background"
+								>
+									<span>
+										<span className="block font-medium tracking-tight">
+											{name}
+										</span>
+										<span className="mt-1 block text-fd-muted-foreground text-sm group-hover:text-fd-background/70">
+											{body}
+										</span>
+									</span>
+									<ArrowIcon />
+								</Link>
+							</li>
+						))}
+					</ul>
+				</Row>
+
+				<section className="relative grid overflow-hidden bg-signal text-white lg:grid-cols-12">
+					<div
+						aria-hidden="true"
+						className="halftone pointer-events-none absolute inset-y-0 right-0 w-1/2 text-white/25 [--dot:1.8px] [--pitch:10px] [mask-image:linear-gradient(to_left,black,transparent)]"
+					/>
+					<div className="relative px-5 py-14 sm:px-8 lg:col-span-7 lg:py-20">
+						<h2 className="font-normal text-[clamp(2.25rem,5vw,4.5rem)] leading-[0.95] tracking-[-0.045em]">
+							Add link previews to your app.
 						</h2>
-						<p className="mt-2 max-w-[52ch] text-fd-muted-foreground">
+						<p className="mt-5 max-w-[46ch] text-lg text-white/80">
 							Install the package, call <code>preview()</code>, render the card.
-							The quick start walks through it.
+							The quick start walks through it in a few minutes.
 						</p>
 					</div>
-					<div className="grid gap-3 md:w-[22rem]">
-						<InstallCommand />
+					<div className="relative flex flex-col justify-end gap-3 px-5 pb-14 sm:px-8 lg:col-span-5 lg:py-20">
+						<InstallCommand tone="signal" />
 						<Link
 							href="/quick-start/"
-							className="inline-flex min-h-11 items-center justify-center rounded-xl bg-fd-primary px-5 font-medium text-fd-primary-foreground text-sm transition-[filter,transform] hover:brightness-110 active:translate-y-px"
+							className="flex min-h-12 items-center justify-between bg-white px-4 font-medium text-signal text-sm transition-colors hover:bg-fd-foreground hover:text-fd-background"
 						>
 							Read the quick start
+							<ArrowIcon />
 						</Link>
 					</div>
-				</div>
-				<footer className="mt-10 flex flex-wrap justify-between gap-4 text-fd-muted-foreground text-sm">
-					<span>
-						linkpeek {packageVersion} · MIT · {author}
-					</span>
-					<nav aria-label="Resources" className="flex flex-wrap gap-4">
+				</section>
+
+				<footer className="grid border-rule border-t text-sm lg:grid-cols-12">
+					<div className="flex items-center gap-3 border-rule px-5 py-6 sm:px-8 lg:col-span-4 lg:border-r">
+						<Logo />
+						<span className="font-mono text-fd-muted-foreground text-xs">
+							v{packageVersion} · MIT
+						</span>
+					</div>
+					<nav
+						aria-label="Resources"
+						className="flex flex-wrap gap-x-6 gap-y-2 px-5 py-6 text-fd-muted-foreground sm:px-8 lg:col-span-8"
+					>
+						<Link href="/quick-start/" className="hover:text-fd-foreground">
+							Docs
+						</Link>
+						<Link href="/api/" className="hover:text-fd-foreground">
+							API
+						</Link>
 						<a
 							href={`${repository}/releases`}
 							className="hover:text-fd-foreground"
 						>
 							Releases
+						</a>
+						<a href={npmUrl} className="hover:text-fd-foreground">
+							npm
+						</a>
+						<a href={repository} className="hover:text-fd-foreground">
+							GitHub
 						</a>
 						<a href="llms.txt" className="hover:text-fd-foreground">
 							llms.txt
@@ -311,48 +355,72 @@ export default function HomePage() {
 						<a href="sitemap.xml" className="hover:text-fd-foreground">
 							Sitemap
 						</a>
-						<a href={repository} className="hover:text-fd-foreground">
-							GitHub
-						</a>
+						<span className="ml-auto">{author}</span>
 					</nav>
 				</footer>
-			</section>
+			</div>
 		</main>
 	);
 }
 
-function Section({
-	id,
+// A section on the grid: the route it documents as a mono link, the heading
+// and lede in the left column, the content across the rest.
+function Row({
+	path,
+	href,
 	title,
 	lede,
 	children,
 }: {
-	id: string;
+	path: string;
+	href: string;
 	title: string;
 	lede: ReactNode;
 	children: ReactNode;
 }) {
+	const id = path.slice(1);
 	return (
 		<section
 			id={id}
 			aria-labelledby={`${id}-title`}
-			className="mx-auto max-w-6xl border-t px-5 py-16 sm:px-8 md:py-20"
+			className="grid border-rule border-b lg:grid-cols-12"
 		>
-			<div className="grid gap-8 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] lg:gap-16">
-				<div>
-					<h2
-						id={`${id}-title`}
-						className="font-semibold text-2xl tracking-tight sm:text-[1.75rem]"
-					>
-						{title}
-					</h2>
-					<p className="mt-3 text-fd-muted-foreground leading-relaxed">
-						{lede}
-					</p>
-				</div>
-				<div className="min-w-0">{children}</div>
+			<div className="border-rule px-5 pt-10 pb-6 sm:px-8 lg:col-span-4 lg:border-r lg:py-12">
+				<Link
+					href={href}
+					className="font-mono text-fd-muted-foreground text-xs hover:text-signal"
+				>
+					{path}
+				</Link>
+				<h2
+					id={`${id}-title`}
+					className="mt-4 font-normal text-[clamp(1.75rem,2.6vw,2.5rem)] leading-[1.02] tracking-[-0.04em]"
+				>
+					{title}
+				</h2>
+				<p className="mt-4 max-w-[46ch] text-fd-muted-foreground leading-relaxed">
+					{lede}
+				</p>
+			</div>
+			<div className="min-w-0 px-5 pb-10 sm:px-8 lg:col-span-8 lg:py-12 [&_.bars]:my-0">
+				{children}
 			</div>
 		</section>
+	);
+}
+
+function ArrowIcon() {
+	return (
+		<svg
+			viewBox="0 0 16 16"
+			aria-hidden="true"
+			className="size-4 shrink-0 transition-transform group-hover:translate-x-0.5"
+			fill="none"
+			stroke="currentColor"
+			strokeWidth="1.5"
+		>
+			<path d="M3 8h10M9 4l4 4-4 4" />
+		</svg>
 	);
 }
 

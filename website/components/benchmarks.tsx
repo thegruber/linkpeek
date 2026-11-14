@@ -1,3 +1,5 @@
+import type React from "react";
+import { Reveal } from "@/components/reveal";
 import {
 	benchmarkDate,
 	benchmarkEnvironment,
@@ -16,73 +18,85 @@ export function BenchmarkChart({ kind }: { kind: ChartKind }) {
 	const { title, subtitle, unit, rows } = chart(kind);
 	const ceiling = Math.max(...rows.map((row) => row.value));
 	return (
-		<figure className="not-prose my-6 rounded-xl border bg-fd-card p-5 sm:p-6">
-			<figcaption className="mb-4">
-				<strong className="block font-semibold text-[0.95rem] text-fd-foreground">
-					{title}
-				</strong>
-				<span className="text-fd-muted-foreground text-sm">{subtitle}</span>
-			</figcaption>
-			<table className="w-full table-fixed border-collapse text-sm">
-				<colgroup>
-					<col className="w-[7.5rem] sm:w-[13rem]" />
-					<col />
-				</colgroup>
-				<thead className="sr-only">
-					<tr>
-						<th scope="col">Package</th>
-						<th scope="col">{unit}</th>
-					</tr>
-				</thead>
-				<tbody>
-					{rows.map((row) => {
-						const self = row.name === SELF;
-						return (
-							<tr key={row.name}>
-								<th
-									scope="row"
-									className={`truncate py-1.5 pr-3 text-left font-normal ${self ? "font-semibold text-fd-foreground" : "text-fd-muted-foreground"}`}
+		<Reveal className="not-prose my-6">
+			<figure className="m-0 border border-rule bg-fd-background">
+				<figcaption className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-rule border-b px-5 py-4">
+					<strong className="font-medium text-[0.95rem] text-fd-foreground tracking-tight">
+						{title}
+					</strong>
+					<span className="font-mono text-fd-muted-foreground text-xs">
+						{subtitle}
+					</span>
+				</figcaption>
+				<table className="figures w-full table-fixed border-collapse text-sm">
+					<colgroup>
+						<col className="w-[8rem] sm:w-[14rem]" />
+						<col />
+					</colgroup>
+					<thead className="sr-only">
+						<tr>
+							<th scope="col">Package</th>
+							<th scope="col">{unit}</th>
+						</tr>
+					</thead>
+					<tbody>
+						{rows.map((row, index) => {
+							const self = row.name === SELF;
+							return (
+								<tr
+									key={row.name}
+									className="border-rule border-b last:border-b-0"
 								>
-									{row.name}{" "}
-									<span className="hidden text-xs opacity-70 sm:inline">
-										{row.version}
-									</span>
-								</th>
-								<td className="py-1.5">
-									<div className="flex items-center gap-2.5">
-										<span
-											aria-hidden="true"
-											className={`h-3.5 shrink-0 rounded-r-[4px] ${self ? "bg-signal" : "bg-bar"}`}
-											style={{
-												width: `max(3px, calc((100% - 10.5rem) * ${(row.value / ceiling).toFixed(4)}))`,
-											}}
-										/>
-										<span
-											className={`shrink-0 whitespace-nowrap ${self ? "font-semibold text-fd-foreground" : "text-fd-muted-foreground"}`}
-										>
-											{row.label}
+									<th
+										scope="row"
+										className={`truncate border-rule border-r px-5 py-2.5 text-left font-normal ${self ? "font-medium text-fd-foreground" : "text-fd-muted-foreground"}`}
+									>
+										{row.name}{" "}
+										<span className="hidden font-mono text-[0.7rem] opacity-70 sm:inline">
+											{row.version}
 										</span>
-									</div>
-								</td>
-							</tr>
-						);
-					})}
-				</tbody>
-			</table>
-		</figure>
+									</th>
+									<td className="px-4 py-2.5">
+										<div className="flex items-center gap-3">
+											<span
+												aria-hidden="true"
+												className={`bar h-3 shrink-0 ${self ? "bg-signal" : "bg-bar"}`}
+												style={
+													{
+														"--i": index,
+														width: `max(2px, calc((100% - 10.5rem) * ${(row.value / ceiling).toFixed(4)}))`,
+													} as React.CSSProperties
+												}
+											/>
+											<span
+												className={`shrink-0 whitespace-nowrap font-mono text-[0.8rem] ${self ? "font-medium text-fd-foreground" : "text-fd-muted-foreground"}`}
+											>
+												{row.label}
+											</span>
+										</div>
+									</td>
+								</tr>
+							);
+						})}
+					</tbody>
+				</table>
+			</figure>
+		</Reveal>
 	);
 }
 
 export function BenchmarkHighlights() {
 	return (
-		<dl className="not-prose my-6 grid gap-px overflow-hidden rounded-xl border bg-fd-border sm:grid-cols-3">
+		<dl className="not-prose my-6 grid border-rule border-t border-l sm:grid-cols-3">
 			{highlights().map((item) => (
 				<div
 					key={item.label}
-					className="flex flex-col-reverse justify-end bg-fd-card px-5 py-4"
+					className="flex flex-col-reverse justify-end border-rule border-r border-b px-5 py-5"
 				>
-					<dt className="text-fd-muted-foreground text-sm">{item.label}</dt>
-					<dd className="font-semibold text-2xl text-fd-foreground tracking-tight">
+					<dt className="mt-2 text-fd-muted-foreground text-sm">
+						{item.label}
+					</dt>
+					<dd className="figures font-normal text-[2.5rem] text-fd-foreground leading-none tracking-[-0.04em]">
 						{item.value}
 					</dd>
 				</div>

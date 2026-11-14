@@ -49,7 +49,7 @@ export async function GET(
 		>
 			<div style={{ display: "flex", alignItems: "center", gap: 18 }}>
 				<svg width="56" height="56" viewBox="0 0 64 64" aria-hidden="true">
-					<rect width="64" height="64" rx="15" fill="#165dff" />
+					<rect width="64" height="64" fill="#165dff" />
 					<g transform="translate(0 -2) rotate(-8 32 40)">
 						<circle cx="35" cy="26" r="7.5" fill="#fff" />
 						<circle cx="50.5" cy="26" r="7.5" fill="#fff" />
@@ -60,7 +60,7 @@ export async function GET(
 							y="29.5"
 							width="50"
 							height="26"
-							rx="6"
+							rx="1.5"
 							fill="#fff"
 							stroke="#165dff"
 							strokeWidth="3"
@@ -70,7 +70,7 @@ export async function GET(
 							y="35"
 							width="12"
 							height="15"
-							rx="3"
+							rx="0"
 							fill="#b4c8ff"
 						/>
 						<rect
@@ -78,7 +78,7 @@ export async function GET(
 							y="36.5"
 							width="21"
 							height="4"
-							rx="2"
+							rx="0"
 							fill="#165dff"
 						/>
 						<rect
@@ -86,13 +86,13 @@ export async function GET(
 							y="44"
 							width="13"
 							height="3.5"
-							rx="1.75"
+							rx="0"
 							fill="#b4c8ff"
 						/>
 					</g>
 				</svg>
 				<span
-					style={{ fontSize: 34, fontWeight: 600, letterSpacing: "-0.035em" }}
+					style={{ fontSize: 34, fontWeight: 500, letterSpacing: "-0.035em" }}
 				>
 					linkpeek
 				</span>
@@ -111,7 +111,7 @@ export async function GET(
 				<div
 					style={{
 						fontSize: title.length > 34 ? 64 : 78,
-						fontWeight: 600,
+						fontWeight: 500,
 						lineHeight: 1.04,
 						letterSpacing: "-0.035em",
 						maxWidth: 900,
@@ -189,7 +189,7 @@ export function generateStaticParams() {
 type Font = {
 	name: string;
 	data: ArrayBuffer;
-	weight: 400 | 600;
+	weight: 400 | 500;
 	style: "normal";
 };
 
@@ -199,9 +199,9 @@ let fontCache: Promise<Font[]> | undefined;
 // Without network access the images fall back to the default font.
 function loadFonts(): Promise<Font[]> {
 	fontCache ??= Promise.all(
-		([400, 600] as const).map(async (weight) => {
+		([400, 500] as const).map(async (weight) => {
 			const css = await fetch(
-				`https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@${weight}`,
+				`https://fonts.googleapis.com/css2?family=Geist:wght@${weight}`,
 			).then((response) => response.text());
 			const url = css.match(/src: url\((.+?)\)/)?.[1];
 			if (!url) throw new Error("font URL not found");

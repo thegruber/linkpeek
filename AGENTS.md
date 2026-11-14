@@ -30,7 +30,7 @@
 
 ## Brand
 - The mark is a link preview card, tilted as if just pasted, with two eyes peeking over its top edge and looking down at it. Sources live in `assets/brand/` (`mark.svg`, one-color `glyph.svg`, outlined `lockup-*.svg`, a simplified `favicon.svg` for 16–24 px, `mark-256.png`, `social-preview.png`).
-- Signal blue `#165dff` marks the one thing that matters on a surface; everything else stays neutral. Type is Schibsted Grotesk (UI, headings) and JetBrains Mono (code only).
+- Signal blue `#165dff` marks the one thing that matters on a surface; everything else stays neutral. Type is Geist (UI, headings, tracked tight) and Geist Mono (code, data, routes). The site is a Swiss grid: 1px rules forming rectangles, square corners, halftone dots as the only texture.
 
 ## Demo preview endpoint
 - `demo-api/` is the Vercel project `gubastudio/linkpeek-playground` (`https://linkpeek-playground.vercel.app/api/preview`), used by the homepage's "try any URL" demo. It deploys from Git with root directory `demo-api` (production from `main`); builds are skipped when the last commit does not touch `demo-api/`.
