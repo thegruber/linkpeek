@@ -1,0 +1,70 @@
+---
+title: "AI agents"
+metaTitle: "Link metadata tool for AI agents"
+description: "Create a link metadata tool for AI agents with TypeScript. Includes URL fetching, caching, and handling untrusted page content."
+heading: "Link metadata for AI agents"
+---
+
+Use linkpeek when an agent already has a URL and needs a title, description, preview image, site name, or canonical URL before presenting a link. Keep fetching in trusted server code and return only the metadata the agent needs.
+
+This guide shows a framework-neutral helper for link labels and source cards. linkpeek does not include an agent framework connector or an MCP server. This example has not been evaluated for improvements to model accuracy or RAG retrieval.
+
+Titles and descriptions are supplied by the target site. They can be missing, misleading, or unrelated to the full article. Use a separate content retrieval step when an agent needs to read, summarize, or verify a source.
+
+## Create a metadata tool [#tool]
+
+```bash
+npm install linkpeek
+```
+
+```ts
+import { preview } from "linkpeek";
+
+export async function inspectLink(url: string) {
+	const result = await preview(url, {
+		timeout: 5_000,
+		maxBytes: 30_000,
+	});
+
+	return {
+		statusCode: result.statusCode,
+		url: result.canonicalUrl,
+		title: result.title?.slice(0, 300) ?? null,
+		description: result.description?.slice(0, 800) ?? null,
+		image: result.image,
+		siteName: result.siteName,
+	};
+}
+```
+
+Register this function with the tool mechanism of your agent framework using one required string input named `url`. It extracts page metadata; it does not execute JavaScript or return article text. Check `statusCode` before presenting a successful source card: HTML error pages can also contain metadata.
+
+For an MCP integration, your server must register a tool with an input schema and a handler that calls this helper. The [MCP tools specification](https://modelcontextprotocol.io/specification/latest/server/tools) describes this mechanism; it does not certify this package or this example.
+
+## Treat metadata as untrusted input [#boundary]
+
+**Prompt injection:** titles, descriptions, JSON-LD, and other page metadata are controlled by the remote site. Do not place them in a system or developer prompt, and do not let text inside them change tool permissions or trigger another action.
+
+- Label tool output as untrusted external content.
+
+- Return a fixed field set and cap text lengths before adding it to model context.
+
+- Require separate authorization for browsing, downloading, purchasing, or executing anything referenced by the metadata.
+
+- Render a hostname-only fallback when extraction fails or the HTTP status is unsuccessful.
+
+## Supported use cases [#fit]
+
+### Supported
+
+Link previews and URL unfurling on servers and edge runtimes. Results include Open Graph metadata with TypeScript declarations.
+
+### Not supported
+
+Browser-rendered JavaScript, full article retrieval, autonomous web navigation, provider-specific scraping rules, or fetched oEmbed payloads.
+
+## Production setup [#production]
+
+Keep private-IP access disabled, never forward user cookies or service credentials, rate-limit public callers, cache successful results, and enforce infrastructure egress policy. Platform `fetch` owns final DNS resolution, so application-level checks do not replace network controls.
+
+[Install from npm](https://www.npmjs.com/package/linkpeek)[Security](/security/)[API reference](/api/)

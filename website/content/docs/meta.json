@@ -1,0 +1,13 @@
+{
+	"pages": [
+		"---Reference---",
+		"quick-start",
+		"api",
+		"security",
+		"---Integrations---",
+		"...integrations",
+		"---Guides---",
+		"...guides",
+		"benchmarks"
+	]
+}

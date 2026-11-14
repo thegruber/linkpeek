@@ -1,0 +1,106 @@
+@import "tailwindcss";
+@import "fumadocs-ui/css/neutral.css";
+@import "fumadocs-ui/css/preset.css";
+
+@source "../components";
+@source "../content";
+
+/*
+ * linkpeek palette: cool paper and ink with the favicon's signal blue. The
+ * blue marks the one thing that matters on each surface (linkpeek's bar, the
+ * primary action, the active page); everything else stays neutral.
+ */
+@theme {
+	--font-sans: var(--font-grotesk), ui-sans-serif, system-ui, sans-serif;
+	--font-mono: var(--font-code), ui-monospace, SFMono-Regular, monospace;
+
+	--color-fd-background: #fcfcfd;
+	--color-fd-foreground: #12141a;
+	--color-fd-muted: #f2f3f6;
+	--color-fd-muted-foreground: #5a6070;
+	--color-fd-popover: #ffffff;
+	--color-fd-popover-foreground: #12141a;
+	--color-fd-card: #f6f7f9;
+	--color-fd-card-foreground: #12141a;
+	--color-fd-border: #e3e5ea;
+	--color-fd-primary: #165dff;
+	--color-fd-primary-foreground: #ffffff;
+	--color-fd-secondary: #eef0f4;
+	--color-fd-secondary-foreground: #12141a;
+	--color-fd-accent: #e8eeff;
+	--color-fd-accent-foreground: #0f3fb3;
+	--color-fd-ring: #165dff;
+
+	--color-signal: #165dff;
+	--color-signal-wash: rgb(22 93 255 / 0.1);
+	--color-bar: #d5d8e0;
+}
+
+.dark {
+	--color-fd-background: #0d0f14;
+	--color-fd-foreground: #eceef3;
+	--color-fd-muted: #171a22;
+	--color-fd-muted-foreground: #9aa1b0;
+	--color-fd-popover: #141720;
+	--color-fd-popover-foreground: #eceef3;
+	--color-fd-card: #12151c;
+	--color-fd-card-foreground: #eceef3;
+	--color-fd-border: #252a35;
+	--color-fd-primary: #7b9bff;
+	--color-fd-primary-foreground: #0d0f14;
+	--color-fd-secondary: #1a1e27;
+	--color-fd-secondary-foreground: #eceef3;
+	--color-fd-accent: #1b2440;
+	--color-fd-accent-foreground: #c9d6ff;
+	--color-fd-ring: #7b9bff;
+
+	--color-signal: #7b9bff;
+	--color-signal-wash: rgb(123 155 255 / 0.14);
+	--color-bar: #2c313d;
+}
+
+html {
+	scrollbar-gutter: stable;
+}
+
+/* With a stable scrollbar gutter, the search dialog's scroll lock must not
+   add its own scrollbar compensation. */
+html > body[data-scroll-locked] {
+	/* biome-ignore lint/complexity/noImportantStyles: overrides the lock's inline style */
+	margin-right: 0px !important;
+	/* biome-ignore lint/complexity/noImportantStyles: overrides the lock's inline style */
+	--removed-body-scroll-bar-size: 0px !important;
+}
+
+body {
+	font-feature-settings: "ss01", "cv11";
+	-webkit-font-smoothing: antialiased;
+}
+
+::selection {
+	background: var(--color-signal-wash);
+}
+
+/* The one orchestrated moment: the hero URL unfurls into its card. */
+@keyframes unfurl {
+	from {
+		opacity: 0;
+		transform: translateY(-6px) scale(0.985);
+		clip-path: inset(0 0 100% 0 round 14px);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+		clip-path: inset(0 0 0 0 round 14px);
+	}
+}
+
+.unfurl {
+	animation: unfurl 520ms cubic-bezier(0.2, 0.8, 0.2, 1) 280ms both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.unfurl {
+		animation: none;
+	}
+}

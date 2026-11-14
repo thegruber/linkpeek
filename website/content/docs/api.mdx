@@ -1,0 +1,140 @@
+---
+title: "API"
+metaTitle: "API reference"
+description: "Reference for linkpeek preview(), parseHTML(), presets, result fields, options, and typed error codes."
+heading: "API reference"
+---
+
+The root export provides `preview`, `parseHTML`, `presets`, URL validation helpers, and typed errors in ESM and CommonJS.
+
+## Fetch a URL [#preview]
+
+`preview(url, options?)` returns `Promise<PreviewResult>`.
+
+Fetch an HTTP(S) URL, validate redirects, enforce timeout and byte limits, then extract preview metadata. Network failures propagate; invalid input and policy failures throw `LinkpeekError`.
+
+HTML responses with an HTTP error status still resolve with extracted metadata. Check `result.statusCode` before caching or displaying a successful card. Direct image, video and audio responses populate the corresponding media URL field.
+
+```ts
+import { preview } from "linkpeek";
+
+const result = await preview("https://example.com/article");
+if (result.statusCode < 400) {
+  console.log(result.title ?? result.siteName);
+}
+```
+
+## Options [#options]
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `timeout` | `number` | `8000` | Request timeout in milliseconds, from 0 to 2,147,483,647. Throws `LinkpeekError` code `TIMEOUT` when elapsed; invalid values throw `INVALID_OPTIONS` |
+| `maxBytes` | `number` | `30_000` | Maximum decoded response-body bytes to retain |
+| `userAgent` | `string` | `"Twitterbot/1.0"` | User-Agent sent with requests |
+| `followRedirects` | `boolean` | `true` | Follow HTTP redirects after validating each target |
+| `maxRedirects` | `number` | `10` | Maximum HTTP redirects to follow. Must be a non-negative integer; invalid values throw `INVALID_OPTIONS` |
+| `headers` | `Record<string, string>` | `{}` | Extra non-sensitive request headers. Common credential-bearing headers are rejected; custom headers are not forwarded on cross-origin redirects |
+| `allowPrivateIPs` | `boolean` | `false` | Allow private/internal IP targets |
+| `signal` | `AbortSignal` | none | Cancel the request from the caller side |
+| `fetch` | `typeof fetch` | `globalThis.fetch` | Custom fetch implementation. It must honor manual redirects and the supplied abort signal |
+| `followMetaRefresh` | `boolean` | `false` | Follow one `<head>` `<meta http-equiv="refresh">` redirect with a delay of 10s or less |
+| `includeBodyContent` | `boolean` | `false` | Continue scanning `<body>` for JSON-LD and image fallbacks |
+
+## Result fields [#result]
+
+All result fields are present. Optional metadata uses `null` when unavailable; titles and images are not guaranteed.
+
+Extracted resource URLs are resolved against the document base and limited to HTTP(S).
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `url` | `string` | Final fetched URL; `parseHTML()` returns the canonical URL |
+| `statusCode` | `number` | HTTP status code. `parseHTML()` returns `0` |
+| `title` | `string \| null` | `og:title` -\> `twitter:title` -\> JSON-LD -\> Dublin Core -\> `<title>` |
+| `description` | `string \| null` | `og:description` -\> `twitter:description` -\> `meta[name=description]` -\> JSON-LD -\> Dublin Core |
+| `image` | `string \| null` | Preview image URL |
+| `imageAlt` | `string \| null` | Image alt text |
+| `imageWidth` | `number \| null` | `og:image:width` |
+| `imageHeight` | `number \| null` | `og:image:height` |
+| `siteName` | `string` | `og:site_name` -\> JSON-LD publisher -\> hostname |
+| `favicon` | `string \| null` | Declared favicon, or the origin’s /favicon.ico as a fallback guess |
+| `mediaType` | `string` | `og:type`, defaults to `"website"` |
+| `canonicalUrl` | `string` | Canonical URL, `og:url`, or fetched URL |
+| `author` | `string \| null` | JSON-LD author, author meta, or Dublin Core creator |
+| `locale` | `string \| null` | `og:locale` |
+| `lang` | `string \| null` | HTML language, content-language, or locale prefix |
+| `publishedDate` | `string \| null` | Article, JSON-LD, or Dublin Core date |
+| `keywords` | `string[] \| null` | `meta[name=keywords]` |
+| `video` | `string \| null` | Safe `og:video` URL |
+| `audio` | `string \| null` | Safe `og:audio` URL |
+| `twitterCard` | `string \| null` | Twitter card type |
+| `twitterSite` | `string \| null` | Twitter site handle |
+| `twitterCreator` | `string \| null` | Twitter creator handle |
+| `themeColor` | `string \| null` | Theme color |
+| `oEmbedUrl` | `string \| null` | Discovered oEmbed endpoint URL. Not fetched |
+
+## Parse existing HTML [#parse]
+
+`parseHTML(html, baseUrl, options?)` returns `PreviewResult` synchronously, with `statusCode: 0`. It makes no network requests. Both `url` and `canonicalUrl` contain the resolved canonical URL. The options object accepts `includeBodyContent`; fetch options such as `maxBytes` do not limit a supplied HTML string.
+
+Use the parser directly when HTML is already available. Default parsing stops tokenizing at the end of the head. Set `includeBodyContent: true` only when body JSON-LD or image fallback is worth the extra work.
+
+## Typed errors [#errors]
+
+```ts
+import { LinkpeekError, preview } from "linkpeek";
+
+try {
+	await preview(url);
+} catch (error) {
+	if (error instanceof LinkpeekError) {
+		console.log(error.code); // "TIMEOUT", "PRIVATE_NETWORK_BLOCKED", …
+	}
+}
+```
+
+Use `code`, never message matching, for program flow. Caller abort reasons and network failures propagate as-is and need not be `LinkpeekError` instances.
+
+| Code | Meaning |
+| --- | --- |
+| `INVALID_URL` | URL could not be parsed or contains credentials |
+| `UNSUPPORTED_PROTOCOL` | URL does not use HTTP(S) |
+| `PRIVATE_NETWORK_BLOCKED` | Target matches a blocked hostname or literal address |
+| `SENSITIVE_HEADER` | Custom headers include a prohibited credential-bearing name |
+| `INVALID_OPTIONS` | An option fails validation |
+| `TOO_MANY_REDIRECTS` | The HTTP redirect limit was reached |
+| `TIMEOUT` | The request exceeded its timeout |
+
+## Presets [#presets]
+
+`presets.fast` is the default: `maxBytes: 30_000`, `includeBodyContent: false`, `followMetaRefresh: false`. `presets.quality` uses `maxBytes: 200_000` and enables both flags. Spread a preset to override individual options.
+
+```ts
+import { preview, presets } from "linkpeek";
+
+await preview(url, { ...presets.quality, timeout: 5_000 });
+```
+
+## URL validation helpers [#validation]
+
+`validateUrl(url, allowPrivateIPs?)` returns `void` on success or throws `LinkpeekError`. `isPrivateHost(hostname)` returns a boolean for hostnames and literal IPs covered by the blocklist. Neither helper performs DNS resolution.
+
+```ts
+import { isPrivateHost, validateUrl } from "linkpeek";
+
+isPrivateHost("127.0.0.1"); // true
+validateUrl("http://169.254.169.254/"); // throws PRIVATE_NETWORK_BLOCKED
+```
+
+## TypeScript and CommonJS [#types]
+
+The root export includes `PreviewOptions`, `PreviewResult` and `LinkpeekErrorCode` types. Requires Node.js 22.12+; ESM and CommonJS each have their own declarations.
+
+```ts
+import type { PreviewOptions, PreviewResult } from "linkpeek";
+
+// CommonJS:
+const { preview } = require("linkpeek");
+```
+
+[Security model](/security/) · [Troubleshooting](/guides/troubleshooting/)

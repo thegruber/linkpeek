@@ -1,0 +1,79 @@
+---
+title: "Quick start"
+metaTitle: "Quick start: link previews in TypeScript"
+description: "Install linkpeek, fetch a URL with preview(), and render Open Graph, Twitter Card, and JSON-LD metadata as a link preview card."
+---
+
+## Installation [#install]
+
+Use your package manager of choice. linkpeek runs on Node.js 22.12+, Bun, Deno and fetch-compatible edge runtimes, ships ESM and CommonJS with TypeScript declarations, and has one runtime dependency.
+
+```package-install
+linkpeek
+```
+
+## Usage [#example]
+
+```ts
+import { preview } from "linkpeek";
+
+const result = await preview(
+  "https://example.com/article"
+);
+
+if (result.statusCode < 400) {
+  console.log(result.title);
+  console.log(result.description);
+  console.log(result.image);
+}
+```
+
+### What you get [#result]
+
+This is linkpeek parsing this page, live in your browser. `preview()` returns the same shape for a fetched URL.
+
+<LiveResult />
+
+Run `preview()` on a server or edge endpoint. Missing metadata returns `null`. HTTP error pages can still return metadata, so check `statusCode` before caching a result.
+
+The [API reference](/api/) lists all options, result fields and error codes.
+
+## Parsing existing HTML [#try-title]
+
+Use `parseHTML(html, baseUrl)` when you already have the HTML. It runs synchronously without network requests. See the [Open Graph parser guide](/guides/open-graph-parser/) for examples and an optional [interactive parser](/guides/open-graph-parser/#try-title).
+
+## Presets [#presets]
+
+The default fast preset scans the document head and retains up to 30,000 decoded response-body bytes. The quality preset allows 200,000 bytes, scans body JSON-LD and image fallbacks, and can follow one validated meta-refresh.
+
+```ts
+import { preview, presets } from "linkpeek";
+
+const result = await preview(url, presets.quality);
+```
+
+These limits apply to retained bytes, not total network traffic.
+
+## Performance [#performance]
+
+Most metadata lives in the `<head>`. The default preset stops reading there and cancels the rest of the response, so a large page costs about as much as a small one.
+
+<BenchmarkChart kind="large" />
+
+On small pages the packages are within about two milliseconds of each other, and network latency dominates. The [benchmarks](/benchmarks/) cover small pages, install size and the method.
+
+## Integration guides [#integrations]
+
+- [Next.js](/integrations/nextjs/): App Router endpoint.
+
+- [Cloudflare Workers](/integrations/cloudflare-workers/): extraction and caching.
+
+- [Node.js and Express](/integrations/node-express/): a server-side preview API.
+
+- [AI agents](/integrations/ai-agents/): return link metadata from a tool call.
+
+## Security and limitations [#boundaries]
+
+linkpeek validates redirect targets and blocks literal private and non-global addresses by default. The runtime’s `fetch` resolves hostnames; public endpoints also need outbound network controls. Never forward caller credentials to arbitrary URLs. Read the [security model](/security/) before exposing an endpoint.
+
+linkpeek does not execute page JavaScript, extract full articles or fetch oEmbed payloads. See [troubleshooting](/guides/troubleshooting/) for missing metadata and HTTP errors, or the [library comparison](/guides/link-preview-library-comparison/) for other use cases.

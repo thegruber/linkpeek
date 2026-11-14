@@ -3,7 +3,10 @@ dist
 .env
 .env.local
 coverage
-website/dist
+website/.next
+website/out
+website/.source
+website/next-env.d.ts
 .playwright-cli/
 output/
 *.tsbuildinfo

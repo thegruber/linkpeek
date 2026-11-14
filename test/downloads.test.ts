@@ -3,7 +3,7 @@ import {
 	downloadsEndpoint,
 	parseDownloads,
 	summarizeDownloads,
-} from "../website/downloads-data.js";
+} from "../website/lib/downloads-data.js";
 
 function days(values: number[]) {
 	const start = Date.UTC(2026, 0, 1);

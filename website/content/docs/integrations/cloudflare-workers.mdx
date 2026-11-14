@@ -1,0 +1,48 @@
+---
+title: "Cloudflare Workers"
+metaTitle: "Link previews in Cloudflare Workers"
+description: "Extract and cache URL metadata in a Cloudflare Worker with linkpeek's fetch-native API."
+heading: "Link previews in Cloudflare Workers"
+---
+
+linkpeek uses platform `fetch`, Web Streams, `TextDecoder`, and `AbortController`. It needs no Node HTTP client or DOM implementation.
+
+## Create a Worker endpoint [#worker]
+
+```bash
+npm install linkpeek
+```
+
+```ts
+import { preview } from "linkpeek";
+
+export default {
+	async fetch(request: Request): Promise<Response> {
+		const url = new URL(request.url).searchParams.get("url");
+		if (!url) return Response.json({ error: "Missing url" }, { status: 400 });
+
+		try {
+			const result = await preview(url);
+			return Response.json(result, {
+				headers: {
+					"Cache-Control": result.statusCode >= 200 && result.statusCode < 300
+						? "public, max-age=3600"
+						: "no-store",
+				},
+			});
+		} catch {
+			return Response.json({ error: "Preview unavailable" }, { status: 422 });
+		}
+	},
+};
+```
+
+## Caching [#cache]
+
+These response headers support browser and downstream caching. This Worker does not use the Cloudflare Cache API: every request reaching the handler still fetches the target. Add a shared cache with a stable URL key if needed, store only 2xx previews, and rate-limit public callers.
+
+## Runtime limitations [#limits]
+
+linkpeek validates literal addresses and each redirect target. The Worker runtime resolves hostnames and establishes connections. Keep private-IP access disabled and use platform egress controls when hostile public input is in scope.
+
+[Install from npm](https://www.npmjs.com/package/linkpeek)[Complete example on GitHub](https://github.com/thegruber/linkpeek/tree/main/examples/cloudflare-worker)[Security model](/security/)

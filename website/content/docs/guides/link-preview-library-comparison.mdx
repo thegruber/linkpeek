@@ -1,0 +1,98 @@
+---
+title: "Library comparison"
+metaTitle: "TypeScript link preview library comparison"
+description: "Compare linkpeek with link-preview-js, open-graph-scraper, metascraper, unfurl.js, and url-metadata by use case, API shape, security, and footprint."
+heading: "Compare preview libraries"
+---
+
+linkpeek is a focused choice for server-side preview cards with typed output and safe network defaults. Broader scraping, text-to-URL detection, rich oEmbed fetching, and provider-specific rules are different jobs with different good tools.
+
+## Supported features [#fit]
+
+| Package | Good fit | Tradeoff versus linkpeek |
+| --- | --- | --- |
+| **linkpeek** | Typed URL previews on Node.js, Bun, Deno, and fetch-based edge runtimes | Deliberately not a full article or provider-rule extraction framework |
+| `link-preview-js` | Previewing a URL or finding the first URL in text | Broader input API; a different result shape and runtime focus |
+| `open-graph-scraper` | Node-oriented Open Graph scraping with broader scraper controls | Larger install tree; edge parse-only users may prefer its separate lite package |
+| `metascraper` | Composable, provider-specific metadata rules | More setup and dependencies for a much broader extraction framework |
+| `unfurl.js` | Rich nested metadata and fetched oEmbed data in Node.js | [Archived upstream](https://github.com/jacktuck/unfurl) as of this guide; not focused on a small edge-runtime preview path |
+| `url-metadata` | Broad page metadata in Node.js | Broader output and dependency surface than a preview-card utility |
+
+This is a fit comparison, not a universal ranking. Verify the linked dated evidence before using it in an architectural decision.
+
+## Speed and install size [#speed]
+
+Measured on
+
+<BenchmarkDate />
+
+ with the same pages and a local server, so the numbers show library overhead rather than network latency. On small pages the packages are within about two milliseconds of each other; the [benchmarks](/benchmarks/) include those results and the method.
+
+<BenchmarkChart kind="large" />
+
+<BenchmarkChart kind="install" />
+
+## Result fields [#shape]
+
+The packages expose similar concepts through different keys. In the benchmarked APIs, title access commonly looks like this:
+
+| Package | Typical title access | Fetch ownership |
+| --- | --- | --- |
+| linkpeek | `result.title` | `preview()` fetches; `parseHTML()` parses existing HTML |
+| `link-preview-js` | `result.title` | URL and content APIs |
+| `open-graph-scraper` | `response.result.ogTitle` | Main package fetches |
+| `metascraper` | `result.title` | Your application supplies HTML |
+| `unfurl.js` | `result.open_graph?.title` | `unfurl()` fetches |
+| `url-metadata` | `result["og:title"]` | Main API fetches |
+
+## URL fetching and security [#security]
+
+For a public preview endpoint, the important question is not merely whether metadata parses: it is which layer validates an untrusted destination and every redirect before the next request.
+
+| Package | Security consideration as of 14 November 2026 |
+| --- | --- |
+| linkpeek | Blocks credential-bearing input, common secret headers, private/special-use IP literals, and redirect targets by default. It does not resolve hostnames itself: platform `fetch` owns DNS, so a hostname that resolves to a private address needs egress controls. |
+| `link-preview-js` | Version 6.0.0 resolves each hostname and redirect hop, rejects private results, and pins the connection to the checked addresses in Node.js. Versions through 4.0.0 were affected by [CVE-2026-43897](https://github.com/advisories/GHSA-4gp8-rjrq-ch6q). |
+| `open-graph-scraper` | Since 6.13.0 the main package only requests destinations whose resolved addresses are public and checks redirects first, with no opt-out. If you already own the fetch, compare the parse-only [`open-graph-scraper-lite`](https://github.com/jshemas/openGraphScraper/issues/203). |
+| `metascraper` | The application supplies HTML, so redirect validation, address policy, timeouts, byte limits, and credentials belong to the caller's fetch implementation. |
+| `unfurl.js` | The repository is archived; still-open [PR #117](https://github.com/jacktuck/unfurl/pull/117) documents destination validation proposed after the last published release. |
+| `url-metadata` | The Node-oriented API exposes request-filtering agent options. Review its current defaults and options against your threat model rather than assuming every runtime has the same network controls. |
+
+These are dated architectural notes, not security ratings. Every server-side URL fetcher also benefits from rate limiting, cache controls, and platform egress policy.
+
+## Migration considerations [#migrate]
+
+```ts
+npm install linkpeek
+
+import { preview } from "linkpeek";
+
+const result = await preview(url);
+
+if (result.statusCode >= 400) {
+	// Render a fallback and skip caching.
+}
+
+const card = {
+	title: result.title,
+	description: result.description,
+	image: result.image,
+	url: result.canonicalUrl,
+};
+```
+
+- HTTP error pages resolve with their metadata and `statusCode`; invalid input, blocked targets, timeouts, and network failures throw.
+
+- Private and special-use addresses are blocked by default. Keep that default for public input and review the documented DNS-resolution limit.
+
+- Discovered oEmbed endpoints are returned in `oEmbedUrl` but are not fetched.
+
+- The default preset scans the head with a 30 KB ceiling. Use `presets.quality` when body JSON-LD or body-image fallback is worth more work.
+
+- Keep preview fetching on the server; browser CORS and untrusted outbound requests make this a poor client-side boundary.
+
+## Sources and measurements [#evidence]
+
+Same-corpus latency, package footprint, competitor versions, known runtime constraints, security sources, and reproduction commands live in the dated comparison notes; refresh that evidence before quoting it later.
+
+[Install linkpeek from npm](https://www.npmjs.com/package/linkpeek), read the [detailed comparison](https://github.com/thegruber/linkpeek/blob/main/docs/comparison.md), or start with the [quick start](/quick-start/).
