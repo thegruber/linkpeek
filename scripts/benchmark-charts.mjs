@@ -15,7 +15,6 @@ export function benchmarkContent(data) {
 				small.length,
 		]),
 	);
-	const self = data.install.packages.find((entry) => entry.name === SELF);
 	const largest = Math.max(
 		...data.install.packages.map((entry) => entry.nodeModulesKiB),
 	);
