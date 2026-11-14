@@ -1,7 +1,12 @@
-import { HomeLayout } from "fumadocs-ui/layouts/home";
 import type { ReactNode } from "react";
-import { baseOptions } from "@/lib/layout.shared";
+import { SiteHeader } from "@/components/site-header";
+import { packageVersion } from "@/lib/version";
 
 export default function Layout({ children }: { children: ReactNode }) {
-	return <HomeLayout {...baseOptions()}>{children}</HomeLayout>;
+	return (
+		<>
+			<SiteHeader version={packageVersion} />
+			{children}
+		</>
+	);
 }

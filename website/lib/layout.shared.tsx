@@ -7,6 +7,8 @@ export function baseOptions({ docs = false } = {}): BaseLayoutProps {
 	return {
 		nav: { title: <Logo />, url: "/" },
 		githubUrl: repository,
+		// The site is light only, like a printed spec sheet.
+		themeSwitch: { enabled: false },
 		links: [
 			...(docs
 				? []

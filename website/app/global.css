@@ -6,9 +6,10 @@
 @source "../content";
 
 /*
- * linkpeek: a technical spec sheet on a Swiss grid. Paper and ink, 1px rules
- * that form rectangles, square corners. One highlighter yellow marks what
- * linkpeek reads: the <head>. Halftone dots are the only texture.
+ * linkpeek, light only, like a printed spec sheet: white paper, charcoal
+ * ink, 1px charcoal rules that cut the page into rectangles, light grey for
+ * large shapes, and one pale highlighter yellow. Ordered-dither art is the
+ * only texture. Square corners everywhere.
  */
 @theme {
 	--font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
@@ -23,62 +24,34 @@
 	--radius-3xl: 0px;
 
 	--color-fd-background: #ffffff;
-	--color-fd-foreground: #111111;
-	--color-fd-muted: #f3f4f5;
-	--color-fd-muted-foreground: #5c616b;
+	--color-fd-foreground: #232323;
+	--color-fd-muted: #f2f2f1;
+	--color-fd-muted-foreground: #5f5f5f;
 	--color-fd-popover: #ffffff;
-	--color-fd-popover-foreground: #111111;
-	--color-fd-card: #f7f7f8;
-	--color-fd-card-foreground: #111111;
-	--color-fd-border: #dcdde0;
-	--color-fd-primary: #111111;
+	--color-fd-popover-foreground: #232323;
+	--color-fd-card: #f6f6f5;
+	--color-fd-card-foreground: #232323;
+	--color-fd-border: #dcdcdc;
+	--color-fd-primary: #232323;
 	--color-fd-primary-foreground: #ffffff;
-	--color-fd-secondary: #eff0f2;
-	--color-fd-secondary-foreground: #111111;
-	--color-fd-accent: #fff4b8;
-	--color-fd-accent-foreground: #111111;
-	--color-fd-ring: #111111;
+	--color-fd-secondary: #f2f2f1;
+	--color-fd-secondary-foreground: #232323;
+	--color-fd-accent: #fff3a8;
+	--color-fd-accent-foreground: #232323;
+	--color-fd-ring: #232323;
 
-	--color-signal: #ffe14d;
-	--color-signal-ink: #111111;
-	--color-signal-text: #7a5c00;
-	--color-signal-wash: rgb(255 225 77 / 0.35);
+	--color-ink: #232323;
+	--color-paper: #ffffff;
+	--color-shape: #d9d9d9;
+	--color-block: #ffef85;
 	--color-mark: #ffe14d;
-	--color-mark-ink: #111111;
-	--color-bar: #d3d5da;
-	--color-rule: #dcdde0;
-	--color-logo-tile: #111111;
-	--color-logo-thumb: #ffe14d;
-	--color-logo-line: #111111;
-}
-
-.dark {
-	--color-fd-background: #0b0c0e;
-	--color-fd-foreground: #ececee;
-	--color-fd-muted: #15171b;
-	--color-fd-muted-foreground: #9a9fa9;
-	--color-fd-popover: #121418;
-	--color-fd-popover-foreground: #ececee;
-	--color-fd-card: #111317;
-	--color-fd-card-foreground: #ececee;
-	--color-fd-border: #24272d;
-	--color-fd-primary: #ffe14d;
-	--color-fd-primary-foreground: #111111;
-	--color-fd-secondary: #17191e;
-	--color-fd-secondary-foreground: #ececee;
-	--color-fd-accent: #2a2508;
-	--color-fd-accent-foreground: #ffe98a;
-	--color-fd-ring: #ffe14d;
-
-	--color-signal: #ffe14d;
-	--color-signal-ink: #111111;
-	--color-signal-text: #ffe14d;
-	--color-signal-wash: rgb(255 225 77 / 0.2);
-	--color-mark: #ffe14d;
-	--color-mark-ink: #111111;
-	--color-bar: #2b2e35;
-	--color-rule: #24272d;
-	--color-logo-tile: #222226;
+	--color-mark-ink: #232323;
+	--color-rule: #dcdcdc;
+	--color-bar: #d9d9d9;
+	--color-signal: #232323;
+	--color-signal-ink: #ffffff;
+	--color-signal-text: #232323;
+	--color-signal-wash: rgb(255 225 77 / 0.45);
 }
 
 html {

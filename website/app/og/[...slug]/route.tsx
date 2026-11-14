@@ -43,53 +43,22 @@ export async function GET(
 				position: "relative",
 				padding: "64px 80px 0",
 				background: "#ffffff",
-				color: "#111111",
+				color: "#232323",
 				fontFamily: fonts.length ? "Grotesk" : undefined,
 			}}
 		>
 			<div style={{ display: "flex", alignItems: "center", gap: 18 }}>
 				<svg width="56" height="56" viewBox="0 0 64 64" aria-hidden="true">
-					<rect width="64" height="64" fill="#111111" />
-					<g transform="translate(0 -2) rotate(-8 32 40)">
-						<circle cx="35" cy="26" r="7.5" fill="#fff" />
-						<circle cx="50.5" cy="26" r="7.5" fill="#fff" />
-						<circle cx="33.4" cy="28.2" r="3.2" fill="#111111" />
-						<circle cx="48.9" cy="28.2" r="3.2" fill="#111111" />
-						<rect
-							x="7"
-							y="29.5"
-							width="50"
-							height="26"
-							rx="1.5"
-							fill="#fff"
-							stroke="#111111"
-							strokeWidth="3"
-						/>
-						<rect
-							x="12.5"
-							y="35"
-							width="12"
-							height="15"
-							rx="0"
-							fill="#ffe14d"
-						/>
-						<rect
-							x="28.5"
-							y="36.5"
-							width="21"
-							height="4"
-							rx="0"
-							fill="#111111"
-						/>
-						<rect
-							x="28.5"
-							y="44"
-							width="13"
-							height="3.5"
-							rx="0"
-							fill="#ffe14d"
-						/>
-					</g>
+					<rect width="64" height="64" fill="#232323" />
+					<path
+						d="M31 15 15 32l16 17"
+						fill="none"
+						stroke="#ffffff"
+						strokeWidth="6.5"
+						strokeLinecap="square"
+					/>
+					<path d="M30 38a13 13 0 0 1 26 0z" fill="#ffffff" />
+					<circle cx="47" cy="31" r="4.6" fill="#232323" />
 				</svg>
 				<span
 					style={{ fontSize: 34, fontWeight: 500, letterSpacing: "-0.035em" }}
@@ -151,12 +120,12 @@ export async function GET(
 			>
 				<path
 					fill="#fff"
-					stroke="#111111"
+					stroke="#232323"
 					strokeWidth="2.5"
 					d="M1.5 24a10.5 10.5 0 0 1 21 0zM25.5 24a10.5 10.5 0 0 1 21 0z"
 				/>
-				<circle cx="10" cy="20" r="3.8" fill="#111111" />
-				<circle cx="34" cy="20" r="3.8" fill="#111111" />
+				<circle cx="10" cy="20" r="3.8" fill="#232323" />
+				<circle cx="34" cy="20" r="3.8" fill="#232323" />
 			</svg>
 			<div
 				style={{
@@ -182,7 +151,7 @@ export async function GET(
 			>
 				<span
 					style={{
-						color: "#111111",
+						color: "#232323",
 						background: "#ffe14d",
 						padding: "2px 8px",
 					}}

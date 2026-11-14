@@ -119,9 +119,9 @@ export function HeroDemo({ examples }: { examples: ShowcaseCard[] }) {
 						: "";
 
 	return (
-		<div className="flex h-full min-w-0 flex-col border border-rule bg-fd-background">
+		<div className="flex h-full min-w-0 flex-col bg-fd-background">
 			<form
-				className="flex border-rule border-b"
+				className="flex border-ink border-b"
 				onSubmit={(event) => {
 					event.preventDefault();
 					if (shownUrl.trim()) void submit(input || shownUrl);
@@ -148,7 +148,7 @@ export function HeroDemo({ examples }: { examples: ShowcaseCard[] }) {
 				<button
 					type="submit"
 					disabled={state.kind === "loading"}
-					className="press min-h-14 bg-fd-foreground px-6 font-medium text-fd-background text-sm transition-[background-color,color,transform] hover:bg-signal hover:text-signal-ink disabled:opacity-60"
+					className="press min-h-14 bg-ink px-6 font-mono text-[0.72rem] text-white uppercase tracking-[0.06em] transition-[background-color,color,transform] hover:bg-mark hover:text-ink disabled:opacity-60"
 				>
 					Preview
 				</button>
@@ -163,7 +163,7 @@ export function HeroDemo({ examples }: { examples: ShowcaseCard[] }) {
 						key={card.url}
 						href={card.url}
 						rel="nofollow noopener noreferrer ugc"
-						className={`unfurl block border border-rule bg-fd-background transition-opacity ${state.kind === "loading" ? "opacity-40" : ""}`}
+						className={`unfurl block border border-ink bg-fd-background transition-opacity ${state.kind === "loading" ? "opacity-40" : ""}`}
 					>
 						{card.image && (
 							// biome-ignore lint/performance/noImgElement: third-party Open Graph images
@@ -176,7 +176,7 @@ export function HeroDemo({ examples }: { examples: ShowcaseCard[] }) {
 								onError={(event) => {
 									event.currentTarget.hidden = true;
 								}}
-								className="aspect-[1200/630] w-full border-rule border-b bg-fd-muted object-cover"
+								className="aspect-[1200/630] max-h-64 w-full border-ink border-b bg-fd-muted object-cover"
 							/>
 						)}
 						<span className="grid gap-1 px-4 py-3.5">
@@ -201,7 +201,7 @@ export function HeroDemo({ examples }: { examples: ShowcaseCard[] }) {
 			</div>
 
 			<p
-				className={`flex min-h-11 items-center justify-between gap-4 border-rule border-t px-4 py-3 font-mono text-xs ${state.kind === "error" ? "text-fd-foreground" : "text-fd-muted-foreground"}`}
+				className={`flex min-h-11 items-center justify-between gap-4 border-ink border-t px-4 py-3 font-mono text-xs ${state.kind === "error" ? "text-fd-foreground" : "text-fd-muted-foreground"}`}
 				aria-live="polite"
 			>
 				<TextMorph

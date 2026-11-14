@@ -1,6 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><title>linkpeek</title><defs><clipPath id="lp-tile"><rect width="64" height="64"/></clipPath></defs><g clip-path="url(#lp-tile)"><rect width="64" height="64" fill="#111111"/><g transform="translate(0 -2) rotate(-8 32 40)">
-<circle cx="35" cy="26" r="7.5" fill="#fff"/><circle cx="50.5" cy="26" r="7.5" fill="#fff"/>
-<circle cx="33.4" cy="28.2" r="3.2" fill="#111111"/><circle cx="48.9" cy="28.2" r="3.2" fill="#111111"/>
-<rect x="7" y="29.5" width="50" height="26" rx="1.5" fill="#fff" stroke="#111111" stroke-width="3"/>
-<rect x="12.5" y="35" width="12" height="15" fill="#ffe14d"/><rect x="28.5" y="36.5" width="21" height="4" fill="#111111"/><rect x="28.5" y="44" width="13" height="3.5" fill="#ffe14d"/>
-</g></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><title>linkpeek</title><rect width="64" height="64" fill="#232323"/><path d="M31 15 15 32l16 17" fill="none" stroke="#ffffff" stroke-width="6.5" stroke-linecap="square" stroke-linejoin="miter"/><path d="M30 38a13 13 0 0 1 26 0z" fill="#ffffff"/><circle cx="47" cy="31" r="4.6" fill="#232323"/></svg>

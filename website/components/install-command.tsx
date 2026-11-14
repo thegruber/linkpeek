@@ -6,13 +6,13 @@ export function InstallCommand({
 	tone = "plain",
 }: {
 	command?: string;
-	tone?: "plain" | "signal";
+	tone?: "plain" | "dark" | "block";
 }) {
 	const [copied, setCopied] = useState(false);
-	const signal = tone === "signal";
+	const signal = tone === "dark";
 	return (
 		<div
-			className={`flex w-full items-stretch border font-mono text-sm ${signal ? "border-white/40 text-white" : "border-rule bg-fd-background"}`}
+			className={`flex w-full items-stretch border font-mono text-sm ${signal ? "border-white/40 text-white" : tone === "block" ? "border-ink bg-white" : "border-rule bg-fd-background"}`}
 		>
 			<span
 				aria-hidden="true"
