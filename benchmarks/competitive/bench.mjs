@@ -86,7 +86,8 @@ const adapters = {
 	},
 	"link-preview-js (E2E)": {
 		// Expected to fail: since the CVE-2026-43897 fix it rejects IP-literal
-		// hosts with no opt-out, so it cannot be benchmarked end-to-end locally.
+		// private hosts, even with resolveDNSHost: false, so it cannot be
+		// benchmarked end-to-end locally.
 		run: async (url) => (await getLinkPreview(url)).title,
 		note: "getLinkPreview(url)",
 		expectedFailure: true,
@@ -103,9 +104,19 @@ const adapters = {
 		},
 		note: "fetch().text() + getPreviewFromContent()",
 	},
-	"open-graph-scraper": {
+	"open-graph-scraper (E2E)": {
+		// Expected to fail: since 6.13.0 it rejects non-public resolved
+		// addresses with no opt-out, so it cannot fetch the local server.
 		run: async (url) => (await ogs({ url })).result.ogTitle,
 		note: "ogs({ url })",
+		expectedFailure: true,
+	},
+	"open-graph-scraper (fetch+parse)": {
+		run: async (url) => {
+			const html = await (await fetch(url)).text();
+			return (await ogs({ html })).result.ogTitle;
+		},
+		note: "fetch().text() + ogs({ html })",
 	},
 	"unfurl.js": {
 		run: async (url) => {
@@ -211,7 +222,7 @@ for (const [fixture, body] of Object.entries(corpus)) {
 			}
 			rows.push({ name, median: median(times), p95: p95(times), title });
 		} catch (err) {
-			failed = err.message?.slice(0, 90) ?? String(err);
+			failed = String(err?.message ?? err?.result?.error ?? err).slice(0, 90);
 			rows.push({ name, failed });
 			if (!adapter.expectedFailure) process.exitCode = 1;
 		}
