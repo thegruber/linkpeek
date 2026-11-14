@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { TextMorph } from "torph/react";
 import { appName, home, ogImagePath, previewApi, siteUrl } from "@/lib/shared";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
@@ -252,7 +253,14 @@ export function UnfurlDemo() {
 				className={`min-h-11 border-rule border-t px-4 py-3 font-mono text-xs ${remote.state === "error" ? "text-fd-foreground" : "text-fd-muted-foreground"}`}
 				aria-live="polite"
 			>
-				{status}
+				<TextMorph
+					as="span"
+					duration={420}
+					ease="cubic-bezier(0.23, 1, 0.32, 1)"
+					respectReducedMotion
+				>
+					{status}
+				</TextMorph>
 			</p>
 		</div>
 	);

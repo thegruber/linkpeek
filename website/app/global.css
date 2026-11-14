@@ -145,20 +145,12 @@ body {
 	.peek-body {
 		animation: peek-stream 1100ms cubic-bezier(0.16, 1, 0.3, 1) 350ms both;
 	}
-	.peek-glance {
-		animation: peek-glance 520ms cubic-bezier(0.16, 1, 0.3, 1) 1300ms both;
-	}
 	.bars[data-visible="false"] .bar {
 		transform: scaleX(0);
 	}
 	.bars[data-visible="true"] .bar {
 		animation: bar-grow 760ms cubic-bezier(0.16, 1, 0.3, 1) both;
 		animation-delay: calc(var(--i, 0) * 70ms);
-	}
-}
-@media (prefers-reduced-motion: reduce) {
-	.peek-glance {
-		transform: translate(-10px, 22px);
 	}
 }
 /* Motion tokens (Emil Kowalski): strong ease-out for UI, ease-in-out for
@@ -199,6 +191,26 @@ body {
 	}
 }
 
+/* Section headings: words rise from their masks in reading order. */
+.reveal-word {
+	display: inline-block;
+	overflow: clip;
+	overflow-clip-margin: 0.1em;
+	padding-bottom: 0.08em;
+	margin-bottom: -0.08em;
+	vertical-align: top;
+}
+.reveal-word > span {
+	display: inline-block;
+}
+[data-reveal="pending"] .reveal-word > span {
+	transform: translateY(110%);
+}
+[data-reveal="in"] .reveal-word > span {
+	animation: line-rise 760ms var(--ease-out) both;
+	animation-delay: calc(min(var(--i, 0), 8) * 42ms);
+}
+
 /* Showcase strip: one slow, linear loop that pauses on hover. */
 @media (prefers-reduced-motion: no-preference) {
 	.marquee-track {
@@ -236,11 +248,6 @@ body {
 	}
 	to {
 		clip-path: inset(0 0 0 0);
-	}
-}
-@keyframes peek-glance {
-	to {
-		transform: translate(-10px, 22px);
 	}
 }
 @keyframes bar-grow {

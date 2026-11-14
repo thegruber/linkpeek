@@ -4,8 +4,10 @@ import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
 import { BenchmarkChart } from "@/components/benchmarks";
 import { Downloads } from "@/components/downloads";
+import { PeekingEyes } from "@/components/gaze";
 import { InstallCommand } from "@/components/install-command";
 import { Logo } from "@/components/logo";
+import { RollingFigure, WordReveal } from "@/components/motion-text";
 import { PeekPanel } from "@/components/peek-panel";
 import { LiveResult, UnfurlDemo } from "@/components/self-preview";
 import { Showcase } from "@/components/showcase";
@@ -211,9 +213,12 @@ export default function HomePage() {
 							href="/benchmarks/"
 							className="flex flex-col justify-between gap-6 border-rule border-b px-5 py-6 transition-colors hover:bg-fd-card sm:border-r lg:border-b-0"
 						>
-							<span className="figures block font-normal text-[clamp(2.5rem,4vw,3.75rem)] leading-none tracking-[-0.045em]">
-								{item.value}
-							</span>
+							<RollingFigure
+								value={item.figure}
+								decimals={item.decimals}
+								suffix={item.suffix}
+								className="figures block font-normal text-[clamp(2.5rem,4vw,3.75rem)] leading-none tracking-[-0.045em]"
+							/>
 							<span className="text-fd-muted-foreground text-sm">
 								{item.label}
 							</span>
@@ -306,15 +311,21 @@ export default function HomePage() {
 					</ul>
 				</Row>
 
-				<section className="relative grid overflow-hidden bg-signal text-white lg:grid-cols-12">
+				<section className="relative mt-16 grid bg-signal text-white lg:grid-cols-12">
+					{/* The eyes from the hero, peeking over the closing block. */}
+					<PeekingEyes
+						outline="var(--color-signal)"
+						className="absolute right-[8%] bottom-full w-20 sm:w-28"
+					/>
 					<div
 						aria-hidden="true"
 						className="halftone pointer-events-none absolute inset-y-0 right-0 w-1/2 text-white/25 [--dot:1.8px] [--pitch:10px] [mask-image:linear-gradient(to_left,black,transparent)]"
 					/>
 					<div className="relative px-5 py-14 sm:px-8 lg:col-span-7 lg:py-20">
-						<h2 className="font-normal text-[clamp(2.25rem,5vw,4.5rem)] leading-[0.95] tracking-[-0.045em]">
-							Add link previews to your app.
-						</h2>
+						<WordReveal
+							text="Add link previews to your app."
+							className="font-normal text-[clamp(2.25rem,5vw,4.5rem)] leading-[0.95] tracking-[-0.045em]"
+						/>
 						<p className="mt-5 max-w-[46ch] text-lg text-white/80">
 							Install the package, call <code>preview()</code>, render the card.
 							The quick start walks through it in a few minutes.
@@ -370,6 +381,11 @@ export default function HomePage() {
 						<span className="ml-auto">{author}</span>
 					</nav>
 				</footer>
+				<WordReveal
+					as="p"
+					text="linkpeek"
+					className="pointer-events-none select-none overflow-hidden border-rule border-t px-3 pt-4 font-medium text-[clamp(5rem,23.5vw,21.5rem)] leading-[0.74] tracking-[-0.065em]"
+				/>
 			</div>
 		</main>
 	);
@@ -404,12 +420,11 @@ function Row({
 				>
 					{path}
 				</Link>
-				<h2
+				<WordReveal
 					id={`${id}-title`}
+					text={title}
 					className="mt-4 font-normal text-[clamp(1.75rem,2.6vw,2.5rem)] leading-[1.02] tracking-[-0.04em]"
-				>
-					{title}
-				</h2>
+				/>
 				<p className="mt-4 max-w-[46ch] text-fd-muted-foreground leading-relaxed">
 					{lede}
 				</p>

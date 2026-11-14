@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { RollingFigure } from "@/components/motion-text";
 import {
 	downloadsEndpoint,
 	parseDownloads,
@@ -11,7 +12,6 @@ import { npmUrl } from "@/lib/shared";
 const WIDTH = 132;
 const HEIGHT = 32;
 const INSET = 3;
-const full = new Intl.NumberFormat("en");
 const compact = new Intl.NumberFormat("en", {
 	notation: "compact",
 	maximumFractionDigits: 1,
@@ -51,9 +51,10 @@ export function Downloads() {
 			href={npmUrl}
 			className="group flex h-full flex-col justify-between gap-6 px-5 py-6 transition-colors hover:bg-fd-card"
 		>
-			<span className="figures block font-normal text-[clamp(2.5rem,4vw,3.75rem)] leading-none tracking-[-0.045em]">
-				{state ? full.format(state.week) : "—"}
-			</span>
+			<RollingFigure
+				value={state?.week ?? 0}
+				className="figures block font-normal text-[clamp(2.5rem,4vw,3.75rem)] leading-none tracking-[-0.045em]"
+			/>
 			<span className="flex items-end justify-between gap-4">
 				<span className="text-fd-muted-foreground text-sm">
 					npm downloads last week

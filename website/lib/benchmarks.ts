@@ -90,6 +90,10 @@ export function chart(kind: ChartKind): Chart {
 export interface Highlight {
 	label: string;
 	value: string;
+	/** The number in `value`, so it can be animated, and what follows it. */
+	figure: number;
+	decimals: number;
+	suffix: string;
 }
 
 // Ratios against the closest competitor. When linkpeek stops leading a
@@ -107,18 +111,16 @@ export function highlights(): Highlight[] {
 	const page = `${formatKB(largePage.bytes)} page`;
 	return [
 		own < fastest
-			? {
-					label: `${page}, vs the next-fastest package`,
-					value: `${formatRatio(fastest / own)} faster`,
-				}
-			: { label: `${page}, median`, value: formatMs(own) },
+			? ratio(`${page}, vs the next-fastest package`, fastest / own, "faster")
+			: figure(`${page}, median`, own, 2, " ms"),
 		sizes[SELF] < smallest
-			? {
-					label: "Install size, vs the next-smallest package",
-					value: `${formatRatio(smallest / sizes[SELF])} smaller`,
-				}
-			: { label: "Install size", value: formatMiB(sizes[SELF]) },
-		{ label: "Runtime dependencies", value: "1" },
+			? ratio(
+					"Install size, vs the next-smallest package",
+					smallest / sizes[SELF],
+					"smaller",
+				)
+			: figure("Install size", sizes[SELF] / 1024, 1, " MB"),
+		figure("Runtime dependencies", 1, 0, ""),
 	];
 }
 
@@ -149,6 +151,32 @@ function sorted(rows: ChartRow[]): ChartRow[] {
 
 export function formatMs(value: number): string {
 	return `${value < 10 ? value.toFixed(2) : value < 100 ? value.toFixed(1) : Math.round(value)} ms`;
+}
+
+function ratio(label: string, value: number, word: string): Highlight {
+	const decimals = value < 10 ? 1 : 0;
+	return {
+		label,
+		value: `${formatRatio(value)} ${word}`,
+		figure: Number(value.toFixed(decimals)),
+		decimals,
+		suffix: `× ${word}`,
+	};
+}
+
+function figure(
+	label: string,
+	value: number,
+	decimals: number,
+	suffix: string,
+): Highlight {
+	return {
+		label,
+		value: `${value.toFixed(decimals)}${suffix}`,
+		figure: Number(value.toFixed(decimals)),
+		decimals,
+		suffix,
+	};
 }
 
 function formatRatio(ratio: number): string {

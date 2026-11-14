@@ -9,13 +9,16 @@
 		"typecheck": "next typegen && tsc --noEmit"
 	},
 	"dependencies": {
+		"@number-flow/react": "^0.6.2",
 		"fumadocs-core": "16.19.2",
 		"fumadocs-mdx": "15.6.2",
 		"fumadocs-ui": "npm:@fumadocs/base-ui@16.19.2",
 		"linkpeek": "^2.1.7",
+		"motion": "^14.14.0",
 		"next": "16.4.6",
 		"react": "^19.3.1",
 		"react-dom": "^19.3.1",
+		"torph": "^0.1.4",
 		"zod": "^4.6.7"
 	},
 	"devDependencies": {
