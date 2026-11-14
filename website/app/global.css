@@ -198,6 +198,21 @@ body {
 	}
 }
 
+/* Hero demo: a highlighter line fills until the next example. */
+.rotate-progress {
+	width: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+	.rotate-progress {
+		animation: rotate-fill linear forwards;
+	}
+}
+@keyframes rotate-fill {
+	to {
+		width: 100%;
+	}
+}
+
 /* The hero URL unfurls into its card. */
 @keyframes unfurl {
 	from {

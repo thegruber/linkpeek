@@ -1,6 +1,7 @@
 "use client";
 import { useSearchContext } from "fumadocs-ui/contexts/search";
 import Link from "next/link";
+import { Downloads } from "@/components/downloads";
 import { Mark } from "@/components/logo";
 import { npmUrl, repository } from "@/lib/shared";
 
@@ -27,6 +28,10 @@ export function SiteHeader({ version }: { version: string }) {
 				<span className="font-medium tracking-[-0.03em]">linkpeek</span>
 				<span className="font-mono text-fd-muted-foreground text-xs">
 					v{version}
+				</span>
+				{/* Where Aspen shows the local time, linkpeek shows live usage. */}
+				<span className="ml-auto hidden font-mono text-fd-muted-foreground text-xs xl:inline">
+					<Downloads />
 				</span>
 			</div>
 			<nav

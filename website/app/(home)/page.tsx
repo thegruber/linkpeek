@@ -114,7 +114,10 @@ export default async function HomePage() {
 						TypeScript link preview library
 					</p>
 					<h1 className="max-w-[12ch] font-normal text-[clamp(3rem,6.2vw,6.25rem)] leading-[0.92] tracking-[-0.05em]">
-						Turn any URL into a <span className="highlight">link preview</span>.
+						Turn any URL into{" "}
+						<span className="whitespace-nowrap">
+							a <span className="highlight">link preview</span>.
+						</span>
 					</h1>
 				</div>
 				<div className="border-ink border-b lg:col-span-2">
@@ -147,7 +150,9 @@ export default async function HomePage() {
 						<span>v{packageVersion}</span>
 						<span>MIT</span>
 						<span>types included</span>
-						<Downloads />
+						<span className="xl:hidden">
+							<Downloads />
+						</span>
 					</p>
 				</div>
 			</section>
@@ -182,7 +187,7 @@ export default async function HomePage() {
 					<Link
 						key={item.label}
 						href="/benchmarks/"
-						className={`flex min-h-56 flex-col justify-between gap-6 border-ink px-5 py-6 sm:px-8 ${index === 0 ? "bg-block" : index === 1 ? "bg-shape" : ""} border-b sm:border-r lg:border-b-0`}
+						className={`flex min-h-56 flex-col justify-between gap-6 border-ink px-5 py-6 sm:px-8 ${index === 0 ? "bg-block" : ""} border-b sm:border-r lg:border-b-0`}
 					>
 						<RollingFigure
 							value={item.figure}
@@ -197,9 +202,11 @@ export default async function HomePage() {
 					href="/api/#presets"
 					className="flex min-h-56 flex-col justify-between gap-6 px-5 py-6 sm:px-8"
 				>
-					<span className="font-normal text-[clamp(3rem,5vw,5rem)] leading-none tracking-[-0.05em]">
-						30 kB
-					</span>
+					<RollingFigure
+						value={30}
+						suffix=" kB"
+						className="figures block font-normal text-[clamp(3rem,5vw,5rem)] leading-none tracking-[-0.05em]"
+					/>
 					<span className="text-sm">
 						The most it reads by default, then it stops
 					</span>

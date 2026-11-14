@@ -155,7 +155,7 @@ export function HeroDemo({ examples }: { examples: ShowcaseCard[] }) {
 			</form>
 
 			<div
-				className="flex-1 bg-fd-card p-4 sm:p-6"
+				className="grid flex-1 content-center gap-4 bg-fd-card p-4 sm:p-6"
 				aria-busy={state.kind === "loading"}
 			>
 				{card ? (
@@ -163,7 +163,7 @@ export function HeroDemo({ examples }: { examples: ShowcaseCard[] }) {
 						key={card.url}
 						href={card.url}
 						rel="nofollow noopener noreferrer ugc"
-						className={`unfurl block border border-ink bg-fd-background transition-opacity ${state.kind === "loading" ? "opacity-40" : ""}`}
+						className={`unfurl grid border border-ink bg-fd-background transition-opacity sm:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] ${state.kind === "loading" ? "opacity-40" : ""}`}
 					>
 						{card.image && (
 							// biome-ignore lint/performance/noImgElement: third-party Open Graph images
@@ -176,24 +176,48 @@ export function HeroDemo({ examples }: { examples: ShowcaseCard[] }) {
 								onError={(event) => {
 									event.currentTarget.hidden = true;
 								}}
-								className="aspect-[1200/630] max-h-64 w-full border-ink border-b bg-fd-muted object-cover"
+								className="aspect-[1200/630] h-full w-full border-ink border-b bg-fd-muted object-cover sm:border-r sm:border-b-0"
 							/>
 						)}
-						<span className="grid gap-1 px-4 py-3.5">
+						<span className="grid content-center gap-1.5 px-4 py-4">
 							<span className="font-mono text-fd-muted-foreground text-xs">
 								{card.host}
 							</span>
-							<strong className="line-clamp-1 font-medium text-[1rem] tracking-tight">
+							<strong className="line-clamp-2 font-medium text-[1.05rem] leading-snug tracking-tight">
 								{card.title ?? card.host}
 							</strong>
 							{card.description && (
-								<span className="line-clamp-2 text-fd-muted-foreground text-sm leading-snug">
+								<span className="line-clamp-3 text-fd-muted-foreground text-sm leading-snug">
 									{card.description}
 								</span>
 							)}
 						</span>
 					</a>
-				) : (
+				) : null}
+				{card && (
+					<dl className="grid grid-cols-2 border-ink border-t border-l font-mono text-[0.7rem] sm:grid-cols-4">
+						{(
+							[
+								["title", card.title],
+								["description", card.description],
+								["image", card.image],
+								["site", card.host],
+							] as const
+						).map(([key, value]) => (
+							<div key={key} className="border-ink border-r border-b px-3 py-2">
+								<dt className="text-fd-muted-foreground">{key}</dt>
+								<dd className="truncate">
+									{value
+										? key === "image"
+											? "absolute URL"
+											: `${value.length} chars`
+										: "null"}
+								</dd>
+							</div>
+						))}
+					</dl>
+				)}
+				{!card && (
 					<div className="grid aspect-[1200/630] place-items-center border border-rule border-dashed text-fd-muted-foreground text-sm">
 						The preview card appears here.
 					</div>
@@ -201,7 +225,7 @@ export function HeroDemo({ examples }: { examples: ShowcaseCard[] }) {
 			</div>
 
 			<p
-				className={`flex min-h-11 items-center justify-between gap-4 border-ink border-t px-4 py-3 font-mono text-xs ${state.kind === "error" ? "text-fd-foreground" : "text-fd-muted-foreground"}`}
+				className={`relative flex min-h-11 items-center justify-between gap-4 border-ink border-t px-4 py-3 font-mono text-xs ${state.kind === "error" ? "text-fd-foreground" : "text-fd-muted-foreground"}`}
 				aria-live="polite"
 			>
 				<TextMorph
@@ -213,7 +237,18 @@ export function HeroDemo({ examples }: { examples: ShowcaseCard[] }) {
 					{status}
 				</TextMorph>
 				{state.kind === "example" && (
-					<span className="hidden sm:inline">example, built with linkpeek</span>
+					<>
+						<span className="hidden sm:inline">
+							example {state.index + 1}/{examples.length}, built with linkpeek
+						</span>
+						{/* Time until the next example; it stops once the visitor takes over. */}
+						<span
+							key={state.index}
+							aria-hidden="true"
+							className="rotate-progress absolute top-[-1px] left-0 h-[3px] bg-mark"
+							style={{ animationDuration: `${ROTATE_MS}ms` }}
+						/>
+					</>
 				)}
 			</p>
 		</div>
