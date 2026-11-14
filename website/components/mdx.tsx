@@ -5,6 +5,7 @@ import {
 	BenchmarkDate,
 	BenchmarkHighlights,
 	BenchmarkMethod,
+	VersusTable,
 } from "@/components/benchmarks";
 import { ParserDemo } from "@/components/parser-demo";
 import { LiveResult } from "@/components/self-preview";
@@ -18,6 +19,7 @@ export function getMDXComponents(components?: MDXComponents) {
 		BenchmarkMethod,
 		LiveResult,
 		ParserDemo,
+		VersusTable,
 		...components,
 	} satisfies MDXComponents;
 }

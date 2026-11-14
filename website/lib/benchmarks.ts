@@ -201,3 +201,60 @@ function formatDate(day: string): string {
 		timeZone: "UTC",
 	}).format(new Date(`${day}T00:00:00Z`));
 }
+
+export interface VersusRow {
+	metric: string;
+	self: string;
+	other: string;
+	/** True when linkpeek's value is the better one. */
+	selfWins: boolean;
+}
+
+/** linkpeek against one other package, from the same dated run. */
+export function versus(other: string): VersusRow[] {
+	if (!(other in versions)) throw new Error(`No benchmark data for ${other}`);
+	const install = Object.fromEntries(
+		data.install.packages.map((entry) => [entry.name, entry]),
+	);
+	const row = (
+		metric: string,
+		a: number,
+		b: number,
+		format: (value: number) => string,
+	): VersusRow => ({
+		metric,
+		self: format(a),
+		other: format(b),
+		selfWins: a <= b,
+	});
+	return [
+		row(
+			`${formatKB(largePage.bytes)} page, median`,
+			largePage.medianMs[SELF],
+			largePage.medianMs[other],
+			formatMs,
+		),
+		row(
+			"Small pages, mean of medians",
+			smallMeans[SELF],
+			smallMeans[other],
+			formatMs,
+		),
+		row(
+			"Clean install size",
+			install[SELF].nodeModulesKiB,
+			install[other].nodeModulesKiB,
+			formatMiB,
+		),
+		row(
+			"Packages installed",
+			install[SELF].installedPackages,
+			install[other].installedPackages,
+			String,
+		),
+	];
+}
+
+export function versionOf(name: string): string {
+	return versions[name];
+}

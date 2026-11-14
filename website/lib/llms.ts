@@ -7,6 +7,8 @@ import {
 	type ChartKind,
 	chartMarkdown,
 	highlightsMarkdown,
+	versionOf,
+	versus,
 } from "./benchmarks";
 import { home, siteUrl } from "./shared";
 import { pagePath, source } from "./source";
@@ -21,6 +23,19 @@ const replacements: [RegExp, (...groups: string[]) => string][] = [
 		(_, kind) => chartMarkdown(kind as ChartKind),
 	],
 	[/<BenchmarkHighlights \/>/g, () => highlightsMarkdown()],
+	[
+		/<VersusTable other="([^"]+)" \/>/g,
+		(_, other) =>
+			[
+				`| Metric | linkpeek ${versionOf("linkpeek")} | ${other} ${versionOf(other)} |`,
+				"| --- | ---: | ---: |",
+				...versus(other).map(
+					(row) => `| ${row.metric} | ${row.self} | ${row.other} |`,
+				),
+				"",
+				`Measured on ${benchmarkDate}, same corpus and local server.`,
+			].join("\n"),
+	],
 	[/<BenchmarkDate \/>/g, () => benchmarkDate],
 	[
 		/<BenchmarkMethod \/>/g,

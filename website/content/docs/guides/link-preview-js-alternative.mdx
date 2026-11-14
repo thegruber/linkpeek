@@ -1,0 +1,52 @@
+---
+title: "vs link-preview-js"
+metaTitle: "link-preview-js alternative: linkpeek compared"
+description: "Compare linkpeek with link-preview-js: speed on large pages, install size, runtime support, SSRF defaults, and how to migrate getLinkPreview() to preview()."
+heading: "linkpeek vs link-preview-js"
+---
+
+Both packages turn a URL into preview-card metadata on the server. They differ in what they optimize for: link-preview-js takes free text and has the strictest DNS checks on Node.js; linkpeek reads only the page head, installs small and runs on any runtime with `fetch`.
+
+## Measured side by side [#numbers]
+
+<VersusTable other="link-preview-js" />
+
+link-preview-js 6 refuses private addresses entirely, so it cannot reach a local benchmark server. Its numbers are native `fetch` plus `getPreviewFromContent()`. See the [benchmarks](/benchmarks/) for the method and every package.
+
+## Choose link-preview-js when [#choose-link-preview-js]
+
+- You start from **free text** and need the first URL in it detected for you.
+- You need the **strictest built-in SSRF defense on Node.js**: version 6 resolves every hostname and redirect hop with `dns.lookup` and pins the connection to the checked addresses, which defeats DNS rebinding. linkpeek leaves DNS to the platform `fetch`.
+
+## Choose linkpeek when [#choose-linkpeek]
+
+- You run on **Cloudflare Workers, Vercel Edge, Deno or Bun**. linkpeek uses only platform `fetch`, Web Streams and `TextDecoder`.
+- Your users paste links to **large pages**. linkpeek stops reading after `</head>` and cancels the stream; a 500 kB page costs about as much as a small one.
+- **Install size** matters for cold starts or container images: one runtime dependency.
+- You want a **typed, flat result** (`title`, `description`, `image`, `siteName`, `canonicalUrl`, `favicon`) and typed error codes.
+
+## Migrate getLinkPreview() to preview() [#migrate]
+
+```ts
+// link-preview-js
+import { getLinkPreview } from "link-preview-js";
+const data = await getLinkPreview(url);
+const card = {
+  title: data.title,
+  image: data.images?.[0],
+  favicon: data.favicons?.[0],
+};
+
+// linkpeek
+import { preview } from "linkpeek";
+const result = await preview(url);
+const card = {
+  title: result.title,
+  image: result.image,
+  favicon: result.favicon,
+};
+```
+
+linkpeek resolves HTTP error pages with their metadata and a `statusCode` instead of throwing, so check `result.statusCode < 400` before caching. Errors you should branch on carry a `code` such as `PRIVATE_NETWORK_BLOCKED` or `TIMEOUT`; the [API reference](/api/) lists them.
+
+For a public preview endpoint on Node.js, pair linkpeek with outbound network rules, as the [security model](/security/) explains.

@@ -10,6 +10,8 @@ import {
 	chart,
 	highlights,
 	SELF,
+	versionOf,
+	versus,
 } from "@/lib/benchmarks";
 
 // A bar chart that is a real table: screen readers, search engines and the
@@ -102,6 +104,60 @@ export function BenchmarkHighlights() {
 				</div>
 			))}
 		</dl>
+	);
+}
+
+export function VersusTable({ other }: { other: string }) {
+	const rows = versus(other);
+	return (
+		<div className="not-prose my-6 overflow-x-auto border border-rule">
+			<table className="figures w-full border-collapse text-sm">
+				<caption className="border-rule border-b px-4 py-3 text-left font-mono text-fd-muted-foreground text-xs">
+					Same corpus, same local server, measured on {benchmarkDate}
+				</caption>
+				<thead>
+					<tr className="border-rule border-b text-left">
+						<th
+							scope="col"
+							className="px-4 py-2.5 font-normal text-fd-muted-foreground"
+						>
+							Metric
+						</th>
+						<th scope="col" className="px-4 py-2.5 font-medium">
+							linkpeek {versionOf(SELF)}
+						</th>
+						<th scope="col" className="px-4 py-2.5 font-normal">
+							{other} {versionOf(other)}
+						</th>
+					</tr>
+				</thead>
+				<tbody>
+					{rows.map((row) => (
+						<tr
+							key={row.metric}
+							className="border-rule border-b last:border-b-0"
+						>
+							<th
+								scope="row"
+								className="px-4 py-2.5 text-left font-normal text-fd-muted-foreground"
+							>
+								{row.metric}
+							</th>
+							<td
+								className={`px-4 py-2.5 font-mono ${row.selfWins ? "text-signal" : ""}`}
+							>
+								{row.self}
+							</td>
+							<td
+								className={`px-4 py-2.5 font-mono ${row.selfWins ? "" : "text-signal"}`}
+							>
+								{row.other}
+							</td>
+						</tr>
+					))}
+				</tbody>
+			</table>
+		</div>
 	);
 }
 

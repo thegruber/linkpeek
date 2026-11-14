@@ -64,21 +64,18 @@ if (card.statusCode < 400) {
   });
 }`;
 
-const badges = [
+const facts = [
+	{ label: "version", value: `v${packageVersion}`, href: npmUrl },
+	{ label: "license", value: "MIT", href: `${repository}/blob/main/LICENSE` },
 	{
-		href: npmUrl,
-		src: "https://img.shields.io/npm/v/linkpeek",
-		alt: "npm version",
+		label: "types",
+		value: "built in",
+		href: `${repository}/blob/main/src/types.ts`,
 	},
 	{
+		label: "node",
+		value: "≥ 22.12",
 		href: `${repository}/actions/workflows/ci.yml`,
-		src: `${repository}/actions/workflows/ci.yml/badge.svg`,
-		alt: "CI status",
-	},
-	{
-		href: `${repository}/blob/main/LICENSE`,
-		src: "https://img.shields.io/npm/l/linkpeek",
-		alt: "MIT license",
 	},
 ];
 
@@ -178,23 +175,28 @@ export default function HomePage() {
 									<ArrowIcon />
 								</Link>
 							</div>
-							<span className="flex flex-wrap gap-1.5 pt-2">
-								{badges.map((badge) => (
-									<a
-										key={badge.alt}
-										href={badge.href}
-										className="block leading-none"
+							{/* Package facts in the site's own type instead of third-party
+							    badges; each links to its source. */}
+							<ul className="grid grid-cols-2 border-rule border-t border-l font-mono text-xs sm:grid-cols-4">
+								{facts.map((fact) => (
+									<li
+										key={fact.label}
+										className="border-rule border-r border-b"
 									>
-										{/* biome-ignore lint/performance/noImgElement: external SVG badge */}
-										<img
-											src={badge.src}
-											alt={badge.alt}
-											height={20}
-											className="h-5 w-auto"
-										/>
-									</a>
+										<a
+											href={fact.href}
+											className="block px-3 py-2.5 transition-colors hover:bg-fd-card"
+										>
+											<span className="block text-fd-muted-foreground">
+												{fact.label}
+											</span>
+											<span className="mt-0.5 block text-fd-foreground">
+												{fact.value}
+											</span>
+										</a>
+									</li>
 								))}
-							</span>
+							</ul>
 						</div>
 					</div>
 					<div className="border-rule border-t lg:col-span-7 lg:border-t-0">
@@ -359,6 +361,18 @@ export default function HomePage() {
 						</Link>
 						<Link href="/api/" className="hover:text-fd-foreground">
 							API
+						</Link>
+						<Link
+							href="/guides/link-preview-js-alternative/"
+							className="hover:text-fd-foreground"
+						>
+							vs link-preview-js
+						</Link>
+						<Link
+							href="/guides/open-graph-scraper-alternative/"
+							className="hover:text-fd-foreground"
+						>
+							vs open-graph-scraper
 						</Link>
 						<a
 							href={`${repository}/releases`}
