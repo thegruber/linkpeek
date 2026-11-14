@@ -159,7 +159,7 @@ export default async function HomePage() {
 
 			{/* Why it is fast. */}
 			<section className="grid border-ink border-b lg:grid-cols-4">
-				<div className="flex flex-col justify-between gap-10 bg-ink px-5 py-10 text-white sm:px-8 lg:col-span-1 lg:py-12">
+				<div className="flex flex-col gap-6 bg-ink px-5 py-10 text-white sm:px-8 lg:col-span-1 lg:py-12">
 					<h2 className="font-normal text-[clamp(2.25rem,3.6vw,3.5rem)] uppercase leading-[0.92] tracking-[-0.04em]">
 						Reads the head. Skips the rest.
 					</h2>

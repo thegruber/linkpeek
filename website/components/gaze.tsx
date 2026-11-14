@@ -88,13 +88,13 @@ export function useGaze(
 }
 
 /**
- * The brand's eyes peeking over whatever edge they sit on. Place them so
+ * The brand's eye peeking over whatever edge it sits on. Place them so
  * their flat bottom touches the edge.
  */
 export function PeekingEyes({
 	className,
 	style,
-	sclera = "#ffffff",
+	sclera = "#9fd8f7",
 	pupil = "#0b0b0c",
 	outline,
 }: {
@@ -119,14 +119,13 @@ export function PeekingEyes({
 			style={style}
 		>
 			<path
-				d="M1.5 24a10.5 10.5 0 0 1 21 0zM25.5 24a10.5 10.5 0 0 1 21 0z"
+				d="M11 24a13 13 0 0 1 26 0z"
 				fill={sclera}
 				stroke={outline}
-				strokeWidth={outline ? 2 : 0}
+				strokeWidth={outline ? 1.5 : 0}
 			/>
 			<motion.g style={{ x, y }}>
-				<circle cx="12" cy="18.5" r="4" fill={pupil} />
-				<circle cx="36" cy="18.5" r="4" fill={pupil} />
+				<circle cx="27.5" cy="17.5" r="4.6" fill={pupil} />
 			</motion.g>
 		</svg>
 	);

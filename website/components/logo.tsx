@@ -13,7 +13,7 @@ export function Mark({ className = "size-6" }: { className?: string }) {
 				strokeWidth="6.5"
 				strokeLinecap="square"
 			/>
-			<path d={mark.eye} fill="#ffffff" />
+			<path d={mark.eye} fill="#9fd8f7" />
 			<circle
 				className="peek-pupils"
 				cx={mark.pupil.cx}
