@@ -36,6 +36,11 @@ updates:
           - minor
           - patch
   - package-ecosystem: npm
+    directory: /demo-api
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 2
+  - package-ecosystem: npm
     directory: /benchmarks/competitive
     schedule:
       interval: weekly

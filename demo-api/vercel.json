@@ -1,0 +1,9 @@
+{
+	"$schema": "https://openapi.vercel.sh/vercel.json",
+	"functions": {
+		"api/preview.ts": {
+			"maxDuration": 10,
+			"memory": 512
+		}
+	}
+}

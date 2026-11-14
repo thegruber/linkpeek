@@ -28,6 +28,10 @@
 - Benchmark numbers on the site come only from `website/data/benchmarks.json`; charts and Markdown exports render from it.
 - `npm run build --prefix website` also runs `scripts/check-site.mjs` (one H1, canonical, social tags, JSON-LD, Markdown twins, links, sitemap). Keep it passing.
 
+## Demo preview endpoint
+- `demo-api/` is the Vercel project `gubastudio/linkpeek-playground` (`https://linkpeek-playground.vercel.app/api/preview`), used by the homepage's "try any URL" demo. Deploy with `vercel deploy --prod` from `demo-api/`.
+- Keep its defenses together: docs-origin allowlist, per-hop DNS check in `lib/guard.ts` (tested in `test/demo-api.test.ts`), 5 s timeout, metadata-only JSON, day-long edge cache, and the Vercel firewall rate limits (20/min and 200/h per IP on `/api/preview`).
+
 ## Design Rules
 - Runtime dependency policy: keep `htmlparser2` as the only runtime dependency.
 - Default mode is fast: 30 KB, head-first parsing, no body scan, no meta-refresh.
