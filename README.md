@@ -25,7 +25,7 @@ result.siteName;     // string
 result.canonicalUrl; // absolute final/canonical URL
 ```
 
-[Documentation](https://thegruber.github.io/linkpeek/) · [API reference](https://thegruber.github.io/linkpeek/api/) · [Try the parser](https://thegruber.github.io/linkpeek/guides/open-graph-parser/#try-title) · [Troubleshooting](https://thegruber.github.io/linkpeek/guides/troubleshooting/) · [Security](https://thegruber.github.io/linkpeek/security/) · [Examples](https://github.com/thegruber/linkpeek/tree/main/examples) · [Benchmarks](https://thegruber.github.io/linkpeek/benchmarks/) · [Changelog](https://github.com/thegruber/linkpeek/blob/main/CHANGELOG.md)
+[Documentation](https://thegruber.github.io/linkpeek/) · [Quick start](https://thegruber.github.io/linkpeek/quick-start/) · [API reference](https://thegruber.github.io/linkpeek/api/) · [Try the parser](https://thegruber.github.io/linkpeek/guides/open-graph-parser/#try-title) · [Troubleshooting](https://thegruber.github.io/linkpeek/guides/troubleshooting/) · [Security](https://thegruber.github.io/linkpeek/security/) · [Examples](https://github.com/thegruber/linkpeek/tree/main/examples) · [Benchmarks](https://thegruber.github.io/linkpeek/benchmarks/) · [Changelog](https://github.com/thegruber/linkpeek/blob/main/CHANGELOG.md)
 
 ## Runtime support
 
