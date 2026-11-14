@@ -34,9 +34,22 @@ export function InstallCommand({
 						setCopied(false);
 					}
 				}}
-				className={`min-w-[5.5rem] border-l px-4 font-sans text-xs transition-colors active:translate-y-px ${signal ? "border-white/40 hover:bg-white hover:text-signal" : "border-rule text-fd-muted-foreground hover:bg-fd-foreground hover:text-fd-background"}`}
+				aria-label={copied ? "Copied" : "Copy install command"}
+				className={`press relative grid min-w-[5.5rem] place-items-center border-l px-4 font-mono text-xs transition-[background-color,color,transform] ${signal ? "border-white/40 hover:bg-white hover:text-signal" : "border-rule text-fd-muted-foreground hover:bg-fd-foreground hover:text-fd-background"}`}
 			>
-				{copied ? "Copied" : "Copy"}
+				{/* Both labels share one cell; a short blur bridges the swap. */}
+				<span
+					aria-hidden="true"
+					className={`col-start-1 row-start-1 transition-[opacity,filter] duration-200 ${copied ? "opacity-0 blur-[2px]" : "opacity-100"}`}
+				>
+					Copy
+				</span>
+				<span
+					aria-hidden="true"
+					className={`col-start-1 row-start-1 transition-[opacity,filter] duration-200 ${copied ? "opacity-100" : "opacity-0 blur-[2px]"}`}
+				>
+					Copied
+				</span>
 			</button>
 		</div>
 	);

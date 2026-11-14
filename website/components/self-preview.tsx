@@ -194,7 +194,7 @@ export function UnfurlDemo() {
 				<button
 					type="submit"
 					disabled={remote.state === "loading"}
-					className="min-h-12 bg-fd-foreground px-5 font-medium text-fd-background text-sm transition-colors hover:bg-signal hover:text-white active:translate-y-px disabled:opacity-60"
+					className="press min-h-12 bg-fd-foreground px-5 font-medium text-fd-background text-sm transition-[background-color,color,transform] hover:bg-signal hover:text-white disabled:opacity-60"
 				>
 					Preview
 				</button>

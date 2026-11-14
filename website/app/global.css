@@ -161,6 +161,70 @@ body {
 		transform: translate(-10px, 22px);
 	}
 }
+/* Motion tokens (Emil Kowalski): strong ease-out for UI, ease-in-out for
+   on-screen movement. */
+:root {
+	--ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+	--ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+/* Every pressable thing answers the press. */
+.press {
+	transition-duration: 160ms;
+	transition-timing-function: var(--ease-out);
+}
+.press:active {
+	transform: scale(0.97);
+}
+
+/* Headline: each line rises out of its own mask, the lead of the hero. */
+.reveal-line {
+	display: inline-block;
+	overflow: clip;
+	overflow-clip-margin: 0.12em;
+	padding-bottom: 0.06em;
+	vertical-align: top;
+}
+.reveal-line > span {
+	display: inline-block;
+}
+@media (prefers-reduced-motion: no-preference) {
+	.reveal-line > span {
+		animation: line-rise 820ms var(--ease-out) var(--d, 0ms) both;
+	}
+}
+@keyframes line-rise {
+	from {
+		transform: translateY(105%);
+	}
+}
+
+/* Showcase strip: one slow, linear loop that pauses on hover. */
+@media (prefers-reduced-motion: no-preference) {
+	.marquee-track {
+		animation: marquee 70s linear infinite;
+	}
+	.marquee:hover .marquee-track,
+	.marquee:focus-within .marquee-track {
+		animation-play-state: paused;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.marquee {
+		overflow-x: auto;
+	}
+}
+@keyframes marquee {
+	to {
+		transform: translateX(-50%);
+	}
+}
+
+.peek-eyes {
+	transform-box: fill-box;
+	transform-origin: center;
+}
+
 @keyframes peek-rise {
 	from {
 		transform: translateY(150px);

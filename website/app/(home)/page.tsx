@@ -1,13 +1,14 @@
 import { ServerCodeBlock } from "fumadocs-ui/components/codeblock.rsc";
 import type { Metadata } from "next";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { BenchmarkChart } from "@/components/benchmarks";
 import { Downloads } from "@/components/downloads";
 import { InstallCommand } from "@/components/install-command";
 import { Logo } from "@/components/logo";
 import { PeekPanel } from "@/components/peek-panel";
 import { LiveResult, UnfurlDemo } from "@/components/self-preview";
+import { Showcase } from "@/components/showcase";
 import { benchmarkDate, highlights } from "@/lib/benchmarks";
 import {
 	appName,
@@ -130,8 +131,17 @@ export default function HomePage() {
 				<section className="grid border-rule border-b lg:grid-cols-12">
 					<div className="flex flex-col justify-end border-rule px-5 pt-14 pb-8 sm:px-8 lg:col-span-8 lg:border-r lg:pt-24 lg:pb-10">
 						<h1 className="font-normal text-[clamp(3rem,7.4vw,7.25rem)] leading-[0.9] tracking-[-0.05em]">
-							TypeScript link previews,{" "}
-							<span className="text-fd-muted-foreground">head first.</span>
+							<span className="reveal-line">
+								<span style={{ "--d": "0ms" } as CSSProperties}>
+									TypeScript link
+								</span>
+							</span>{" "}
+							<span className="reveal-line">
+								<span style={{ "--d": "90ms" } as CSSProperties}>
+									previews,{" "}
+									<span className="text-fd-muted-foreground">head first.</span>
+								</span>
+							</span>
 						</h1>
 					</div>
 					<div className="border-rule border-t lg:col-span-4 lg:border-t-0">
@@ -153,14 +163,14 @@ export default function HomePage() {
 							<div className="grid grid-cols-2">
 								<Link
 									href="/quick-start/"
-									className="flex min-h-12 items-center justify-between bg-fd-foreground px-4 font-medium text-fd-background text-sm transition-colors hover:bg-signal hover:text-white"
+									className="flex min-h-12 items-center justify-between bg-fd-foreground px-4 font-medium text-fd-background text-sm press transition-[background-color,color,transform] hover:bg-signal hover:text-white"
 								>
 									Quick start
 									<ArrowIcon />
 								</Link>
 								<Link
 									href="/benchmarks/"
-									className="flex min-h-12 items-center justify-between border border-rule border-l-0 px-4 font-medium text-sm transition-colors hover:bg-fd-card"
+									className="flex min-h-12 items-center justify-between border border-rule border-l-0 press px-4 font-medium text-sm transition-[background-color,transform] hover:bg-fd-card"
 								>
 									Benchmarks
 									<ArrowIcon />
@@ -211,6 +221,8 @@ export default function HomePage() {
 					))}
 					<Downloads />
 				</section>
+
+				<Showcase />
 
 				<Row
 					path="/benchmarks"
@@ -312,7 +324,7 @@ export default function HomePage() {
 						<InstallCommand tone="signal" />
 						<Link
 							href="/quick-start/"
-							className="flex min-h-12 items-center justify-between bg-white px-4 font-medium text-signal text-sm transition-colors hover:bg-fd-foreground hover:text-fd-background"
+							className="flex min-h-12 items-center justify-between bg-white press px-4 font-medium text-signal text-sm transition-[background-color,color,transform] hover:bg-fd-foreground hover:text-fd-background"
 						>
 							Read the quick start
 							<ArrowIcon />
