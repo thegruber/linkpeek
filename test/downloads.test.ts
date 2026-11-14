@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
 	downloadsEndpoint,
-	niceMaximum,
 	parseDownloads,
 	summarizeDownloads,
 } from "../website/downloads-data.js";
@@ -14,7 +13,7 @@ function days(values: number[]) {
 	}));
 }
 
-describe("homepage download chart data", () => {
+describe("homepage download sparkline data", () => {
 	it("targets the public last-year endpoint", () => {
 		expect(downloadsEndpoint("@scope/pkg")).toBe(
 			"https://api.npmjs.org/downloads/range/last-year/%40scope%2Fpkg",
@@ -51,22 +50,17 @@ describe("homepage download chart data", () => {
 			{ start: "2026-01-25", end: "2026-01-31", downloads: 14 },
 		]);
 		expect(summary.last7Days).toBe(14);
-		expect(summary.previous7Days).toBe(7);
-		expect(summary.last30Days).toBe(39);
 		expect(summary.total).toBe(48);
-		expect(summary.through).toBe("2026-01-31");
+		expect(summary.sinceLaunch).toBe(false);
+	});
+
+	it("labels the total as all-time only when the range predates the first download", () => {
+		expect(
+			summarizeDownloads(days([0, ...Array(14).fill(1)])).sinceLaunch,
+		).toBe(true);
 	});
 
 	it("returns no weeks when nothing was downloaded", () => {
 		expect(summarizeDownloads(days(Array(14).fill(0))).weeks).toEqual([]);
-	});
-
-	it("rounds axis maxima to readable steps", () => {
-		expect(niceMaximum(0)).toBe(1);
-		expect(niceMaximum(4_348)).toBe(5_000);
-		expect(niceMaximum(1_900)).toBe(2_000);
-		expect(niceMaximum(2_100)).toBe(2_500);
-		expect(niceMaximum(5_519)).toBe(6_000);
-		expect(niceMaximum(10_000)).toBe(10_000);
 	});
 });

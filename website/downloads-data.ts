@@ -1,4 +1,4 @@
-// Pure helpers for the homepage download chart, kept DOM-free so they can be
+// Pure helpers for the homepage download sparkline, kept DOM-free so they can be
 // unit tested without a browser.
 
 export interface DailyDownloads {
@@ -14,10 +14,10 @@ export interface WeeklyDownloads {
 
 export interface DownloadSummary {
 	last7Days: number;
-	previous7Days: number;
-	last30Days: number;
 	total: number;
-	through: string;
+	// True when the range starts before the first download, so `total` is the
+	// all-time count rather than only the past year.
+	sinceLaunch: boolean;
 	weeks: WeeklyDownloads[];
 }
 
@@ -60,22 +60,10 @@ export function summarizeDownloads(daily: DailyDownloads[]): DownloadSummary {
 	const firstActive = weeks.findIndex((week) => week.downloads > 0);
 	return {
 		last7Days: sum(daily.slice(-7)),
-		previous7Days: sum(daily.slice(-14, -7)),
-		last30Days: sum(daily.slice(-30)),
 		total: sum(daily),
-		through: daily.at(-1)?.day ?? "",
+		sinceLaunch: daily[0]?.downloads === 0,
 		weeks: firstActive === -1 ? [] : weeks.slice(firstActive),
 	};
-}
-
-// Rounds an axis maximum up to a readable step times a power of ten.
-export function niceMaximum(value: number): number {
-	if (value <= 0) return 1;
-	const magnitude = 10 ** Math.floor(Math.log10(value));
-	const step =
-		[1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10].find((n) => n * magnitude >= value) ??
-		10;
-	return step * magnitude;
 }
 
 function sum(entries: DailyDownloads[]): number {
