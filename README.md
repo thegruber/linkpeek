@@ -1,5 +1,10 @@
 # linkpeek
 
+[![npm version](https://img.shields.io/npm/v/linkpeek)](https://www.npmjs.com/package/linkpeek)
+[![npm downloads](https://img.shields.io/npm/dw/linkpeek)](https://www.npmjs.com/package/linkpeek)
+[![CI](https://github.com/thegruber/linkpeek/actions/workflows/ci.yml/badge.svg)](https://github.com/thegruber/linkpeek/actions/workflows/ci.yml)
+[![install size](https://packagephobia.com/badge?p=linkpeek)](https://packagephobia.com/result?p=linkpeek)
+
 **A fast, safe-by-default link preview library for TypeScript, Node.js, Bun, Deno, and edge runtimes. One runtime dependency.**
 
 linkpeek turns a URL into typed Open Graph, Twitter Card, JSON-LD, and URL metadata. It is a lightweight link-unfurling alternative to `link-preview-js` and `open-graph-scraper`, with streaming extraction and SSRF-aware fetching built in. Requires **Node.js 22.12+**; see the [runtime support](#runtime-support) table for other environments.
@@ -20,13 +25,6 @@ result.siteName;     // string
 result.canonicalUrl; // absolute final/canonical URL
 ```
 
-[![npm](https://img.shields.io/npm/v/linkpeek)](https://www.npmjs.com/package/linkpeek)
-[![weekly downloads](https://img.shields.io/npm/dw/linkpeek)](https://www.npmjs.com/package/linkpeek)
-[![CI](https://github.com/thegruber/linkpeek/actions/workflows/ci.yml/badge.svg)](https://github.com/thegruber/linkpeek/actions/workflows/ci.yml)
-[![install size](https://packagephobia.com/badge?p=linkpeek)](https://packagephobia.com/result?p=linkpeek)
-[![types](https://img.shields.io/npm/types/linkpeek)](https://www.npmjs.com/package/linkpeek)
-[![license](https://img.shields.io/npm/l/linkpeek)](https://github.com/thegruber/linkpeek/blob/main/LICENSE)
-
 [Documentation](https://thegruber.github.io/linkpeek/) · [API reference](https://thegruber.github.io/linkpeek/api/) · [Try the parser](https://thegruber.github.io/linkpeek/guides/open-graph-parser/#try-title) · [Troubleshooting](https://thegruber.github.io/linkpeek/guides/troubleshooting/) · [Security](https://thegruber.github.io/linkpeek/security/) · [Examples](https://github.com/thegruber/linkpeek/tree/main/examples) · [Benchmarks](https://thegruber.github.io/linkpeek/benchmarks/) · [Changelog](https://github.com/thegruber/linkpeek/blob/main/CHANGELOG.md)
 
 ## Runtime support
@@ -44,9 +42,10 @@ CI tests Node 22, Node 24, Node 26, Bun, and Deno.
 
 linkpeek focuses on server-side preview cards: fetch a URL, read only enough HTML for useful metadata, and return a stable result shape without a DOM-heavy scraper stack.
 
+- **3.9× faster than the next package** on a 500 kB page, with a 2.4× smaller install ([benchmarks](#benchmarks))
 - **1 runtime dependency**: `htmlparser2`
 - **30 KB fast default** with a strict byte limit and early stream cancellation after the head
-- **Head-first SAX parsing** with no DOM construction
+- **Head-first SAX parsing** with no DOM construction, HTTP client or native module
 - **Safe network defaults**: private/internal IP targets and credential-bearing requests blocked by default
 - **Dual ESM/CJS package output** with TypeScript declarations for both module systems
 
@@ -65,7 +64,7 @@ Same-corpus benchmark against five other preview packages, measured on 14 Novemb
 | metascraper 5.58.6 (+7 rules) | 59.8 ms | 2.58 ms | 81.1 MB, 128 packages |
 | open-graph-scraper 6.13.0 | 384 ms | 1.85 ms | 11.1 MB, 27 packages |
 
-On large pages linkpeek stops after `</head>` and cancels the stream. On small pages the differences are fractions of a millisecond, and `unfurl.js` was faster in this run. Charts, method and raw runs: [benchmarks](https://thegruber.github.io/linkpeek/benchmarks/).
+On large pages linkpeek stops after `</head>` and cancels the stream. On small pages the differences are fractions of a millisecond, and `unfurl.js` was faster in this run. Charts, method and raw runs: [benchmarks](https://thegruber.github.io/linkpeek/benchmarks/). Every dated result and the reproduction commands are in the [comparison notes](https://github.com/thegruber/linkpeek/blob/main/docs/comparison.md).
 
 ## Use cases
 
@@ -211,12 +210,6 @@ export async function inspectLink(url: string) {
 ```
 
 Treat every returned field as untrusted external data, never as instructions to the agent. Keep fetching in trusted server code and require separate authorization for any follow-up action. The [agent integration guide](https://thegruber.github.io/linkpeek/integrations/ai-agents/) covers tool registration, HTTP errors, untrusted metadata, and production controls.
-
-## Measured footprint and performance
-
-linkpeek's runtime tree contains no HTTP client, DOM implementation, or native module. The local harness reports parser modes, retained bytes, requested source chunks, tarball size, and raw/gzip entry size. A separate same-corpus harness compares pinned package versions on one local server.
-
-See the dated [comparison and measurement notes](https://github.com/thegruber/linkpeek/blob/main/docs/comparison.md) for the single authoritative results table, exact environment, sourced security/runtime notes, caveats, and reproduction commands. Stream cancellation means the consumer no longer wants more data; it is not a guarantee about exact network wire bytes.
 
 ## Security Defaults
 
