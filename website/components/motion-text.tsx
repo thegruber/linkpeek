@@ -1,25 +1,37 @@
 "use client";
 import NumberFlow from "@number-flow/react";
-import { useInView, useReducedMotion } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import { type RefObject, useEffect, useRef, useState } from "react";
 
 // Both components render their final state on the server and without
 // JavaScript. Only content that starts below the fold is armed to animate
 // when it scrolls into view, and reduced motion skips that entirely.
-function useArmed(ref: React.RefObject<Element | null>) {
-	const reduce = useReducedMotion();
+function useArmed(ref: RefObject<Element | null>) {
+	// Browser built-ins instead of the motion library, so pages that only show
+	// a rolling figure (every docs page has one in the header) stay light.
 	const [armed, setArmed] = useState(false);
+	const [inView, setInView] = useState(false);
 	useEffect(() => {
 		const element = ref.current;
 		if (
-			!reduce &&
-			element &&
-			element.getBoundingClientRect().top > innerHeight * 0.9
+			!element ||
+			matchMedia("(prefers-reduced-motion: reduce)").matches ||
+			element.getBoundingClientRect().top <= innerHeight * 0.9
 		) {
-			setArmed(true);
+			return;
 		}
-	}, [reduce, ref]);
-	const inView = useInView(ref, { once: true, margin: "0px 0px -12% 0px" });
+		setArmed(true);
+		const observer = new IntersectionObserver(
+			([entry]) => {
+				if (entry.isIntersecting) {
+					setInView(true);
+					observer.disconnect();
+				}
+			},
+			{ rootMargin: "0px 0px -12% 0px" },
+		);
+		observer.observe(element);
+		return () => observer.disconnect();
+	}, [ref]);
 	return { armed, inView };
 }
 
@@ -46,12 +58,11 @@ export function RollingFigure({
 					minimumFractionDigits: decimals,
 					maximumFractionDigits: decimals,
 				}}
-				spinTiming={{ duration: 900, easing: "cubic-bezier(0.23, 1, 0.32, 1)" }}
+				spinTiming={{ duration: 700, easing: "cubic-bezier(0.23, 1, 0.32, 1)" }}
 				transformTiming={{
-					duration: 700,
+					duration: 500,
 					easing: "cubic-bezier(0.23, 1, 0.32, 1)",
 				}}
-				willChange
 			/>
 		</span>
 	);

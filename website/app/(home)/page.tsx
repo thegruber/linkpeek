@@ -33,6 +33,7 @@ const image = {
 };
 
 export const metadata: Metadata = {
+	robots: { "max-image-preview": "large" },
 	alternates: {
 		canonical: siteUrl,
 		types: { "text/markdown": `${siteUrl}index.md` },
@@ -300,7 +301,7 @@ export default async function HomePage() {
 				<div className="relative min-h-56 lg:col-span-2">
 					<Dither
 						className="absolute inset-0"
-						place={{ x: 0.35, y: 0.05, scale: 1.25 }}
+						place={{ x: 0.62, width: 0.5 }}
 						tone={-0.05}
 					/>
 				</div>
@@ -327,35 +328,35 @@ export default async function HomePage() {
 				</div>
 				<nav
 					aria-label="Documentation"
-					className="grid content-start gap-2 border-ink border-b px-5 py-6 sm:px-8 lg:border-r lg:border-b-0"
+					className="grid content-start border-ink border-b px-5 py-6 sm:px-8 lg:border-r lg:border-b-0"
 				>
-					<Link href="/quick-start/" className="hover:underline">
+					<Link href="/quick-start/" className="py-1.5 hover:underline">
 						Quick start
 					</Link>
-					<Link href="/api/" className="hover:underline">
+					<Link href="/api/" className="py-1.5 hover:underline">
 						API reference
 					</Link>
-					<Link href="/benchmarks/" className="hover:underline">
+					<Link href="/benchmarks/" className="py-1.5 hover:underline">
 						Benchmarks
 					</Link>
-					<Link href="/security/" className="hover:underline">
+					<Link href="/security/" className="py-1.5 hover:underline">
 						Security
 					</Link>
 				</nav>
 				<nav
 					aria-label="Resources"
-					className="grid content-start gap-2 border-ink border-b px-5 py-6 sm:px-8 lg:border-r lg:border-b-0"
+					className="grid content-start border-ink border-b px-5 py-6 sm:px-8 lg:border-r lg:border-b-0"
 				>
-					<a href={npmUrl} className="hover:underline">
+					<a href={npmUrl} className="py-1.5 hover:underline">
 						npm
 					</a>
-					<a href={repository} className="hover:underline">
+					<a href={repository} className="py-1.5 hover:underline">
 						GitHub
 					</a>
-					<a href={`${repository}/releases`} className="hover:underline">
+					<a href={`${repository}/releases`} className="py-1.5 hover:underline">
 						Releases
 					</a>
-					<a href="llms.txt" className="hover:underline">
+					<a href="llms.txt" className="py-1.5 hover:underline">
 						llms.txt
 					</a>
 				</nav>

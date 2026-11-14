@@ -1,22 +1,14 @@
 import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared";
 import { Logo } from "@/components/logo";
-import { npmUrl, repository } from "./shared";
 
-// The docs sidebar already lists every page, so it only adds the npm link.
-export function baseOptions({ docs = false } = {}): BaseLayoutProps {
+// The site header carries the logo, main links, GitHub and npm, so the docs
+// sidebar only lists pages. The site is light only, like a printed sheet.
+export function baseOptions(
+	_options: { docs?: boolean } = {},
+): BaseLayoutProps {
 	return {
 		nav: { title: <Logo />, url: "/" },
-		githubUrl: repository,
-		// The site is light only, like a printed spec sheet.
 		themeSwitch: { enabled: false },
-		links: [
-			...(docs
-				? []
-				: [
-						{ text: "Docs", url: "/quick-start/" },
-						{ text: "Benchmarks", url: "/benchmarks/" },
-					]),
-			{ text: "npm", url: npmUrl, external: true },
-		],
+		links: [],
 	};
 }

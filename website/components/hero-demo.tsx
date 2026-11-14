@@ -35,26 +35,39 @@ export function HeroDemo({ examples }: { examples: ShowcaseCard[] }) {
 	const [input, setInput] = useState("");
 	const touched = useRef(false);
 
+	// The progress line is the clock: when its animation ends, the next
+	// example shows. Hovering or focusing the demo pauses it.
+	const [paused, setPaused] = useState(false);
+	const [rotating, setRotating] = useState(false);
+	const firstCard = useRef(true);
 	useEffect(() => {
-		if (
-			examples.length < 2 ||
-			matchMedia("(prefers-reduced-motion: reduce)").matches
-		) {
-			return;
-		}
-		const timer = setInterval(() => {
-			if (touched.current) return;
-			setState((current) =>
-				current.kind === "example"
-					? { kind: "example", index: (current.index + 1) % examples.length }
-					: current,
-			);
-		}, ROTATE_MS);
-		return () => clearInterval(timer);
+		setRotating(
+			examples.length > 1 &&
+				!matchMedia("(prefers-reduced-motion: reduce)").matches,
+		);
 	}, [examples.length]);
+	useEffect(() => {
+		if (state.kind === "example" && state.index > 0) firstCard.current = false;
+		if (state.kind !== "example") firstCard.current = false;
+	}, [state]);
+	const next = () => {
+		if (touched.current) return;
+		setState((current) =>
+			current.kind === "example"
+				? { kind: "example", index: (current.index + 1) % examples.length }
+				: current,
+		);
+	};
 
 	const example = state.kind === "example" ? examples[state.index] : undefined;
-	const card: Card | undefined = state.kind === "result" ? state.card : example;
+	const lastCard = useRef<Card | undefined>(undefined);
+	const card: Card | undefined =
+		state.kind === "result"
+			? state.card
+			: state.kind === "loading"
+				? lastCard.current
+				: example;
+	lastCard.current = card;
 	const shownUrl =
 		input ||
 		(state.kind === "loading"
@@ -119,7 +132,15 @@ export function HeroDemo({ examples }: { examples: ShowcaseCard[] }) {
 						: "";
 
 	return (
-		<div className="flex h-full min-w-0 flex-col bg-fd-background">
+		// biome-ignore lint/a11y/noStaticElementInteractions: hover and focus only pause the example rotation
+		<div
+			className="demo flex h-full min-w-0 flex-col bg-fd-background"
+			data-paused={paused || undefined}
+			onPointerEnter={() => setPaused(true)}
+			onPointerLeave={() => setPaused(false)}
+			onFocus={() => setPaused(true)}
+			onBlur={() => setPaused(false)}
+		>
 			<form
 				className="flex border-ink border-b"
 				onSubmit={(event) => {
@@ -163,7 +184,7 @@ export function HeroDemo({ examples }: { examples: ShowcaseCard[] }) {
 						key={card.url}
 						href={card.url}
 						rel="nofollow noopener noreferrer ugc"
-						className={`unfurl grid border border-ink bg-fd-background transition-opacity sm:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] ${state.kind === "loading" ? "opacity-40" : ""}`}
+						className={`${firstCard.current ? "unfurl" : "swap"} grid border border-ink bg-fd-background transition-opacity sm:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] ${state.kind === "loading" ? "opacity-40" : ""}`}
 					>
 						{card.image && (
 							// biome-ignore lint/performance/noImgElement: third-party Open Graph images
@@ -226,11 +247,11 @@ export function HeroDemo({ examples }: { examples: ShowcaseCard[] }) {
 
 			<p
 				className={`relative flex min-h-11 items-center justify-between gap-4 border-ink border-t px-4 py-3 font-mono text-xs ${state.kind === "error" ? "text-fd-foreground" : "text-fd-muted-foreground"}`}
-				aria-live="polite"
+				aria-live={state.kind === "example" ? "off" : "polite"}
 			>
 				<TextMorph
 					as="span"
-					duration={420}
+					duration={280}
 					ease="cubic-bezier(0.23, 1, 0.32, 1)"
 					respectReducedMotion
 				>
@@ -245,8 +266,12 @@ export function HeroDemo({ examples }: { examples: ShowcaseCard[] }) {
 						<span
 							key={state.index}
 							aria-hidden="true"
-							className="rotate-progress absolute top-[-1px] left-0 h-[3px] bg-mark"
-							style={{ animationDuration: `${ROTATE_MS}ms` }}
+							className={`rotate-progress absolute top-[-1px] left-0 h-[3px] w-full bg-mark ${rotating ? "" : "hidden"}`}
+							style={{
+								animationDuration: `${ROTATE_MS}ms`,
+								animationDelay: state.index === 0 ? "600ms" : "0ms",
+							}}
+							onAnimationEnd={next}
 						/>
 					</>
 				)}

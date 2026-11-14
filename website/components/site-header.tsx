@@ -1,6 +1,8 @@
 "use client";
 import { useSearchContext } from "fumadocs-ui/contexts/search";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import type { ReactNode } from "react";
 import { Downloads } from "@/components/downloads";
 import { Mark } from "@/components/logo";
 import { npmUrl, repository } from "@/lib/shared";
@@ -13,10 +15,54 @@ const links = [
 
 // Aspen-style bar: the mark in its own black cell, plain links, and one
 // solid action cell on the right.
-export function SiteHeader({ version }: { version: string }) {
+export function SiteHeader({
+	version = process.env.NEXT_PUBLIC_LINKPEEK_VERSION ?? "",
+	menu,
+}: {
+	version?: string;
+	/** Mobile docs navigation trigger, shown instead of the action cell. */
+	menu?: ReactNode;
+}) {
 	const search = useSearchContext();
+	const pathname = usePathname();
+	const docsRoutes = [
+		"/quick-start",
+		"/api",
+		"/security",
+		"/integrations",
+		"/guides",
+	];
+	const section = (href: string) => {
+		if (href === "/quick-start/") {
+			return (
+				docsRoutes.some((route) => pathname.startsWith(route)) &&
+				!pathname.startsWith("/guides/link-preview-library-comparison")
+			);
+		}
+		return pathname.startsWith(href.replace(/\/$/, ""));
+	};
+	const action = (
+		<Link
+			href="/quick-start/"
+			aria-label="Get started"
+			className="press group flex items-center gap-3 bg-ink px-5 font-mono text-[0.72rem] text-white uppercase tracking-[0.04em] transition-[background-color,color,transform] hover:bg-mark hover:text-ink"
+		>
+			<span className="hidden sm:inline">Get started</span>
+			<svg
+				viewBox="0 0 16 16"
+				aria-hidden="true"
+				className="size-4"
+				fill="none"
+				stroke="currentColor"
+				strokeWidth="1.5"
+			>
+				<path d="M3 8h10M9 4l4 4-4 4" />
+			</svg>
+		</Link>
+	);
+
 	return (
-		<header className="sticky top-0 z-40 grid h-14 grid-cols-[3.5rem_1fr_auto] border-ink border-b bg-fd-background sm:grid-cols-[3.5rem_minmax(0,1fr)_minmax(0,1fr)_auto]">
+		<header className="sticky top-0 z-40 grid h-14 grid-cols-[3.5rem_1fr_auto_auto] border-ink border-b bg-fd-background sm:grid-cols-[3.5rem_minmax(0,1fr)_minmax(0,1fr)_auto_auto] lg:grid-cols-[3.5rem_minmax(0,1fr)_minmax(0,1fr)_auto]">
 			<Link
 				href="/"
 				aria-label="linkpeek home"
@@ -47,7 +93,8 @@ export function SiteHeader({ version }: { version: string }) {
 					<Link
 						key={href}
 						href={href}
-						className="whitespace-nowrap hover:underline hover:underline-offset-4"
+						aria-current={section(href) ? "page" : undefined}
+						className={`${href.includes("comparison") ? "hidden sm:flex" : "flex"} min-h-11 items-center whitespace-nowrap decoration-[#ff5b1f] decoration-2 underline-offset-[6px] hover:underline aria-[current=page]:underline`}
 					>
 						{label}
 					</Link>
@@ -74,22 +121,34 @@ export function SiteHeader({ version }: { version: string }) {
 					</button>
 				)}
 			</nav>
-			<Link
-				href="/quick-start/"
-				className="press group flex items-center gap-3 bg-ink px-5 font-mono text-[0.72rem] text-white uppercase tracking-[0.04em] transition-[background-color,color,transform] hover:bg-mark hover:text-ink"
-			>
-				<span className="hidden sm:inline">Get started</span>
-				<svg
-					viewBox="0 0 16 16"
-					aria-hidden="true"
-					className="size-4"
-					fill="none"
-					stroke="currentColor"
-					strokeWidth="1.5"
+			{search.enabled && (
+				<button
+					type="button"
+					aria-label="Search the docs"
+					onClick={() => search.setOpenSearch(true)}
+					className="grid w-14 place-items-center border-ink border-l lg:hidden"
 				>
-					<path d="M3 8h10M9 4l4 4-4 4" />
-				</svg>
-			</Link>
+					<svg
+						viewBox="0 0 16 16"
+						aria-hidden="true"
+						className="size-4"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="1.5"
+					>
+						<circle cx="7" cy="7" r="4.5" />
+						<path d="m10.5 10.5 3.5 3.5" />
+					</svg>
+				</button>
+			)}
+			{menu ? (
+				<>
+					<div className="md:hidden">{menu}</div>
+					<div className="hidden md:flex">{action}</div>
+				</>
+			) : (
+				action
+			)}
 		</header>
 	);
 }

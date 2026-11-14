@@ -46,7 +46,6 @@ export const metadata: Metadata = {
 	manifest: `${basePath}manifest.webmanifest`,
 	openGraph: { siteName: appName, type: "website", locale: "en_US" },
 	twitter: { card: "summary_large_image" },
-	robots: { index: true, follow: true, "max-image-preview": "large" },
 };
 
 export const viewport: Viewport = {

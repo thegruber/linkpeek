@@ -18,8 +18,8 @@ export default function DefaultSearchDialog(props: SharedProps) {
 	const search = useStaticSearch({ from: searchIndex });
 	return (
 		<SearchDialog {...search} {...props}>
-			<SearchDialogOverlay />
-			<SearchDialogContent>
+			<SearchDialogOverlay className="bg-ink/20 backdrop-blur-none" />
+			<SearchDialogContent className="rounded-none border-ink shadow-none">
 				<SearchDialogHeader>
 					<SearchDialogIcon />
 					<SearchDialogInput />

@@ -59,7 +59,7 @@ function Card({ card, hidden }: { card: ShowcaseCard; hidden: boolean }) {
 						loading="lazy"
 						decoding="async"
 						referrerPolicy="no-referrer"
-						className="aspect-[1200/630] w-full object-cover transition-transform duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover/card:scale-[1.03]"
+						className="aspect-[1200/630] w-full object-cover transition-transform duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover/card:scale-[1.03]"
 					/>
 				</span>
 				<span className="grid gap-1 px-4 py-3.5">

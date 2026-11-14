@@ -1,35 +1,51 @@
-import { HomeLayout } from "fumadocs-ui/layouts/home";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Mark } from "@/components/logo";
-import { baseOptions } from "@/lib/layout.shared";
+import { SiteHeader } from "@/components/site-header";
+
+export const metadata: Metadata = {
+	title: "Page not found",
+	description: "This linkpeek page does not exist.",
+	robots: { index: false, follow: true },
+};
 
 export default function NotFound() {
 	return (
-		<HomeLayout {...baseOptions()}>
-			<main className="mx-auto grid max-w-xl flex-1 content-center justify-items-start gap-4 px-6 py-24">
-				<Mark className="size-24" />
-				<p className="text-fd-muted-foreground text-sm">HTTP 404</p>
-				<h1 className="font-semibold text-3xl tracking-tight">
-					Nothing to peek at here
-				</h1>
-				<p className="text-fd-muted-foreground">
-					This page does not exist. The documentation starts at the quick start.
-				</p>
-				<p className="flex gap-3">
-					<Link
-						href="/quick-start/"
-						className="inline-flex min-h-11 items-center rounded-xl bg-fd-primary px-5 font-medium text-fd-primary-foreground text-sm"
-					>
-						Read the quick start
-					</Link>
-					<Link
-						href="/"
-						className="inline-flex min-h-11 items-center rounded-xl border px-5 font-medium text-sm"
-					>
-						Home
-					</Link>
-				</p>
+		<>
+			<SiteHeader />
+			<main className="grid flex-1 lg:grid-cols-2">
+				<div className="flex flex-col justify-between gap-10 border-ink px-5 py-12 sm:px-8 lg:border-r lg:py-16">
+					<p className="font-mono text-[0.72rem] uppercase tracking-[0.06em]">
+						HTTP 404
+					</p>
+					<h1 className="font-normal text-[clamp(2.5rem,5vw,4.5rem)] leading-[0.95] tracking-[-0.045em]">
+						Nothing to peek at here.
+					</h1>
+				</div>
+				<div className="flex flex-col justify-between gap-10 border-ink border-t px-5 py-12 sm:px-8 lg:border-t-0 lg:py-16">
+					<Mark className="size-24" />
+					<div className="grid gap-4">
+						<p className="text-fd-muted-foreground">
+							This page does not exist. The documentation starts at the quick
+							start.
+						</p>
+						<div className="grid grid-cols-2">
+							<Link
+								href="/quick-start/"
+								className="press flex min-h-12 items-center bg-ink px-4 font-mono text-[0.72rem] text-white uppercase tracking-[0.06em] transition-[background-color,color,transform] hover:bg-mark hover:text-ink"
+							>
+								Quick start
+							</Link>
+							<Link
+								href="/"
+								className="press flex min-h-12 items-center border border-ink border-l-0 px-4 font-mono text-[0.72rem] uppercase tracking-[0.06em] transition-[background-color,transform] hover:bg-block"
+							>
+								Home
+							</Link>
+						</div>
+					</div>
+				</div>
 			</main>
-		</HomeLayout>
+		</>
 	);
 }

@@ -54,7 +54,7 @@ export function BenchmarkChart({ kind }: { kind: ChartKind }) {
 										className={`truncate border-rule border-r px-5 py-2.5 text-left font-normal ${self ? "font-medium text-fd-foreground" : "text-fd-muted-foreground"}`}
 									>
 										{row.name}{" "}
-										<span className="hidden font-mono text-[0.7rem] opacity-70 sm:inline">
+										<span className="hidden font-mono text-[0.7rem] sm:inline">
 											{row.version}
 										</span>
 									</th>

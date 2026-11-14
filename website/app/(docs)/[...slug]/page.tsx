@@ -35,22 +35,25 @@ export default async function Page({ params }: Props) {
 	const url = absoluteUrl(pagePath(page));
 
 	return (
-		<DocsPage toc={page.data.toc} full={page.data.full}>
+		<DocsPage
+			toc={page.data.toc}
+			full={page.data.full}
+			className="xl:max-w-[820px]"
+		>
 			<script
 				type="application/ld+json"
 				// biome-ignore lint/security/noDangerouslySetInnerHtml: escaped JSON-LD
 				dangerouslySetInnerHTML={{
-					__html: JSON.stringify(articleSchema(page.data, url)).replaceAll(
-						"<",
-						"\\u003c",
-					),
+					__html: JSON.stringify(
+						articleSchema(page.data, url, page.slugs),
+					).replaceAll("<", "\\u003c"),
 				}}
 			/>
 			<DocsTitle>{page.data.heading ?? page.data.title}</DocsTitle>
 			<DocsDescription className="mb-0">
 				{page.data.description}
 			</DocsDescription>
-			<div className="flex flex-row items-center gap-2 border-b pb-6">
+			<div className="flex min-h-11 flex-row items-center gap-2 border-ink border-b pb-6">
 				<MarkdownCopyButton
 					markdownUrl={`${basePath}${pagePath(page)}index.md`}
 				/>
@@ -87,6 +90,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 	};
 	return {
 		title,
+		robots: { "max-image-preview": "large" },
 		description: page.data.description,
 		alternates: {
 			canonical: absoluteUrl(pagePath(page)),
@@ -112,6 +116,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 function articleSchema(
 	data: { title: string; metaTitle?: string; description?: string },
 	url: string,
+	slugs: string[],
 ) {
 	const headline = data.metaTitle ?? data.title;
 	return {
@@ -123,7 +128,14 @@ function articleSchema(
 				description: data.description,
 				inLanguage: "en",
 				url,
-				isPartOf: siteUrl,
+				isPartOf: {
+					"@type": "WebSite",
+					"@id": `${siteUrl}#website`,
+					url: siteUrl,
+					name: appName,
+				},
+				image: absoluteUrl(ogImagePath(slugs)),
+				publisher: { "@type": "Person", name: author },
 				about: { "@id": `${siteUrl}#software` },
 				author: { "@type": "Person", name: author },
 			},

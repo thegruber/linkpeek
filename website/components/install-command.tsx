@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 export function InstallCommand({
 	command = "npm install linkpeek",
@@ -9,6 +9,7 @@ export function InstallCommand({
 	tone?: "plain" | "dark" | "block";
 }) {
 	const [copied, setCopied] = useState(false);
+	const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
 	const signal = tone === "dark";
 	return (
 		<div
@@ -29,7 +30,8 @@ export function InstallCommand({
 					try {
 						await navigator.clipboard.writeText(command);
 						setCopied(true);
-						setTimeout(() => setCopied(false), 1600);
+						clearTimeout(timer.current);
+						timer.current = setTimeout(() => setCopied(false), 1600);
 					} catch {
 						setCopied(false);
 					}
@@ -40,13 +42,13 @@ export function InstallCommand({
 				{/* Both labels share one cell; a short blur bridges the swap. */}
 				<span
 					aria-hidden="true"
-					className={`col-start-1 row-start-1 transition-[opacity,filter] duration-200 ${copied ? "opacity-0 blur-[2px]" : "opacity-100"}`}
+					className={`col-start-1 row-start-1 transition-[opacity,filter] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] ${copied ? "opacity-0 blur-[2px]" : "opacity-100"}`}
 				>
 					Copy
 				</span>
 				<span
 					aria-hidden="true"
-					className={`col-start-1 row-start-1 transition-[opacity,filter] duration-200 ${copied ? "opacity-100" : "opacity-0 blur-[2px]"}`}
+					className={`col-start-1 row-start-1 transition-[opacity,filter] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] ${copied ? "opacity-100" : "opacity-0 blur-[2px]"}`}
 				>
 					Copied
 				</span>
