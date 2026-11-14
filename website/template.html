@@ -25,7 +25,9 @@
 		<meta name="twitter:image" content="{{socialImage}}" />
 		<meta name="twitter:image:alt" content="linkpeek: TypeScript link previews and URL metadata" />
 		<meta name="twitter:card" content="summary_large_image" />
-		<meta name="theme-color" content="#1b1b1f" />
+		<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+		<meta name="theme-color" content="#1b1b1f" media="(prefers-color-scheme: dark)" />
+		<meta name="color-scheme" content="light dark" />
 		<link rel="stylesheet" href="{{base}}assets/styles.css" />
 		<script type="application/ld+json">{{structuredData}}</script>
 	</head>
@@ -49,6 +51,7 @@
 			<aside class="toc-sidebar">{{toc}}</aside>
 		</div>
 		<footer class="site-footer"><span>linkpeek {{version}} · MIT · Adrian Gruber</span><nav aria-label="Resources"><a href="{{base}}llms.txt">llms.txt</a><a href="{{base}}llms-full.txt">Full text</a><a href="{{base}}sitemap.xml">Sitemap</a><a href="https://github.com/thegruber/linkpeek/releases">Releases</a></nav></footer>
+		<script type="module" src="{{base}}assets/site.js"></script>
 		{{pageScript}}
 	</body>
 </html>

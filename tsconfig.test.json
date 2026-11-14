@@ -15,7 +15,8 @@
 		"test",
 		"website/demo.ts",
 		"website/downloads.ts",
-		"website/downloads-data.ts"
+		"website/downloads-data.ts",
+		"website/site.ts"
 	],
 	"exclude": ["node_modules", "dist", "test/bun-smoke.ts", "test/deno-smoke.ts"]
 }

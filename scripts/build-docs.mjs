@@ -7,7 +7,7 @@ import {
 	writeFileSync,
 } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { build } from "tsup";
 import { benchmarkContent } from "./benchmark-charts.mjs";
 import { documentationContent } from "./docs-content.mjs";
@@ -45,6 +45,7 @@ await build({
 	entry: {
 		demo: resolve(sourceDir, "demo.ts"),
 		downloads: resolve(sourceDir, "downloads.ts"),
+		site: resolve(sourceDir, "site.ts"),
 	},
 	outDir: resolve(outputDir, "assets"),
 	format: ["esm"],
@@ -60,6 +61,25 @@ await build({
 	silent: true,
 });
 writeFileSync(resolve(outputDir, ".nojekyll"), "");
+
+// The homepage shows linkpeek's real parseHTML() result for the homepage
+// itself, so the library is built from source for the docs build.
+const libraryDir = resolve(root, "node_modules/.cache/linkpeek-docs");
+await build({
+	entry: { index: resolve(root, "src/index.ts") },
+	outDir: libraryDir,
+	format: ["esm"],
+	platform: "node",
+	target: "node22",
+	dts: false,
+	sourcemap: false,
+	clean: true,
+	config: false,
+	silent: true,
+});
+const { parseHTML } = await import(
+	pathToFileURL(resolve(libraryDir, "index.js")).href
+);
 
 const navigation = [
 	[
@@ -91,6 +111,27 @@ const navigation = [
 const markdownPages = [];
 for (const page of pages) {
 	const canonical = `${siteOrigin}${siteBase}${page.route}`;
+	let rendered = renderPage(page, canonical, "");
+	if (page.route === "") {
+		rendered = renderPage(
+			page,
+			canonical,
+			previewCard(parseHTML(rendered.html, canonical)),
+		);
+	}
+	const { html, markdown } = rendered;
+	assertFullyRendered(html, page.source);
+	markdownPages.push(`Source: ${canonical}\n\n${markdown}`);
+	const pageDir = resolve(outputDir, page.route);
+	mkdirSync(pageDir, { recursive: true });
+	writeFileSync(resolve(pageDir, "index.html"), html);
+	writeFileSync(
+		resolve(pageDir, "index.md"),
+		`Source: ${canonical}\n\n${markdown}`,
+	);
+}
+
+function renderPage(page, canonical, card) {
 	const structuredData = JSON.stringify(
 		page.route === ""
 			? softwareSchema(canonical)
@@ -108,12 +149,12 @@ for (const page of pages) {
 			),
 		{
 			...benchmarks,
+			"preview:card": card,
 			base: siteBase,
 		},
 	);
 	const { headings, markdown } = documentationContent(content, canonical);
 	const alternate = `${canonical}index.md`;
-	markdownPages.push(`Source: ${canonical}\n\n${markdown}`);
 	const html = render(template, {
 		alternate,
 		pageClass: "reference-page",
@@ -134,14 +175,28 @@ for (const page of pages) {
 		structuredData,
 		title: escapeHtml(page.title),
 	});
-	assertFullyRendered(html, page.source);
-	const pageDir = resolve(outputDir, page.route);
-	mkdirSync(pageDir, { recursive: true });
-	writeFileSync(resolve(pageDir, "index.html"), html);
-	writeFileSync(
-		resolve(pageDir, "index.md"),
-		`Source: ${canonical}\n\n${markdown}`,
-	);
+	return { html, markdown };
+}
+
+// Renders a parseHTML() result as the kind of card an app would build from it.
+function previewCard(result) {
+	const local = (url) =>
+		url?.startsWith(siteOrigin) ? url.slice(siteOrigin.length) : url;
+	const host = new URL(result.canonicalUrl).host;
+	const fields = {
+		title: result.title,
+		description: result.description,
+		image: result.image,
+		siteName: result.siteName,
+		canonicalUrl: result.canonicalUrl,
+	};
+	return `<div class="preview-demo">
+	<a class="preview-card" href="${escapeAttribute(result.canonicalUrl)}">
+		${result.image ? `<img src="${escapeAttribute(local(result.image))}" alt="" width="1200" height="630" loading="lazy" />` : ""}
+		<span class="preview-card-body"><span class="preview-card-site">${escapeHtml(result.siteName ?? host)}</span><strong>${escapeHtml(result.title ?? host)}</strong><span>${escapeHtml(result.description ?? "")}</span></span>
+	</a>
+	<pre tabindex="0" role="region" aria-label="parseHTML() result"><code>${escapeHtml(JSON.stringify(fields, null, 2))}</code></pre>
+</div>`;
 }
 
 const notFound = render(template, {

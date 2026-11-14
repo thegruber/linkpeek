@@ -1,5 +1,5 @@
 :root {
-	color-scheme: dark;
+	color-scheme: light dark;
 	--bg: #1b1b1f;
 	--sidebar: #18181c;
 	--soft: #24242c;
@@ -22,6 +22,25 @@
 	line-height: 1.65;
 	color: var(--text);
 	background: var(--bg);
+}
+
+@media (prefers-color-scheme: light) {
+	:root {
+		--bg: #ffffff;
+		--sidebar: #f7f7f9;
+		--soft: #efeff3;
+		--stage: #eef0fc;
+		--border: #dcdce4;
+		--text: #1b1b1f;
+		--muted: #5b5b68;
+		--link: #3a48d0;
+		--hover: #26319c;
+		--code-bg: #f5f5f8;
+		--value: #1d6b3f;
+		--number: #7a3aa0;
+		--chart: #4f5de6;
+		--chart-wash: rgb(79 93 230 / 0.1);
+	}
 }
 
 * {
@@ -528,6 +547,152 @@ input[type="checkbox"] {
 .spark-dot {
 	fill: var(--chart);
 }
+.code-block {
+	position: relative;
+	margin: 1.25rem 0;
+}
+.code-block > pre {
+	margin: 0;
+	padding-right: 5rem;
+}
+.copy-button {
+	position: absolute;
+	top: 0.6rem;
+	right: 0.6rem;
+	min-height: 32px;
+	padding: 0.2rem 0.65rem;
+	border: 1px solid var(--border);
+	border-radius: 6px;
+	background: var(--bg);
+	color: var(--muted);
+	font-size: 0.75rem;
+	opacity: 0;
+	transition:
+		opacity 150ms ease,
+		color 150ms ease,
+		border-color 150ms ease;
+}
+.code-block:hover .copy-button,
+.code-block:focus-within .copy-button {
+	opacity: 1;
+}
+.copy-button:hover {
+	color: var(--text);
+	border-color: var(--chart);
+}
+@media (hover: none) {
+	.copy-button {
+		opacity: 1;
+	}
+}
+.hero-install code {
+	font-size: 0.95rem;
+}
+.hero-install code::before {
+	content: "$ ";
+	color: var(--muted);
+}
+.code-block:has(.hero-install) {
+	margin-top: 1.75rem;
+}
+.code-block:has(.hero-install) .copy-button {
+	top: 50%;
+	opacity: 1;
+	transform: translateY(-50%);
+}
+.doc .badges {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem;
+	margin: 0.9rem 0 0;
+}
+.badges a {
+	display: block;
+	line-height: 0;
+	border-radius: 4px;
+	transition: transform 150ms ease;
+}
+.badges a:hover {
+	transform: translateY(-1px);
+}
+.badges img {
+	height: 20px;
+	width: auto;
+}
+.install-grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 0.6rem;
+	margin: 1.25rem 0;
+}
+.install-grid .code-block {
+	margin: 0;
+}
+.install-grid pre {
+	margin: 0;
+	padding-top: 0.85rem;
+	padding-bottom: 0.85rem;
+}
+.preview-demo {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	gap: 1rem;
+	align-items: start;
+	margin: 1.25rem 0;
+}
+.preview-demo .code-block,
+.preview-demo pre {
+	margin: 0;
+}
+.preview-demo pre {
+	font-size: 0.75rem;
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+}
+.preview-card {
+	display: grid;
+	overflow: hidden;
+	border: 1px solid var(--border);
+	border-radius: 10px;
+	background: var(--sidebar);
+	color: var(--text);
+	text-decoration: none;
+	transition:
+		transform 180ms ease,
+		border-color 180ms ease;
+}
+.preview-card:hover {
+	color: var(--text);
+	border-color: var(--chart);
+	transform: translateY(-2px);
+}
+.preview-card img {
+	display: block;
+	width: 100%;
+	height: auto;
+	aspect-ratio: 1200 / 630;
+	object-fit: cover;
+	border-bottom: 1px solid var(--border);
+}
+.preview-card-body {
+	display: grid;
+	gap: 0.3rem;
+	padding: 0.9rem 1rem 1rem;
+	font-size: 0.85rem;
+	line-height: 1.45;
+}
+.preview-card-body strong {
+	font-size: 0.95rem;
+	font-weight: 600;
+}
+.preview-card-body span {
+	color: var(--muted);
+}
+.preview-card-site {
+	font-size: 0.75rem;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+}
 .stat-row {
 	display: grid;
 	grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -684,7 +849,8 @@ input[type="checkbox"] {
 	.doc {
 		padding: 2rem 1.25rem 3rem;
 	}
-	.comparison-pair {
+	.comparison-pair,
+	.preview-demo {
 		grid-template-columns: 1fr;
 		gap: 1rem;
 	}
@@ -712,6 +878,10 @@ input[type="checkbox"] {
 	}
 }
 @media (max-width: 560px) {
+	.install-grid {
+		grid-template-columns: 1fr;
+		gap: 0.4rem;
+	}
 	.downloads-spark svg {
 		width: 72px;
 	}
