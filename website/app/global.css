@@ -588,3 +588,34 @@ figure.shiki button:active,
 		opacity: 1;
 	}
 }
+
+/*
+ * Sidebar groups read like a spec sheet: each group opens with a rule, a
+ * small orange icon and an uppercase mono label; its pages sit indented
+ * under the label text, so the hierarchy is visible at a glance.
+ */
+:is(#nd-sidebar, #nd-sidebar-mobile) p.inline-flex {
+	display: flex;
+	margin: 1.25rem 0 0.35rem;
+	padding: 0.9rem 0.5rem 0;
+	border-top: 1px solid var(--color-ink);
+	font: 500 0.68rem / 1.2 var(--font-mono);
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--color-ink);
+}
+:is(#nd-sidebar, #nd-sidebar-mobile) p.inline-flex:first-child {
+	margin-top: 0;
+	padding-top: 0;
+	border-top: 0;
+}
+:is(#nd-sidebar, #nd-sidebar-mobile) p.inline-flex svg {
+	width: 0.9rem;
+	height: 0.9rem;
+	color: var(--color-mark);
+}
+:is(#nd-sidebar, #nd-sidebar-mobile) a[data-active] {
+	/* biome-ignore lint/complexity/noImportantStyles: overrides the docs UI's inline indent */
+	padding-inline-start: calc(0.5rem + 0.9rem + 0.5rem) !important;
+	min-height: 36px;
+}

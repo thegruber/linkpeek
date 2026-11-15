@@ -1,5 +1,6 @@
 "use client";
 import { useSearchContext } from "fumadocs-ui/contexts/search";
+import { BookOpen, ChartNoAxesColumn, Scale, Search } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { type ReactNode, useEffect, useState } from "react";
@@ -8,10 +9,12 @@ import { Mark } from "@/components/logo";
 import { npmUrl, repository } from "@/lib/shared";
 
 const links = [
-	["Docs", "/quick-start/"],
-	["Benchmarks", "/benchmarks/"],
-	["Compare", "/guides/link-preview-library-comparison/"],
-];
+	["Docs", "/quick-start/", BookOpen],
+	["Benchmarks", "/benchmarks/", ChartNoAxesColumn],
+	["Compare", "/guides/link-preview-library-comparison/", Scale],
+] as const;
+
+const ICON = "size-[0.95rem] shrink-0 text-fd-muted-foreground";
 
 // Aspen-style bar: the mark in its own black cell, plain links, and one
 // solid action cell on the right.
@@ -95,35 +98,50 @@ export function SiteHeader({
 				aria-label="Main"
 				className="flex items-center gap-5 overflow-x-auto px-4 text-sm sm:border-ink sm:border-l sm:px-5 lg:px-4"
 			>
-				{links.map(([label, href]) => (
+				{links.map(([label, href, Icon]) => (
 					<Link
 						key={href}
 						href={href}
 						aria-current={section(href) ? "page" : undefined}
-						className={`${href.includes("comparison") ? "hidden sm:flex" : "flex"} u-line min-h-11 items-center whitespace-nowrap [--line-y:0.6rem]`}
+						className={`${href.includes("comparison") ? "hidden sm:flex" : "flex"} u-line min-h-11 items-center gap-1.5 whitespace-nowrap [--line-y:0.6rem]`}
 					>
+						<Icon
+							aria-hidden="true"
+							strokeWidth={1.5}
+							className={`${ICON} hidden lg:block`}
+						/>
 						{label}
 					</Link>
 				))}
 				<a
 					href={repository}
-					className="u-line hidden min-h-11 items-center whitespace-nowrap [--line-y:0.6rem] xl:flex"
+					className="u-line hidden min-h-11 items-center gap-1.5 whitespace-nowrap [--line-y:0.6rem] xl:flex"
 				>
-					GitHub
+					<GitHubIcon />
+					<span className="sr-only 2xl:not-sr-only">GitHub</span>
 				</a>
 				<a
 					href={npmUrl}
-					className="u-line hidden min-h-11 items-center whitespace-nowrap [--line-y:0.6rem] xl:flex"
+					className="u-line hidden min-h-11 items-center gap-1.5 whitespace-nowrap [--line-y:0.6rem] xl:flex"
 				>
-					npm
+					<NpmIcon />
+					<span className="sr-only 2xl:not-sr-only">npm</span>
 				</a>
 				{search.enabled && (
 					<button
 						type="button"
 						onClick={() => search.setOpenSearch(true)}
-						className="press ml-auto hidden items-center gap-2 font-mono text-fd-muted-foreground text-xs transition-[color,transform] hover:text-fd-foreground xl:flex"
+						className="press ml-auto hidden shrink-0 items-center gap-2 whitespace-nowrap font-mono text-fd-muted-foreground text-xs transition-[color,transform] hover:text-fd-foreground xl:flex"
 					>
-						Search <kbd className="border border-rule px-1.5">{shortcut}</kbd>
+						<Search
+							aria-hidden="true"
+							strokeWidth={1.5}
+							className="size-[0.95rem]"
+						/>
+						Search{" "}
+						<kbd className="whitespace-nowrap border border-rule px-1.5">
+							{shortcut}
+						</kbd>
 					</button>
 				)}
 			</nav>
@@ -156,5 +174,31 @@ export function SiteHeader({
 				action
 			)}
 		</header>
+	);
+}
+
+function GitHubIcon() {
+	return (
+		<svg
+			viewBox="0 0 16 16"
+			aria-hidden="true"
+			className={ICON}
+			fill="currentColor"
+		>
+			<path d="M8 .2a8 8 0 0 0-2.53 15.59c.4.07.55-.17.55-.38v-1.33c-2.23.48-2.7-1.07-2.7-1.07-.36-.92-.89-1.17-.89-1.17-.73-.5.05-.49.05-.49.81.06 1.23.83 1.23.83.72 1.23 1.88.87 2.34.67.07-.52.28-.87.5-1.07-1.78-.2-3.65-.89-3.65-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48v2.2c0 .21.15.46.55.38A8 8 0 0 0 8 .2Z" />
+		</svg>
+	);
+}
+
+function NpmIcon() {
+	return (
+		<svg
+			viewBox="0 0 16 16"
+			aria-hidden="true"
+			className={ICON}
+			fill="currentColor"
+		>
+			<path d="M1 1h14v14H1V1Zm2.5 2.5v9h4.5V6h2.5v6.5h2v-9h-9Z" />
+		</svg>
 	);
 }

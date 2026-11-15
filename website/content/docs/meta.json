@@ -1,18 +1,21 @@
 {
 	"pages": [
-		"---Get started---",
+		"---[Rocket]Get started---",
 		"quick-start",
 		"api",
 		"security",
-		"---Use it with---",
+		"---[Plug]Use it with---",
 		"...integrations",
-		"---Guides---",
+		"---[BookText]Guides---",
 		"guides/open-graph-parser",
 		"guides/troubleshooting",
-		"---Compare---",
+		"---[Scale]Compare---",
 		"benchmarks",
 		"guides/link-preview-library-comparison",
 		"guides/link-preview-js-alternative",
-		"guides/open-graph-scraper-alternative"
+		"guides/open-graph-scraper-alternative",
+		"guides/unfurl-js-alternative",
+		"guides/url-metadata-alternative",
+		"guides/metascraper-alternative"
 	]
 }

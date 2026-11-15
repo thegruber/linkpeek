@@ -1,4 +1,5 @@
 import { loader } from "fumadocs-core/source";
+import { lucideIconsPlugin } from "fumadocs-core/source/lucide-icons";
 import { metaSchema, pageSchema } from "fumadocs-core/source/schema";
 import { defineDocs } from "fumadocs-mdx/macro";
 import { z } from "zod";
@@ -24,6 +25,8 @@ const docs = defineDocs({
 export const source = loader({
 	baseUrl: "/",
 	source: docs.toFumadocsSource(),
+	// Sidebar group icons, named in meta.json as ---[Icon]Group---.
+	plugins: [lucideIconsPlugin()],
 });
 
 /**
