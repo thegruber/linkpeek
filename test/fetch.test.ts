@@ -939,3 +939,180 @@ describe("early head cancellation", () => {
 		expect(result.html).toBe("<html><head><title>EOF title</title>");
 	});
 });
+
+describe("fetch hardening", () => {
+	function withUrl(response: Response, url: string): Response {
+		Object.defineProperty(response, "url", { value: url });
+		return response;
+	}
+
+	it("validates response.url from a custom fetch that followed redirects itself", async () => {
+		const customFetch = vi.fn(async () =>
+			withUrl(
+				htmlResponse(["<title>Internal</title>"]),
+				"http://169.254.169.254/latest/meta-data/",
+			),
+		);
+		await expect(
+			fetchUrl("https://example.com/start", { fetch: customFetch }),
+		).rejects.toMatchObject({ code: "PRIVATE_NETWORK_BLOCKED" });
+	});
+
+	it("keeps a public response.url reported by a custom fetch", async () => {
+		const customFetch = vi.fn(async () =>
+			withUrl(
+				htmlResponse(["<title>Moved</title>"]),
+				"https://www.example.com/moved",
+			),
+		);
+		const result = await fetchUrl("https://example.com/start", {
+			fetch: customFetch,
+		});
+		expect(result.finalUrl).toBe("https://www.example.com/moved");
+	});
+
+	it("falls through an unknown Content-Type charset label to the meta prescan", async () => {
+		// "Привет" in windows-1251
+		const cyrillic = new Uint8Array([0xcf, 0xf0, 0xe8, 0xe2, 0xe5, 0xf2]);
+		const head = encoder.encode(
+			'<html><head><meta charset="windows-1251"><title>',
+		);
+		const tail = encoder.encode("</title></head></html>");
+		const bytes = new Uint8Array(head.length + cyrillic.length + tail.length);
+		bytes.set(head);
+		bytes.set(cyrillic, head.length);
+		bytes.set(tail, head.length + cyrillic.length);
+		const result = await fetchUrl("https://example.com", {
+			fetch: async () =>
+				chunkedBytesResponse([bytes], "text/html; charset=bogus"),
+		});
+		expect(result.html).toContain("<title>Привет</title>");
+	});
+
+	it("sniffs HTML when the Content-Type header is missing", async () => {
+		const result = await fetchUrl("https://example.com", {
+			fetch: async () => {
+				const response = new Response(
+					"  <!DOCTYPE html><html><head><title>No type</title></head></html>",
+				);
+				response.headers.delete("content-type");
+				return response;
+			},
+		});
+		expect(result.isHtml).toBe(true);
+		expect(result.html).toContain("<title>No type</title>");
+	});
+
+	it("does not treat a missing Content-Type binary body as HTML", async () => {
+		const result = await fetchUrl("https://example.com/file", {
+			fetch: async () => {
+				const response = new Response(new Uint8Array([0x89, 0x50, 0x4e, 0x47]));
+				response.headers.delete("content-type");
+				return response;
+			},
+		});
+		expect(result.isHtml).toBe(false);
+		expect(result.html).toBe("");
+	});
+
+	it("wraps network failures in a FETCH_FAILED LinkpeekError with the cause", async () => {
+		const cause = new TypeError("fetch failed");
+		try {
+			await fetchUrl("https://example.com", {
+				fetch: async () => {
+					throw cause;
+				},
+			});
+			expect.unreachable();
+		} catch (err) {
+			expect(err).toBeInstanceOf(LinkpeekError);
+			expect((err as LinkpeekError).code).toBe("FETCH_FAILED");
+			expect((err as LinkpeekError).cause).toBe(cause);
+		}
+	});
+
+	it("still rethrows a caller abort as-is", async () => {
+		const controller = new AbortController();
+		const reason = new Error("caller stop");
+		await expect(
+			fetchUrl("https://example.com", {
+				signal: controller.signal,
+				fetch: async (_url, init) => {
+					controller.abort(reason);
+					throw init?.signal?.reason;
+				},
+			}),
+		).rejects.toBe(reason);
+	});
+
+	it("reports truncated when maxBytes ends before </head>", async () => {
+		const page = `<html><head><style>${"a{}".repeat(20_000)}</style><meta property="og:title" content="late"></head><body></body></html>`;
+		const cut = await fetchUrl("https://example.com", {
+			fetch: async () => htmlResponse([page]),
+		});
+		expect(cut.truncated).toBe(true);
+		const whole = await fetchUrl("https://example.com", {
+			fetch: async () => htmlResponse(["<head><title>x</title></head><body>"]),
+		});
+		expect(whole.truncated).toBe(false);
+	});
+});
+
+describe("resolveHost hook", () => {
+	it("blocks a public hostname that resolves to a private address", async () => {
+		const fetchMock = vi.fn(async () => htmlResponse(["<title>x</title>"]));
+		await expect(
+			fetchUrl("https://rebind.example/", {
+				fetch: fetchMock,
+				resolveHost: async () => ["93.184.215.14", "10.0.0.5"],
+			}),
+		).rejects.toMatchObject({ code: "PRIVATE_NETWORK_BLOCKED" });
+		expect(fetchMock).not.toHaveBeenCalled();
+	});
+
+	it("checks every redirect hop", async () => {
+		const resolveHost = vi.fn(async (host: string) =>
+			host === "internal.example" ? ["127.0.0.1"] : ["93.184.215.14"],
+		);
+		const fetchMock = vi.fn(
+			async () =>
+				new Response(null, {
+					status: 302,
+					headers: { location: "https://internal.example/" },
+				}),
+		);
+		await expect(
+			fetchUrl("https://example.com/", { fetch: fetchMock, resolveHost }),
+		).rejects.toMatchObject({ code: "PRIVATE_NETWORK_BLOCKED" });
+		expect(resolveHost.mock.calls.map(([host]) => host)).toEqual([
+			"example.com",
+			"internal.example",
+		]);
+		expect(fetchMock).toHaveBeenCalledTimes(1);
+	});
+
+	it("skips IP-literal hosts and allows public answers", async () => {
+		const resolveHost = vi.fn(async () => ["2606:4700::1111"]);
+		const result = await fetchUrl("https://example.com/", {
+			fetch: async () => htmlResponse(["<title>ok</title>"]),
+			resolveHost,
+		});
+		expect(result.html).toContain("ok");
+		await fetchUrl("https://93.184.215.14/", {
+			fetch: async () => htmlResponse(["<title>ok</title>"]),
+			resolveHost,
+		});
+		expect(resolveHost).toHaveBeenCalledTimes(1);
+	});
+
+	it("wraps resolver failures in FETCH_FAILED", async () => {
+		await expect(
+			fetchUrl("https://nx.example/", {
+				fetch: async () => htmlResponse(["<title>x</title>"]),
+				resolveHost: async () => {
+					throw new Error("ENOTFOUND");
+				},
+			}),
+		).rejects.toMatchObject({ code: "FETCH_FAILED" });
+	});
+});

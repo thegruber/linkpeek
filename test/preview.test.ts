@@ -401,3 +401,90 @@ describe("preview()", () => {
 		expect(result.title).toBe("Not Found");
 	});
 });
+
+describe("preview() call budget", () => {
+	function delayedHtml(html: string, ms: number, signal?: AbortSignal | null) {
+		return new Promise<Response>((resolve, reject) => {
+			const timer = setTimeout(
+				() =>
+					resolve(
+						new Response(html, { headers: { "content-type": "text/html" } }),
+					),
+				ms,
+			);
+			signal?.addEventListener("abort", () => {
+				clearTimeout(timer);
+				reject(signal.reason);
+			});
+		});
+	}
+
+	it("applies one timeout to the whole call, including meta refresh", async () => {
+		const fetchMock = vi.fn(
+			(input: string | URL | Request, init?: RequestInit) =>
+				String(input).endsWith("/start")
+					? delayedHtml(
+							'<head><title>Wait</title><meta http-equiv="refresh" content="0; url=/real"></head>',
+							300,
+							init?.signal,
+						)
+					: delayedHtml("<head><title>Real</title></head>", 300, init?.signal),
+		);
+		const started = performance.now();
+		const result = await preview("https://example.com/start", {
+			fetch: fetchMock,
+			followMetaRefresh: true,
+			timeout: 400,
+		});
+		const elapsed = performance.now() - started;
+		expect(fetchMock).toHaveBeenCalledTimes(2);
+		expect(result.title).toBe("Wait");
+		expect(elapsed).toBeLessThan(560);
+	});
+
+	it("shares one redirect budget between HTTP redirects and meta refresh", async () => {
+		const fetchMock = vi.fn(async (input: string | URL | Request) => {
+			const url = String(input);
+			if (url.endsWith("/start"))
+				return new Response(null, {
+					status: 302,
+					headers: { location: "/interstitial" },
+				});
+			if (url.endsWith("/interstitial"))
+				return new Response(
+					'<head><title>Interstitial</title><meta http-equiv="refresh" content="0; url=/real"></head>',
+					{ headers: { "content-type": "text/html" } },
+				);
+			return new Response("<head><title>Real</title></head>", {
+				headers: { "content-type": "text/html" },
+			});
+		});
+		const result = await preview("https://example.com/start", {
+			fetch: fetchMock,
+			followMetaRefresh: true,
+			maxRedirects: 1,
+		});
+		expect(fetchMock).toHaveBeenCalledTimes(2);
+		expect(result.title).toBe("Interstitial");
+	});
+
+	it("reads og tags after a head Meta Pixel noscript in fast mode", async () => {
+		const html = `<html><head><title>Doc</title><noscript><img height="1" width="1" src="https://www.facebook.com/tr?id=1&ev=PageView&noscript=1"/></noscript><meta property="og:title" content="After pixel"></head><body>${"x".repeat(10_000)}</body></html>`;
+		const result = await preview("https://example.com/", {
+			fetch: async () =>
+				new Response(html, { headers: { "content-type": "text/html" } }),
+		});
+		expect(result.title).toBe("After pixel");
+		expect(result.truncated).toBe(false);
+	});
+
+	it("flags a result whose head was cut by maxBytes", async () => {
+		const html = `<html><head><title>Early</title><style>${"a{}".repeat(20_000)}</style><meta property="og:title" content="Late"></head></html>`;
+		const result = await preview("https://example.com/", {
+			fetch: async () =>
+				new Response(html, { headers: { "content-type": "text/html" } }),
+		});
+		expect(result.title).toBe("Early");
+		expect(result.truncated).toBe(true);
+	});
+});

@@ -4,7 +4,7 @@ export { isPrivateHost, validateUrl } from "./fetch.js";
 export { parseHTML } from "./parse.js";
 export type { PreviewOptions, PreviewResult } from "./types.js";
 
-import { fetchUrl, validateUrl } from "./fetch.js";
+import { createFetchContext, type FetchResult, fetchUrl } from "./fetch.js";
 import { extractMetaRefreshUrl, parseHTML } from "./parse.js";
 import type { PreviewOptions, PreviewResult } from "./types.js";
 
@@ -38,53 +38,65 @@ export async function preview(
 	url: string,
 	options: PreviewOptions = {},
 ): Promise<PreviewResult> {
-	const { html, finalUrl, contentType, isHtml, statusCode } = await fetchUrl(
-		url,
-		options,
-	);
+	// One deadline and one redirect budget cover HTTP redirects and the
+	// optional meta-refresh hop.
+	const context = createFetchContext(url, options);
+	try {
+		const fetched = await fetchUrl(url, options, context);
+		if (!fetched.isHtml) return mediaResult(fetched);
 
-	// Non-HTML response: synthesize a minimal result from the content type
-	if (!isHtml) {
-		const result = emptyResult(finalUrl, statusCode, safeHostname(finalUrl));
-		const mediaTypeHeader = contentType.toLowerCase().split(";", 1)[0].trim();
-		result.mediaType = mediaTypeHeader.split("/")[0] || "website";
-		if (mediaTypeHeader.startsWith("image/")) result.image = finalUrl;
-		if (mediaTypeHeader.startsWith("video/")) result.video = finalUrl;
-		if (mediaTypeHeader.startsWith("audio/")) result.audio = finalUrl;
-		return result;
-	}
+		let result = htmlResult(fetched, options);
 
-	let result = parseHTML(html, finalUrl, options);
-	result.url = finalUrl;
-	result.statusCode = statusCode;
-
-	// Handle meta-refresh redirects (e.g. interstitial or challenge pages).
-	// Only fast refreshes (<= 10s) count as redirects; slow ones are reloads.
-	// Wrapped in try/catch so a failed redirect doesn't discard partial results
-	if (options.followMetaRefresh === true) {
-		const refreshUrl = extractMetaRefreshUrl(html, finalUrl);
-		if (refreshUrl && refreshUrl !== finalUrl) {
-			try {
-				validateUrl(refreshUrl, options.allowPrivateIPs);
-				const refreshed = await fetchUrl(
-					refreshUrl,
-					options,
-					new URL(url).origin,
-				);
-				if (refreshed.isHtml) {
-					result = parseHTML(refreshed.html, refreshed.finalUrl, options);
-					result.url = refreshed.finalUrl;
-					result.statusCode = refreshed.statusCode;
+		// Handle meta-refresh redirects (e.g. interstitial or challenge pages).
+		// Only fast refreshes (<= 10s) count as redirects; slow ones are reloads.
+		// A failed or timed-out refresh keeps the interstitial's partial result.
+		if (
+			options.followMetaRefresh === true &&
+			context.redirects < context.maxRedirects
+		) {
+			const refreshUrl = extractMetaRefreshUrl(fetched.html, fetched.finalUrl);
+			if (refreshUrl && refreshUrl !== fetched.finalUrl) {
+				try {
+					context.redirects++;
+					const refreshed = await fetchUrl(refreshUrl, options, context);
+					if (refreshed.isHtml) result = htmlResult(refreshed, options);
+				} catch (error) {
+					if (options.signal?.aborted) {
+						throw options.signal.reason ?? error;
+					}
 				}
-			} catch (error) {
-				if (options.signal?.aborted) {
-					throw options.signal.reason ?? error;
-				}
-				// Meta-refresh target unreachable or blocked — return what we have
 			}
 		}
-	}
 
+		return result;
+	} finally {
+		context.dispose();
+	}
+}
+
+function htmlResult(
+	fetched: FetchResult,
+	options: PreviewOptions,
+): PreviewResult {
+	const result = parseHTML(fetched.html, fetched.finalUrl, options);
+	result.url = fetched.finalUrl;
+	result.statusCode = fetched.statusCode;
+	result.truncated = fetched.truncated;
+	return result;
+}
+
+/** Non-HTML response: synthesize a minimal result from the content type. */
+function mediaResult({
+	finalUrl,
+	statusCode,
+	contentType,
+}: FetchResult): PreviewResult {
+	const result = emptyResult(finalUrl, statusCode, safeHostname(finalUrl));
+	const mediaTypeHeader = contentType.toLowerCase().split(";", 1)[0].trim();
+	result.mediaType = mediaTypeHeader.split("/")[0] || "website";
+	if (mediaTypeHeader.startsWith("image/")) result.image = finalUrl;
+	if (mediaTypeHeader.startsWith("video/")) result.video = finalUrl;
+	if (mediaTypeHeader.startsWith("audio/")) result.audio = finalUrl;
 	return result;
 }
 

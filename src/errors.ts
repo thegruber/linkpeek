@@ -6,11 +6,13 @@ export type LinkpeekErrorCode =
 	| "SENSITIVE_HEADER"
 	| "INVALID_OPTIONS"
 	| "TOO_MANY_REDIRECTS"
-	| "TIMEOUT";
+	| "TIMEOUT"
+	| "FETCH_FAILED";
 
 /**
- * Error thrown by `preview()` and `fetchUrl()` for invalid input, blocked
- * targets, and timeouts. Check `code` to branch on the failure category
+ * Error thrown by `preview()` and `parseHTML()` for invalid input, blocked
+ * targets, timeouts and network failures (`FETCH_FAILED`, with the original
+ * error as `cause`). Check `code` to branch on the failure category
  * instead of matching message strings.
  */
 export class LinkpeekError extends Error {
