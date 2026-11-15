@@ -90,7 +90,7 @@
 		"node": ">=22.12.0"
 	},
 	"allowScripts": {
-		"esbuild@0.27.2": true,
+		"esbuild@0.28.2": true,
 		"fsevents@2.3.3": true
 	},
 	"dependencies": {
@@ -98,15 +98,15 @@
 	},
 	"devDependencies": {
 		"@arethetypeswrong/cli": "^0.18.5",
-		"@biomejs/biome": "^2.6.2",
+		"@biomejs/biome": "^2.6.8",
 		"@release-it/conventional-changelog": "^12.0.2",
 		"@types/node": "^22.20.5",
-		"@vitest/coverage-v8": "^4.1.12",
+		"@vitest/coverage-v8": "^5.1.0",
 		"publint": "^0.3.25",
-		"release-it": "^21.1.1",
-		"tsup": "^8.5.1",
+		"release-it": "^21.1.2",
+		"tsup": "^9.0.0",
 		"typescript": "^6.0.3",
-		"vitest": "^4.1.12"
+		"vitest": "^5.1.0"
 	},
 	"overrides": {
 		"get-uri": {

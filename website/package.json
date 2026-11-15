@@ -10,9 +10,9 @@
 	},
 	"dependencies": {
 		"@number-flow/react": "^0.6.2",
-		"fumadocs-core": "16.19.2",
+		"fumadocs-core": "^16.19.3",
 		"fumadocs-mdx": "15.6.2",
-		"fumadocs-ui": "npm:@fumadocs/base-ui@16.19.2",
+		"fumadocs-ui": "^16.19.3",
 		"linkpeek": "^2.1.7",
 		"lucide-react": "1.73.0",
 		"motion": "^14.14.0",
