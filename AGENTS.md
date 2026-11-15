@@ -29,7 +29,7 @@
 - `npm run build --prefix website` also runs `scripts/check-site.mjs` (one H1, canonical, social tags, JSON-LD, Markdown twins, links, sitemap). Keep it passing.
 
 ## Brand
-- The mark is two white eyes peeking over a signal-orange `#ff5b1f` band (the `<head>`) on a charcoal `#232323` square; in the wordmark "link" is underlined in the same orange, like a hyperlink. Orange is ours: blue is the category default and green belongs to the similarly named getlinkpeek.com. Geometry lives in `website/lib/mark.json` and drives the logo, favicon and the giant dithered art. Brand files are in `assets/brand/`.
+- The mark is two white eyes peeking over a signal-orange `#ff5b1f` band (the `<head>`) on a charcoal `#232323` square; the wordmark is plain "linkpeek" in Geist Medium, with no partial underline (it split the name and read like a hover state). Orange is ours: blue is the category default and green belongs to the similarly named getlinkpeek.com. Geometry lives in `website/lib/mark.json` and drives the logo, favicon and the giant dithered art. Brand files are in `assets/brand/`.
 - Light only, like a printed spec sheet (inspired by aspensearch.com, not copied): white paper, charcoal ink `#232323`, 1px charcoal rules cutting the page into rectangles, light grey `#d9d9d9` for big shapes, pale orange `#ffe6dc` blocks and signal orange `#ff5b1f` as the only colour (it marks what linkpeek reads). Ordered-dither canvas art is the only texture. Geist for text, Geist Mono for small uppercase labels, code and data. Square corners.
 
 ## Demo preview endpoint

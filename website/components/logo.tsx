@@ -27,12 +27,7 @@ export function Logo() {
 	return (
 		<span className="group/logo inline-flex items-center gap-2 font-medium text-[1.05rem] tracking-[-0.045em]">
 			<Mark />
-			<span>
-				<span className="underline decoration-[#ff5b1f] decoration-[0.14em] underline-offset-[0.18em]">
-					link
-				</span>
-				peek
-			</span>
+			<span>linkpeek</span>
 		</span>
 	);
 }

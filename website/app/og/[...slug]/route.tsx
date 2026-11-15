@@ -20,7 +20,7 @@ export async function GET(
 		: "Turn any URL into a link preview.";
 	const description =
 		page?.data.description ??
-		"Open Graph, Twitter Card and JSON-LD metadata from any URL. Reads only the head, blocks private addresses, one dependency.";
+		"Open Graph, Twitter Card and JSON-LD metadata from any URL. Reads only the head, blocks private IPs, one dependency.";
 	const section = page
 		? page.slugs[0] === "integrations"
 			? "Integration guide"
@@ -90,7 +90,7 @@ export async function GET(
 					) : (
 						<span style={{ display: "flex", flexWrap: "wrap" }}>
 							Turn any URL into a&nbsp;
-							<span style={{ background: "#ff5b1f", padding: "0 10px" }}>
+							<span style={{ background: "#ff5b1f", padding: "0 6px" }}>
 								link preview
 							</span>
 							.
