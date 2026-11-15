@@ -15,8 +15,6 @@
 
 **A fast, safe-by-default link preview library for TypeScript, Node.js, Bun, Deno, and edge runtimes. One runtime dependency.**
 
-<p align="center"><a href="https://thegruber.github.io/linkpeek/"><img src="https://raw.githubusercontent.com/thegruber/linkpeek/main/assets/brand/readme-hero.png" alt="Calling preview(url) in TypeScript returns a typed result and a link preview card; measured 3.9 times faster than the next package on a 500 kB page, a 2.4 times smaller install, one runtime dependency, and at most 30 kB read by default (benchmarks measured 14 November 2026)." width="800"></a></p>
-
 linkpeek turns a URL into typed Open Graph, Twitter Card, JSON-LD, and URL metadata. It is a lightweight link-unfurling alternative to `link-preview-js` and `open-graph-scraper`, with streaming extraction and SSRF-aware fetching built in. Requires **Node.js 22.12+**; see the [runtime support](#runtime-support) table for other environments.
 
 ```bash
@@ -35,6 +33,11 @@ result.siteName;     // string
 result.canonicalUrl; // absolute final/canonical URL
 ```
 
+<p align="center"><a href="https://thegruber.github.io/linkpeek/"><img src="https://raw.githubusercontent.com/thegruber/linkpeek/main/assets/brand/readme-hero.png" alt="Calling preview(url) in TypeScript returns a typed result and a link preview card; measured 3.9 times faster than the next package on a 500 kB page, a 2.4 times smaller install, one runtime dependency, and at most 30 kB kept by default (benchmarks measured 14 November 2026)." width="800"></a></p>
+
+Guides: [Next.js](https://thegruber.github.io/linkpeek/integrations/nextjs/) · [Cloudflare Workers](https://thegruber.github.io/linkpeek/integrations/cloudflare-workers/) · [Express](https://thegruber.github.io/linkpeek/integrations/node-express/) · [AI agents](https://thegruber.github.io/linkpeek/integrations/ai-agents/) · [All libraries compared](https://thegruber.github.io/linkpeek/guides/link-preview-library-comparison/)
+
+Using a coding agent? Paste the [agent task](https://thegruber.github.io/linkpeek/prompt.md) into Claude Code, Cursor, Codex or Copilot and it adds the endpoint and card for you.
 
 ## Runtime support
 
@@ -55,10 +58,10 @@ linkpeek focuses on server-side preview cards: fetch a URL, read only enough HTM
 - **1 runtime dependency**: `htmlparser2`
 - **30 KB fast default** with a strict byte limit and early stream cancellation after the head
 - **Head-first SAX parsing** with no DOM construction, HTTP client or native module
-- **Safe network defaults**: private/internal IP targets and credential-bearing requests blocked by default
+- **Safe network defaults**: literal private/internal IP targets and credential-bearing requests are blocked, and every redirect is checked; DNS resolution stays with the runtime's fetch ([limits](https://thegruber.github.io/linkpeek/security/))
 - **Dual ESM/CJS package output** with TypeScript declarations for both module systems
 
-> linkpeek is intended for server-side use. Put it behind an API route and return only the metadata your client needs.
+> Call `preview()` on a server or at the edge: browsers may not read other sites' pages (CORS), which is why Slack, Discord and X build previews on a server too. Put it behind an API route and return only the metadata your client needs. `parseHTML()` also runs in the browser.
 
 ## Benchmarks
 
@@ -261,7 +264,7 @@ try {
     switch (err.code) {
       case "INVALID_URL":              // not a parseable URL
       case "UNSUPPORTED_PROTOCOL":     // not http/https
-      case "PRIVATE_NETWORK_BLOCKED":  // SSRF protection triggered
+      case "PRIVATE_NETWORK_BLOCKED":  // private or non-global IP target blocked
       case "SENSITIVE_HEADER":         // credential-bearing custom header
       case "TOO_MANY_REDIRECTS":
       case "TIMEOUT":
