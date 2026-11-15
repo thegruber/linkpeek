@@ -170,9 +170,10 @@ body {
 }
 
 /* The hero's one moment: a highlighter stroke across "link preview". */
+/* No z-index here: the stroke stacks in the isolated h1, under all of its
+   text, so the "y" of the line above stays visible on top of it. */
 .highlight {
 	position: relative;
-	z-index: 0;
 	white-space: nowrap;
 }
 .highlight::before {

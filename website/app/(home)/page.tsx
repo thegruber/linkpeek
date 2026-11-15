@@ -1,4 +1,3 @@
-import { ServerCodeBlock } from "fumadocs-ui/components/codeblock.rsc";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { BenchmarkChart } from "@/components/benchmarks";
@@ -8,7 +7,6 @@ import { HeroDemo } from "@/components/hero-demo";
 import { InstallCommand } from "@/components/install-command";
 import { Logo } from "@/components/logo";
 import { RollingFigure } from "@/components/motion-text";
-import { LiveResult } from "@/components/self-preview";
 import { Showcase } from "@/components/showcase";
 import { StreamDiagram } from "@/components/stream-diagram";
 import { highlights } from "@/lib/benchmarks";
@@ -54,18 +52,6 @@ export const metadata: Metadata = {
 	},
 };
 
-const usage = `import { preview } from "linkpeek";
-
-const card = await preview(url);
-
-if (card.statusCode < 400) {
-  render({
-    title: card.title,
-    description: card.description,
-    image: card.image,
-  });
-}`;
-
 const safety = [
 	"Every redirect is validated before the next request.",
 	"Private, loopback and cloud-metadata IPs in URLs are refused by default.",
@@ -108,25 +94,25 @@ export default async function HomePage() {
 			/>
 
 			{/* First screen: the statement, the product, the art, the pitch, the install. */}
-			<section className="grid border-ink border-b lg:min-h-[calc(100svh-3.5rem)] lg:grid-cols-4 lg:grid-rows-[minmax(0,1.55fr)_minmax(0,1fr)]">
+			<section className="grid border-ink border-b lg:min-h-[calc(100svh-3.5rem)] lg:grid-cols-4 lg:grid-rows-[1fr_auto_auto] xl:grid-rows-[minmax(0,1.55fr)_minmax(0,1fr)]">
 				<div className="flex flex-col justify-between gap-10 border-ink border-b px-5 pt-10 pb-8 sm:px-8 lg:col-span-2 lg:border-r">
 					<p className="font-mono text-[0.72rem] uppercase tracking-[0.06em]">
 						TypeScript link preview library
 					</p>
-					<h1 className="max-w-[12ch] text-balance font-normal text-[clamp(3rem,6.2vw,6.25rem)] leading-[0.92] tracking-[-0.05em]">
+					<h1 className="isolate max-w-[12ch] text-balance font-normal text-[clamp(3rem,6.2vw,6.25rem)] leading-[0.92] tracking-[-0.05em]">
 						Turn any URL into{" "}
 						<span className="whitespace-nowrap">
 							a <span className="highlight">link preview</span>.
 						</span>
 					</h1>
 				</div>
-				<div className="border-ink border-b lg:col-span-2">
-					<HeroDemo examples={cards} capturedLabel={capturedLabel} />
-				</div>
-				<div className="relative min-h-64 border-ink border-b lg:col-span-2 lg:border-r lg:border-b-0">
-					<Dither className="absolute inset-0" />
-				</div>
-				<div className="flex flex-col justify-between gap-8 bg-ink px-5 py-7 text-white sm:px-8 lg:border-ink lg:border-r">
+				<HeroDemo
+					examples={cards}
+					capturedLabel={capturedLabel}
+					className="border-ink border-b lg:col-span-2"
+					codeClassName="border-ink border-b lg:col-span-2 lg:row-span-2 lg:border-r lg:border-b-0 xl:row-span-1"
+				/>
+				<div className="flex flex-col justify-between gap-8 bg-ink px-5 py-7 text-white sm:px-8 lg:col-span-2 xl:col-span-1 xl:border-ink xl:border-r">
 					<p className="text-[1.35rem] leading-[1.2] tracking-[-0.02em]">
 						Reads only the <code>&lt;head&gt;</code>. Blocks private IPs. One
 						dependency. Node.js, Bun, Deno and the edge.
@@ -139,7 +125,7 @@ export default async function HomePage() {
 						<ArrowIcon />
 					</Link>
 				</div>
-				<div className="flex flex-col justify-between gap-8 bg-block px-5 py-7 sm:px-8">
+				<div className="flex flex-col justify-between gap-8 bg-block px-5 py-7 sm:px-8 lg:col-span-2 xl:col-span-1">
 					<div className="grid min-w-0 grid-cols-1 gap-3">
 						<p className="text-[1.35rem] leading-[1.2] tracking-[-0.02em]">
 							Install
@@ -214,28 +200,6 @@ export default async function HomePage() {
 			</section>
 
 			<Showcase />
-
-			{/* The code. */}
-			<section className="grid border-ink border-b lg:grid-cols-4">
-				<div className="px-5 pt-10 pb-6 sm:px-8 lg:py-12">
-					<h2 className="font-normal text-[clamp(2.25rem,3.6vw,3.5rem)] uppercase leading-[0.92] tracking-[-0.04em]">
-						One call.
-					</h2>
-					<p className="mt-5 max-w-[34ch] text-fd-muted-foreground text-sm leading-relaxed">
-						Call <code>preview()</code> on your server or at the edge. Missing
-						fields are <code>null</code>; error pages keep their status code.
-						The JSON is linkpeek parsing this page, live in your browser.
-					</p>
-				</div>
-				<div className="grid min-w-0 border-ink px-5 pb-10 sm:px-8 lg:col-span-3 lg:grid-cols-2 lg:border-l lg:py-12">
-					<div className="min-w-0 [&_figure]:my-0 [&_figure]:rounded-none">
-						<ServerCodeBlock code={usage} lang="ts" />
-					</div>
-					<div className="min-w-0">
-						<LiveResult className="h-full" />
-					</div>
-				</div>
-			</section>
 
 			{/* Short lists. */}
 			<section className="grid border-ink border-b lg:grid-cols-3">

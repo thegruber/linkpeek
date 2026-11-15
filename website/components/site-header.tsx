@@ -56,7 +56,7 @@ export function SiteHeader({
 		<Link
 			href="/quick-start/"
 			aria-label="Get started"
-			className="press group flex items-center gap-3 bg-ink px-5 font-mono text-[0.72rem] text-white uppercase tracking-[0.04em] transition-[background-color,color,transform] hover:bg-mark hover:text-ink"
+			className="press group flex items-center gap-3 bg-ink px-5 font-mono lg:w-40 lg:justify-between text-[0.72rem] text-white uppercase tracking-[0.04em] transition-[background-color,color,transform] hover:bg-mark hover:text-ink"
 		>
 			<span className="hidden sm:inline">Get started</span>
 			<svg
@@ -73,7 +73,7 @@ export function SiteHeader({
 	);
 
 	return (
-		<header className="sticky top-0 z-40 grid h-14 grid-cols-[3.5rem_1fr_auto_auto] border-ink border-b bg-fd-background sm:grid-cols-[3.5rem_minmax(0,1fr)_minmax(0,1fr)_auto_auto] xl:grid-cols-[3.5rem_minmax(0,1fr)_minmax(0,1fr)_auto]">
+		<header className="sticky top-0 z-40 grid h-14 grid-cols-[3.5rem_1fr_auto_auto] border-ink border-b bg-fd-background sm:grid-cols-[3.5rem_minmax(0,1fr)_minmax(0,1fr)_auto_auto] lg:grid-cols-[3.5rem_calc(50%_-_3.5rem)_minmax(0,1fr)_auto_auto] xl:grid-cols-[3.5rem_calc(50%_-_3.5rem)_minmax(0,1fr)_auto]">
 			<Link
 				href="/"
 				aria-label="linkpeek home"
@@ -82,12 +82,7 @@ export function SiteHeader({
 				<Mark className="size-14" />
 			</Link>
 			<div className="hidden items-center gap-3 px-5 sm:flex">
-				<span className="font-medium tracking-[-0.03em]">
-					<span className="underline decoration-[#ff5b1f] decoration-[0.14em] underline-offset-[0.18em]">
-						link
-					</span>
-					peek
-				</span>
+				<span className="font-medium tracking-[-0.03em]">linkpeek</span>
 				<span className="font-mono text-fd-muted-foreground text-xs">
 					v{version}
 				</span>
@@ -98,7 +93,7 @@ export function SiteHeader({
 			</div>
 			<nav
 				aria-label="Main"
-				className="flex items-center gap-5 overflow-x-auto px-4 text-sm sm:border-ink sm:border-l sm:px-5"
+				className="flex items-center gap-5 overflow-x-auto px-4 text-sm sm:border-ink sm:border-l sm:px-5 lg:px-4"
 			>
 				{links.map(([label, href]) => (
 					<Link

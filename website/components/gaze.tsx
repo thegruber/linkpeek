@@ -29,6 +29,7 @@ export function useGaze(
 		rest = { x: 0, y: 0 },
 		floor = Number.POSITIVE_INFINITY,
 		delay = 0,
+		hold,
 	}: {
 		reach: number;
 		origin: (box: DOMRect) => Point;
@@ -36,6 +37,8 @@ export function useGaze(
 		/** Lowest y offset, so pupils never sink below the edge they peek over. */
 		floor?: number;
 		delay?: number;
+		/** While true, the pointer is ignored (the caller moves the pupils). */
+		hold?: RefObject<boolean>;
 	},
 ): {
 	x: MotionValue<number>;
@@ -58,7 +61,7 @@ export function useGaze(
 		const timer = delay ? setTimeout(() => (active = true), delay) : undefined;
 		const onMove = (event: PointerEvent) => {
 			const element = ref.current;
-			if (!active || !element) return;
+			if (!active || !element || hold?.current) return;
 			const box = element.getBoundingClientRect();
 			if (box.bottom < 0 || box.top > innerHeight) return;
 			const { reach: r, origin: o, floor: f } = options.current;
@@ -75,7 +78,7 @@ export function useGaze(
 			clearTimeout(timer);
 			window.removeEventListener("pointermove", onMove);
 		};
-	}, [reduce, delay, ref, tx, ty]);
+	}, [reduce, delay, ref, tx, ty, hold]);
 
 	return {
 		x,
@@ -97,19 +100,43 @@ export function PeekingEyes({
 	sclera = "#ffffff",
 	pupil = "#0b0b0c",
 	outline,
+	scanning = false,
 }: {
 	className?: string;
 	style?: React.CSSProperties;
 	sclera?: string;
 	pupil?: string;
 	outline?: string;
+	/** Pupils read left to right, like scanning a line, until it turns false. */
+	scanning?: boolean;
 }) {
 	const ref = useRef<SVGSVGElement>(null);
-	const { x, y } = useGaze(ref, {
+	const hold = useRef(false);
+	const reduce = useReducedMotion();
+	const { x, y, look } = useGaze(ref, {
 		reach: 4.2,
 		floor: 1.5,
+		hold,
 		origin: (box) => ({ x: box.left + box.width / 2, y: box.bottom }),
 	});
+	const lookRef = useRef(look);
+	lookRef.current = look;
+	useEffect(() => {
+		if (!scanning || reduce) return;
+		hold.current = true;
+		let step = 0;
+		const read = () => {
+			lookRef.current({ x: step % 2 ? 3.6 : -3.6, y: -1.5 });
+			step++;
+		};
+		read();
+		const timer = setInterval(read, 380);
+		return () => {
+			clearInterval(timer);
+			hold.current = false;
+			lookRef.current({ x: 0, y: 0 });
+		};
+	}, [scanning, reduce]);
 	return (
 		<svg
 			ref={ref}
