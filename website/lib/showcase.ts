@@ -1,4 +1,4 @@
-import { preview } from "linkpeek";
+import { preview, validateUrl } from "linkpeek";
 
 // Real previews for the homepage strip, fetched by the published package when
 // the site is built. Sites that time out or lack a title and image are left
@@ -80,6 +80,7 @@ export function showcase(): Promise<ShowcaseCard[]> {
 async function measure(
 	url: string,
 ): Promise<{ headBytes: number; pageBytes: number } | null> {
+	validateUrl(url);
 	const response = await fetch(url, {
 		signal: AbortSignal.timeout(8000),
 		headers: { "user-agent": "Twitterbot/1.0" },
@@ -97,6 +98,8 @@ async function measure(
 // Policy); those cards would render a broken image, so they are skipped.
 async function canEmbed(image: string): Promise<boolean> {
 	try {
+		// Image URLs come from third-party pages: never fetch a private address.
+		validateUrl(image);
 		const response = await fetch(image, {
 			method: "GET",
 			signal: AbortSignal.timeout(6000),

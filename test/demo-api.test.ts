@@ -83,7 +83,7 @@ describe("playground guarded fetch", () => {
 
 	it("checks every redirect hop that preview() follows", async () => {
 		const base = vi.fn(async (input: string | URL | Request) =>
-			String(input).startsWith("https://start.example")
+			new URL(String(input)).host === "start.example"
 				? new Response(null, {
 						status: 302,
 						headers: { location: "https://rebind.example/" },

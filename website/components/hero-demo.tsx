@@ -113,7 +113,9 @@ export function HeroDemo({
 				});
 				return;
 			}
-			const canonical = String(data.canonicalUrl ?? url);
+			// Only an http(s) canonical becomes the card link; `url` always is one.
+			const reported = String(data.canonicalUrl ?? "");
+			const canonical = /^https?:\/\//i.test(reported) ? reported : url;
 			setState({
 				kind: "result",
 				ms: Number(data.ms) || 0,
