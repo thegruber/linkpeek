@@ -51,26 +51,53 @@ export function validateUrl(url: string, allowPrivateIPs = false): void {
 		);
 }
 
-export function isPrivateHost(hostname: string): boolean {
-	const h = hostname.toLowerCase().replace(/\.$/, "");
-	if (
-		h === "localhost" ||
-		h === "[::1]" ||
-		h === "::1" ||
-		h.endsWith(".local") ||
-		h.endsWith(".localhost")
-	)
-		return true;
+// Special-use and de facto internal names (RFC 6761, RFC 6762 appendix G,
+// RFC 8375, ICANN .internal). Public sites never live under these.
+const INTERNAL_NAME_SUFFIXES = [
+	"localhost",
+	"local",
+	"internal",
+	"intranet",
+	"private",
+	"corp",
+	"home",
+	"lan",
+	"home.arpa",
+];
 
-	const ipv4 = parseIPv4(h);
-	if (ipv4) {
-		return isPrivateIPv4(ipv4);
+/**
+ * True for loopback, private, link-local, reserved and internal hosts.
+ * Accepts a URL hostname, a bare IPv6 address or any IPv4 spelling the WHATWG
+ * URL parser accepts (`127.1`, `0x7f000001`, `2130706433`, `0177.0.0.1`), and
+ * normalises it exactly as `fetch()` would before checking. Single-label names
+ * such as `metadata` resolve through local search domains and count as
+ * internal. Unparseable hosts return true.
+ */
+export function isPrivateHost(hostname: string): boolean {
+	const raw = hostname.trim();
+	const bracketed =
+		raw.includes(":") && !raw.startsWith("[") ? `[${raw}]` : raw;
+	let host: string;
+	try {
+		host = new URL(`http://${bracketed}/`).hostname;
+	} catch {
+		return true;
+	}
+	host = host.replace(/\.+$/, "");
+	if (!host) return true;
+
+	if (host.startsWith("[")) {
+		const ipv6Parts = parseIPv6(host.slice(1, -1));
+		return ipv6Parts ? isPrivateIPv6(ipv6Parts) : true;
 	}
 
-	const ipv6 = h.replace(/^\[|\]$/g, "").toLowerCase();
-	const ipv6Parts = parseIPv6(ipv6);
-	if (ipv6Parts) return isPrivateIPv6(ipv6Parts);
+	const ipv4 = parseIPv4(host);
+	if (ipv4) return isPrivateIPv4(ipv4);
 
+	if (!host.includes(".")) return true;
+	for (const suffix of INTERNAL_NAME_SUFFIXES) {
+		if (host === suffix || host.endsWith(`.${suffix}`)) return true;
+	}
 	return false;
 }
 
