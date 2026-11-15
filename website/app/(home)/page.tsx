@@ -10,7 +10,7 @@ import { Logo } from "@/components/logo";
 import { RollingFigure } from "@/components/motion-text";
 import { Showcase } from "@/components/showcase";
 import { StreamDiagram } from "@/components/stream-diagram";
-import { highlights } from "@/lib/benchmarks";
+import { tiles } from "@/lib/benchmarks";
 import {
 	appName,
 	author,
@@ -83,7 +83,6 @@ export default async function HomePage() {
 		(best, card) => (!best || card.pageBytes > best.pageBytes ? card : best),
 		undefined,
 	);
-	const stats = highlights();
 	return (
 		<main className="w-full">
 			<script
@@ -165,39 +164,50 @@ export default async function HomePage() {
 				</div>
 			</section>
 
-			{/* Measured figures as tiles. */}
+			{/* Measured figures as tiles, each with its comparison drawn to scale:
+			    orange is linkpeek, grey what it is measured against. */}
 			<section
 				aria-label="Measured results"
 				className="grid grid-cols-2 border-ink border-b lg:grid-cols-4"
 			>
-				{stats.map((item, index) => (
-					<Link
-						key={item.label}
-						href="/benchmarks/"
-						className={`cell group flex min-h-40 flex-col justify-between gap-6 border-ink px-5 py-6 sm:min-h-56 sm:px-8 ${index === 0 ? "bg-block" : ""} ${index % 2 === 0 ? "border-r" : "lg:border-r"} ${index < 2 ? "border-b lg:border-b-0" : ""}`}
-					>
-						<RollingFigure
-							value={item.figure}
-							decimals={item.decimals}
-							suffix={item.suffix.startsWith("×") ? "×" : item.suffix}
-							className="figures block font-normal text-[clamp(3rem,5vw,5rem)] leading-none tracking-[-0.05em]"
-						/>
-						<span className="text-sm">{tileLabel(item)}</span>
-					</Link>
-				))}
-				<Link
-					href="/api/#presets"
-					className="cell flex min-h-40 flex-col justify-between gap-6 px-5 py-6 sm:min-h-56 sm:px-8"
-				>
-					<RollingFigure
-						value={30}
-						suffix=" kB"
-						className="figures block font-normal text-[clamp(3rem,5vw,5rem)] leading-none tracking-[-0.05em]"
-					/>
-					<span className="text-sm">
-						The most it keeps of a response by default
-					</span>
-				</Link>
+				{tiles().map((tile, index) => {
+					const max = Math.max(...tile.bars.map((bar) => bar.value));
+					return (
+						<Link
+							key={tile.label}
+							href={tile.href}
+							className={`cell group flex min-h-48 flex-col justify-between gap-6 border-ink px-5 py-6 sm:min-h-60 sm:px-8 ${index % 2 === 0 ? "border-r" : "lg:border-r"} ${index === 3 ? "lg:border-r-0" : ""} ${index < 2 ? "border-b lg:border-b-0" : ""}`}
+						>
+							<span className="grid gap-3">
+								<RollingFigure
+									value={tile.figure}
+									decimals={tile.decimals}
+									suffix={tile.suffix}
+									className="figures block font-normal text-[clamp(3rem,5vw,5rem)] leading-none tracking-[-0.05em]"
+								/>
+								<span className="text-sm leading-snug">{tile.label}</span>
+							</span>
+							<span className="grid gap-2" aria-hidden="true">
+								{tile.bars.map((bar, row) => (
+									<span key={bar.name} className="grid gap-1">
+										<span className="flex justify-between gap-3 font-mono text-[0.68rem] text-fd-muted-foreground">
+											<span className="truncate">{bar.name}</span>
+											<span className="figures shrink-0">{bar.label}</span>
+										</span>
+										<span className="block h-1.5 bg-fd-muted">
+											<span
+												className={`bars-tile block h-full ${row === 0 ? "bg-mark" : "bg-shape"}`}
+												style={{
+													width: `${Math.max(1.5, (bar.value / max) * 100)}%`,
+												}}
+											/>
+										</span>
+									</span>
+								))}
+							</span>
+						</Link>
+					);
+				})}
 			</section>
 
 			<Showcase />
@@ -380,17 +390,6 @@ export default async function HomePage() {
 			</footer>
 		</main>
 	);
-}
-
-// "3.9× faster" becomes a big "3.9×" with the comparison spelled out below.
-function tileLabel(item: { label: string; suffix: string }): string {
-	if (item.suffix === "× faster") {
-		return `Faster than the next package on a ${item.label.split(",")[0]}`;
-	}
-	if (item.suffix === "× smaller") {
-		return "Smaller install than the next-smallest package";
-	}
-	return item.label;
 }
 
 function ArrowIcon() {

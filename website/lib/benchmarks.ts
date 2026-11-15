@@ -124,6 +124,113 @@ export function highlights(): Highlight[] {
 	];
 }
 
+export interface TileBar {
+	name: string;
+	value: number;
+	label: string;
+}
+
+export interface Tile {
+	figure: number;
+	decimals: number;
+	suffix: string;
+	label: string;
+	href: string;
+	/** Two to scale: linkpeek first, then what it is compared with. */
+	bars: TileBar[];
+}
+
+/**
+ * The homepage figure tiles, each with the comparison behind its number so
+ * the tile can draw it to scale. Ratios fall back to plain values when
+ * linkpeek no longer leads, like highlights().
+ */
+export function tiles(): Tile[] {
+	const own = largePage.medianMs[SELF];
+	const [nextName, nextMs] = Object.entries(largePage.medianMs)
+		.filter(([name]) => name !== SELF)
+		.sort((a, b) => a[1] - b[1])[0];
+	const installs = data.install.packages;
+	const self = installs.find((entry) => entry.name === SELF);
+	const [nextInstall] = installs
+		.filter((entry) => entry.name !== SELF)
+		.sort((a, b) => a.nodeModulesKiB - b.nodeModulesKiB);
+	if (!self || !nextInstall) throw new Error("install sizes missing");
+	const page = formatKB(largePage.bytes);
+	const speed = nextMs / own;
+	const size = nextInstall.nodeModulesKiB / self.nodeModulesKiB;
+	return [
+		{
+			...(speed > 1
+				? { figure: Number(speed.toFixed(1)), decimals: 1, suffix: "×" }
+				: { figure: Number(own.toFixed(2)), decimals: 2, suffix: " ms" }),
+			label: `Faster than ${nextName} on a ${page} page`,
+			href: "/benchmarks/#large-page",
+			bars: [
+				{ name: SELF, value: own, label: formatMs(own) },
+				{ name: nextName, value: nextMs, label: formatMs(nextMs) },
+			],
+		},
+		{
+			...(size > 1
+				? { figure: Number(size.toFixed(1)), decimals: 1, suffix: "×" }
+				: {
+						figure: Number((self.nodeModulesKiB / 1024).toFixed(1)),
+						decimals: 1,
+						suffix: " MB",
+					}),
+			label: `Smaller install than ${nextInstall.name}`,
+			href: "/benchmarks/#size",
+			bars: [
+				{
+					name: SELF,
+					value: self.nodeModulesKiB,
+					label: formatMiB(self.nodeModulesKiB),
+				},
+				{
+					name: nextInstall.name,
+					value: nextInstall.nodeModulesKiB,
+					label: formatMiB(nextInstall.nodeModulesKiB),
+				},
+			],
+		},
+		{
+			figure: 1,
+			decimals: 0,
+			suffix: "",
+			label: "Runtime dependency: htmlparser2",
+			href: "/benchmarks/#size",
+			bars: [
+				{
+					name: SELF,
+					value: self.installedPackages,
+					label: `${self.installedPackages} packages`,
+				},
+				{
+					name: nextInstall.name,
+					value: nextInstall.installedPackages,
+					label: `${nextInstall.installedPackages} packages`,
+				},
+			],
+		},
+		{
+			figure: 30,
+			decimals: 0,
+			suffix: " kB",
+			label: "The most it keeps of a response by default",
+			href: "/api/#presets",
+			bars: [
+				{ name: "kept", value: 30_000, label: "30 kB" },
+				{
+					name: `${page} page`,
+					value: largePage.bytes,
+					label: page,
+				},
+			],
+		},
+	];
+}
+
 /** Markdown version of a chart, for llms.txt and the per-page exports. */
 export function chartMarkdown(kind: ChartKind): string {
 	const { title, subtitle, unit, rows } = chart(kind);
