@@ -35,9 +35,17 @@ This is linkpeek parsing this page, live in your browser. `preview()` returns th
 
 <LiveResult />
 
-Run `preview()` on a server or edge endpoint. Missing metadata returns `null`. HTTP error pages can still return metadata, so check `statusCode` before caching a result.
+Missing metadata returns `null`. HTTP error pages can still return metadata, so check `statusCode` before caching a result. The [API reference](/api/) lists all options, result fields and error codes.
 
-The [API reference](/api/) lists all options, result fields and error codes.
+## Where it runs [#where]
+
+| Where | preview(): fetch and parse | parseHTML(): parse only |
+| --- | --- | --- |
+| Server or API route (Node.js, Bun, Deno) | Yes | Yes |
+| Edge (Cloudflare Workers, Vercel) | Yes | Yes |
+| Browser | No: browsers may not read other sites' pages | Yes |
+
+Browsers block a page from reading the HTML of another site (CORS). That is why Slack, Discord and X build their previews on a server. Your frontend works the same way: it sends the URL to your own endpoint, the endpoint calls `preview()`, and returns the fields as JSON. The demo on the homepage is built exactly like that. The [Next.js guide](/integrations/nextjs/) shows the endpoint.
 
 ## Parsing existing HTML [#parse-html]
 
