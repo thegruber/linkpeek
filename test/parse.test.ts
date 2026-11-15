@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { LinkpeekError } from "../src/errors.js";
 import { extractMetaRefreshUrl, parseHTML } from "../src/parse.js";
 
 const fixturesDir = resolve(import.meta.dirname, "fixtures");
@@ -95,8 +96,8 @@ describe("parseHTML", () => {
 			expect(result.image).toBe("https://example.com/images/json-ld-hero.jpg");
 		});
 
-		it("extracts title from JSON-LD headline", () => {
-			expect(result.title).toBe("Understanding JSON-LD");
+		it("prefers the <title> tag over the JSON-LD headline", () => {
+			expect(result.title).toBe("JSON-LD Article");
 		});
 
 		it("extracts description from JSON-LD", () => {
@@ -113,8 +114,12 @@ describe("parseHTML", () => {
 	describe("json-ld-graph.html", () => {
 		const result = parseHTML(loadFixture("json-ld-graph.html"), BASE);
 
-		it("traverses @graph and extracts title from first item with name", () => {
-			expect(result.title).toBe("Graph Site");
+		it("prefers the <title> tag over @graph entity names", () => {
+			expect(result.title).toBe("JSON-LD Graph Page");
+		});
+
+		it("uses the @graph WebSite name as the site name", () => {
+			expect(result.siteName).toBe("Graph Site");
 		});
 
 		it("extracts description from BlogPosting in graph", () => {
@@ -422,12 +427,12 @@ describe("JSON-LD @graph robustness", () => {
 		expect(result.description).toBe("From graph object");
 	});
 
-	it("inspects root-level properties alongside @graph items", () => {
+	it("finds the content entity inside @graph when the root has none", () => {
 		const html = `<html><head>
-			<script type="application/ld+json">{"name": "Root Name", "@graph": [{"description": "Graph description"}]}</script>
+			<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "BlogPosting", "headline": "Graph headline", "description": "Graph description"}]}</script>
 		</head></html>`;
 		const result = parseHTML(html, BASE);
-		expect(result.title).toBe("Root Name");
+		expect(result.title).toBe("Graph headline");
 		expect(result.description).toBe("Graph description");
 	});
 });
@@ -466,9 +471,17 @@ describe("fallback chain", () => {
 		expect(result.title).toBe("Twitter Title");
 	});
 
-	it("JSON-LD name is used when OG and Twitter titles are absent", () => {
+	it("<title> beats JSON-LD when OG and Twitter titles are absent", () => {
 		const html = `<!DOCTYPE html><html><head>
 			<title>HTML Title</title>
+			<script type="application/ld+json">{"name":"JSON-LD Name"}</script>
+		</head><body></body></html>`;
+		const result = parseHTML(html, BASE);
+		expect(result.title).toBe("HTML Title");
+	});
+
+	it("JSON-LD name is used when there is no title tag", () => {
+		const html = `<!DOCTYPE html><html><head>
 			<script type="application/ld+json">{"name":"JSON-LD Name"}</script>
 		</head><body></body></html>`;
 		const result = parseHTML(html, BASE);
@@ -585,32 +598,13 @@ describe("safe metadata URL resolution", () => {
 		expect(result.canonicalUrl).toBe("https://example.com/safe-canonical");
 	});
 
-	it("does not return unsafe base URLs from the public parser", () => {
-		const result = parseHTML(
-			"<html><head><title>Unsafe Base</title></head></html>",
-			"javascript:alert(1)",
-		);
-
-		expect(result.url).toBe("https://example.com/");
-		expect(result.canonicalUrl).toBe("https://example.com/");
-	});
-
-	it("uses the safe fallback base for relative metadata URLs", () => {
-		const html = `<!DOCTYPE html><html><head>
-			<meta property="og:image" content="/image.jpg">
-			<meta property="og:video" content="/video.mp4">
-			<meta property="og:audio" content="/audio.mp3">
-			<link rel="icon" href="/favicon.ico">
-			<link rel="alternate" type="application/json+oembed" href="/oembed.json">
-		</head></html>`;
-
-		const result = parseHTML(html, "javascript:alert(1)");
-
-		expect(result.image).toBe("https://example.com/image.jpg");
-		expect(result.video).toBe("https://example.com/video.mp4");
-		expect(result.audio).toBe("https://example.com/audio.mp3");
-		expect(result.favicon).toBe("https://example.com/favicon.ico");
-		expect(result.oEmbedUrl).toBe("https://example.com/oembed.json");
+	it("rejects unsafe base URLs instead of inventing a fallback origin", () => {
+		expect(() =>
+			parseHTML(
+				"<html><head><title>Unsafe Base</title></head></html>",
+				"javascript:alert(1)",
+			),
+		).toThrow(LinkpeekError);
 	});
 });
 
@@ -766,8 +760,8 @@ describe("json-ld-body.html — JSON-LD in body", () => {
 		includeBodyContent: true,
 	});
 
-	it("extracts title from body JSON-LD headline", () => {
-		expect(result.title).toBe("Breaking News From Body JSON-LD");
+	it("keeps the <title> tag ahead of the body JSON-LD headline", () => {
+		expect(result.title).toBe("Fallback Title");
 	});
 
 	it("extracts image from body JSON-LD", () => {
@@ -1160,5 +1154,136 @@ describe("audio edge cases", () => {
 		</head></html>`;
 		const r = parseHTML(html, BASE);
 		expect(r.audio).toBe("https://example.com/audio.mp3");
+	});
+});
+
+describe("head scope with inert containers", () => {
+	const pixel = `<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1&ev=PageView&noscript=1"/></noscript>`;
+	const sprite = `<svg xmlns="http://www.w3.org/2000/svg" style="display:none"><symbol id="i"><path d="M0 0h1"/></symbol><use href="#i"/></svg>`;
+
+	it.each([
+		["noscript pixel", pixel],
+		["inline svg sprite", sprite],
+	])("keeps reading head metadata after a %s", (_label, inert) => {
+		const html = `<html><head><title>Doc</title>${inert}<meta property="og:title" content="After inert"><meta property="og:image" content="/after.jpg"></head><body><p>x</p></body></html>`;
+		for (const includeBodyContent of [false, true]) {
+			const r = parseHTML(html, BASE, { includeBodyContent });
+			expect(r.title).toBe("After inert");
+			expect(r.image).toBe("https://example.com/after.jpg");
+		}
+	});
+
+	it("does not read metadata hidden inside head noscript", () => {
+		const html = `<head><noscript><meta property="og:title" content="Noscript"></noscript><title>Real</title></head>`;
+		expect(parseHTML(html, BASE).title).toBe("Real");
+	});
+
+	it("does not take a body image from a head noscript pixel", () => {
+		const html = `<head>${pixel}</head><body><img src="/hero.jpg"></body>`;
+		const r = parseHTML(html, BASE, { includeBodyContent: true });
+		expect(r.image).toBe("https://example.com/hero.jpg");
+	});
+});
+
+describe("title and JSON-LD precedence", () => {
+	it("prefers <title> over a site-wide Organization JSON-LD name", () => {
+		const html = `<head><script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"Acme Inc","logo":"https://acme.test/logo.png"}</script><title>Pricing | Acme</title></head>`;
+		expect(parseHTML(html, BASE).title).toBe("Pricing | Acme");
+	});
+
+	it("uses the article entity headline when there is no title tag", () => {
+		const html = `<head><script type="application/ld+json">{"@graph":[{"@type":"WebSite","name":"Acme"},{"@type":"Organization","name":"Acme Inc"},{"@type":"NewsArticle","headline":"Real story","description":"About it"}]}</script></head>`;
+		const r = parseHTML(html, BASE);
+		expect(r.title).toBe("Real story");
+		expect(r.description).toBe("About it");
+	});
+
+	it("takes JSON-LD fields from one entity instead of mixing entities", () => {
+		const html = `<head><script type="application/ld+json">[{"@type":"Article","headline":"Story","author":{"@type":"Person","name":"Ann"}},{"@type":"Product","name":"Widget","description":"Widget description","image":"https://cdn.test/widget.jpg","datePublished":"2020-01-01"}]</script></head>`;
+		const r = parseHTML(html, BASE);
+		expect(r.title).toBe("Story");
+		expect(r.author).toBe("Ann");
+		expect(r.description).toBeNull();
+		expect(r.image).toBeNull();
+		expect(r.publishedDate).toBeNull();
+	});
+
+	it("resolves @id references inside a JSON-LD @graph", () => {
+		const html = `<head><script type="application/ld+json">{"@graph":[{"@type":"Article","headline":"Yoast story","author":{"@id":"#ann"},"image":{"@id":"#img"},"publisher":{"@id":"#org"}},{"@type":"Person","@id":"#ann","name":"Ann"},{"@type":"ImageObject","@id":"#img","url":"https://cdn.test/a.jpg"},{"@type":"Organization","@id":"#org","name":"Acme News"}]}</script></head>`;
+		const r = parseHTML(html, BASE);
+		expect(r.title).toBe("Yoast story");
+		expect(r.author).toBe("Ann");
+		expect(r.image).toBe("https://cdn.test/a.jpg");
+		expect(r.siteName).toBe("Acme News");
+	});
+
+	it("uses the JSON-LD WebSite name as a site name fallback", () => {
+		const html = `<head><script type="application/ld+json">{"@type":"WebSite","name":"Acme Docs"}</script><title>Intro</title></head>`;
+		const r = parseHTML(html, BASE);
+		expect(r.title).toBe("Intro");
+		expect(r.siteName).toBe("Acme Docs");
+	});
+});
+
+describe("text normalization", () => {
+	it("skips a whitespace-only og:title and falls back to <title>", () => {
+		const html = `<head><meta property="og:title" content="   \n\t "><title>  Real   title \n</title></head>`;
+		expect(parseHTML(html, BASE).title).toBe("Real title");
+	});
+
+	it("collapses whitespace in text fields", () => {
+		const html = `<head><meta property="og:description" content="  line one\n\n   line two  "><meta property="og:site_name" content=" Acme\tNews "><meta name="author" content="  Ann   Lee "></head>`;
+		const r = parseHTML(html, BASE);
+		expect(r.description).toBe("line one line two");
+		expect(r.siteName).toBe("Acme News");
+		expect(r.author).toBe("Ann Lee");
+	});
+
+	it("lets a later non-empty value win over an earlier empty duplicate", () => {
+		const html = `<head><meta property="og:title" content=" "><meta property="og:title" content="Second"></head>`;
+		expect(parseHTML(html, BASE).title).toBe("Second");
+	});
+});
+
+describe("parseHTML base URL", () => {
+	it.each(["not a url", "", "ftp://example.com/x", "javascript:alert(1)"])(
+		"throws INVALID_URL for base %j instead of inventing example.com data",
+		(base) => {
+			try {
+				parseHTML("<title>x</title>", base);
+				expect.unreachable();
+			} catch (err) {
+				expect(err).toBeInstanceOf(LinkpeekError);
+				expect((err as LinkpeekError).code).toBe("INVALID_URL");
+			}
+		},
+	);
+});
+
+describe("first-wins link relations", () => {
+	it("keeps the first rel=canonical and image_src like other fields", () => {
+		const html = `<head><link rel="canonical" href="/first"><link rel="canonical" href="/second"><link rel="image_src" href="/one.jpg"><link rel="image_src" href="/two.jpg"></head>`;
+		const r = parseHTML(html, BASE);
+		expect(r.canonicalUrl).toBe("https://example.com/first");
+		expect(r.image).toBe("https://example.com/one.jpg");
+	});
+});
+
+describe("favicon selection", () => {
+	it("prefers a scalable SVG icon over a small declared ICO", () => {
+		const html = `<head><link rel="icon" href="/favicon.ico" sizes="32x32"><link rel="icon" href="/icon.svg" type="image/svg+xml" sizes="any"></head>`;
+		expect(parseHTML(html, BASE).favicon).toBe("https://example.com/icon.svg");
+	});
+});
+
+describe("meta refresh forms", () => {
+	it("accepts a refresh URL without the url= prefix", () => {
+		const html = `<head><meta http-equiv="refresh" content="0; https://example.com/next"></head>`;
+		expect(extractMetaRefreshUrl(html, BASE)).toBe("https://example.com/next");
+	});
+
+	it("accepts a quoted refresh URL without the url= prefix", () => {
+		const html = `<head><meta http-equiv="refresh" content="0;'/next'"></head>`;
+		expect(extractMetaRefreshUrl(html, BASE)).toBe("https://example.com/next");
 	});
 });

@@ -107,7 +107,7 @@ describe("preview()", () => {
 		const page = `<html><head><title>Head fallback</title></head><body>
 			${"padding ".repeat(300)}
 			<script type="application/ld+json">
-				{"headline":"Body JSON-LD title"}
+				{"headline":"Body JSON-LD title","description":"Body JSON-LD description"}
 			</script>
 		</body></html>`;
 		const fetchMock = vi.fn(
@@ -123,7 +123,8 @@ describe("preview()", () => {
 			maxBytes: 10_000,
 		});
 
-		expect(result.title).toBe("Body JSON-LD title");
+		expect(result.title).toBe("Head fallback");
+		expect(result.description).toBe("Body JSON-LD description");
 	});
 
 	it("streams through a body image fallback when body scanning is enabled", async () => {

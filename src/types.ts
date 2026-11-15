@@ -46,7 +46,7 @@ export interface PreviewResult {
 	url: string;
 	/** HTTP status code of the final response. `parseHTML()` returns 0. */
 	statusCode: number;
-	/** og:title → twitter:title → JSON-LD → Dublin Core → <title> */
+	/** og:title → twitter:title → Dublin Core → <title> → JSON-LD headline/name of the page's main entity */
 	title: string | null;
 	/** og:description → twitter:description → meta description → JSON-LD → Dublin Core */
 	description: string | null;
@@ -58,7 +58,7 @@ export interface PreviewResult {
 	imageWidth: number | null;
 	/** og:image:height, when numeric */
 	imageHeight: number | null;
-	/** og:site_name → JSON-LD publisher → hostname */
+	/** og:site_name → JSON-LD publisher → JSON-LD WebSite name → hostname */
 	siteName: string;
 	/** Declared favicon, or the origin's /favicon.ico as a fallback guess */
 	favicon: string | null;
@@ -90,4 +90,11 @@ export interface PreviewResult {
 	themeColor: string | null;
 	/** Discovered oEmbed endpoint URL. Not fetched. */
 	oEmbedUrl: string | null;
+	/**
+	 * True when `maxBytes` cut the response before linkpeek saw everything it
+	 * reads (the end of `<head>`, or the whole document with
+	 * `includeBodyContent`), so later metadata may be missing. Raise `maxBytes`
+	 * to recover it. `parseHTML()` returns false.
+	 */
+	truncated: boolean;
 }

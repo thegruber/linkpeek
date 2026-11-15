@@ -118,6 +118,7 @@ function emptyResult(
 		twitterCreator: null,
 		themeColor: null,
 		oEmbedUrl: null,
+		truncated: false,
 	};
 }
 
