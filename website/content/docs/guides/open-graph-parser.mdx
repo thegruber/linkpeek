@@ -1,7 +1,7 @@
 ---
 title: "Open Graph parser"
-metaTitle: "Open Graph parser for TypeScript"
-description: "Parse Open Graph, Twitter Card, JSON-LD, favicon, and canonical metadata from HTML with linkpeek and TypeScript."
+metaTitle: "Open Graph parser and scraper for Node.js and TypeScript"
+description: "Parse or fetch Open Graph, Twitter Card, JSON-LD, favicon and canonical metadata in Node.js and TypeScript with parseHTML() and preview()."
 heading: "Parse Open Graph metadata"
 ---
 
@@ -43,8 +43,14 @@ The default head-first mode stops tokenizing after the document head. Enable bod
 
 Use `parseHTML()` when your application already has the HTML. Use `preview()` when linkpeek should fetch the URL with timeouts, byte limits, redirect checks, content decoding, and private-address blocking.
 
+```ts
+import { preview } from "linkpeek";
 
-## Try the parser [#try-title]
+const result = await preview("https://github.com");
+console.log(result.title, result.image, result.twitterCard);
+```
+
+## Try the parser [#try]
 
 Edit the sample. `parseHTML()` runs locally in your browser with the published package.
 

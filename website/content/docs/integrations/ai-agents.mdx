@@ -7,7 +7,7 @@ heading: "Link metadata for AI agents"
 
 Use linkpeek when an agent already has a URL and needs a title, description, preview image, site name, or canonical URL before presenting a link. Keep fetching in trusted server code and return only the metadata the agent needs.
 
-This guide shows a framework-neutral helper for link labels and source cards. linkpeek does not include an agent framework connector or an MCP server. This example has not been evaluated for improvements to model accuracy or RAG retrieval.
+This guide shows a framework-neutral helper for link labels and source cards. linkpeek does not include an agent framework connector or an MCP server.
 
 Titles and descriptions are supplied by the target site. They can be missing, misleading, or unrelated to the full article. Use a separate content retrieval step when an agent needs to read, summarize, or verify a source.
 
@@ -39,7 +39,7 @@ export async function inspectLink(url: string) {
 
 Register this function with the tool mechanism of your agent framework using one required string input named `url`. It extracts page metadata; it does not execute JavaScript or return article text. Check `statusCode` before presenting a successful source card: HTML error pages can also contain metadata.
 
-For an MCP integration, your server must register a tool with an input schema and a handler that calls this helper. The [MCP tools specification](https://modelcontextprotocol.io/specification/latest/server/tools) describes this mechanism; it does not certify this package or this example.
+For an MCP integration, your server must register a tool with an input schema and a handler that calls this helper. The [MCP tools specification](https://modelcontextprotocol.io/specification/latest/server/tools) describes this mechanism.
 
 ## Treat metadata as untrusted input [#boundary]
 
@@ -52,16 +52,6 @@ For an MCP integration, your server must register a tool with an input schema an
 - Require separate authorization for browsing, downloading, purchasing, or executing anything referenced by the metadata.
 
 - Render a hostname-only fallback when extraction fails or the HTTP status is unsuccessful.
-
-## Supported use cases [#fit]
-
-### Supported
-
-Link previews and URL unfurling on servers and edge runtimes. Results include Open Graph metadata with TypeScript declarations.
-
-### Not supported
-
-Browser-rendered JavaScript, full article retrieval, autonomous web navigation, provider-specific scraping rules, or fetched oEmbed payloads.
 
 ## Production setup [#production]
 

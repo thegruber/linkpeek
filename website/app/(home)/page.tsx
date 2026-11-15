@@ -68,17 +68,16 @@ if (card.statusCode < 400) {
 
 const safety = [
 	"Every redirect is validated before the next request.",
-	"Private, loopback and cloud-metadata IP addresses are refused by default.",
+	"Private, loopback and cloud-metadata IPs in URLs are refused by default.",
 	"At most 30 kB is kept, so a huge response cannot exhaust memory.",
-	"Cookies and authorization headers never leave your server.",
+	"Credential headers are refused, and custom headers are dropped on cross-origin redirects.",
 ];
 
 const runtimes = [
 	["Node.js", "/integrations/node-express/"],
 	["Next.js", "/integrations/nextjs/"],
 	["Cloudflare Workers", "/integrations/cloudflare-workers/"],
-	["Bun", "/quick-start/#install"],
-	["Deno", "/quick-start/#install"],
+	["Bun and Deno", "/quick-start/#install"],
 	["AI agents", "/integrations/ai-agents/"],
 ];
 
@@ -129,8 +128,8 @@ export default async function HomePage() {
 				</div>
 				<div className="flex flex-col justify-between gap-8 bg-ink px-5 py-7 text-white sm:px-8 lg:border-ink lg:border-r">
 					<p className="text-[1.35rem] leading-[1.2] tracking-[-0.02em]">
-						Reads only the <code>&lt;head&gt;</code>. Blocks private addresses.
-						One dependency. Node.js, Bun, Deno and the edge.
+						Reads only the <code>&lt;head&gt;</code>. Blocks private IPs. One
+						dependency. Node.js, Bun, Deno and the edge.
 					</p>
 					<Link
 						href="/quick-start/"
@@ -209,7 +208,7 @@ export default async function HomePage() {
 						className="figures block font-normal text-[clamp(3rem,5vw,5rem)] leading-none tracking-[-0.05em]"
 					/>
 					<span className="text-sm">
-						The most it reads by default, then it stops
+						The most it keeps of a response by default
 					</span>
 				</Link>
 			</section>

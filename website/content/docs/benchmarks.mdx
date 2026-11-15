@@ -5,7 +5,7 @@ description: "Reproducible link preview benchmarks: linkpeek against five packag
 heading: "Link preview benchmarks"
 ---
 
-linkpeek and five other link preview packages, measured on <BenchmarkDate /> with the same pages, the same local server and the same correctness check. Every number comes from an open harness you can run yourself.
+linkpeek and five other link preview packages, measured on <BenchmarkDate /> with the same pages, the same local server and the same correctness check. Every number comes from an open harness you can run yourself. The [library comparison](/guides/link-preview-library-comparison/) covers what each package is best at, including where another one fits better.
 
 <BenchmarkHighlights />
 
@@ -37,14 +37,6 @@ The local stream probe serves a controlled 500 kB response in 1 kB chunks and re
 | Quality | ~202 kB | 200 kB | Continues for body fallbacks |
 
 “Source bytes” includes one queued 1 kB stream chunk; the retained byte ceiling remains exact. These are requested chunks, not exact network wire bytes.
-
-## Try it [#try]
-
-```bash
-npm install linkpeek
-```
-
-The [quick start](/quick-start/) has a complete example. The [library comparison](/guides/link-preview-library-comparison/) covers what each package is best at, including the cases where another one fits better.
 
 ## Method [#method]
 

@@ -23,7 +23,7 @@ open-graph-scraper 6.13 only fetches public addresses, so it cannot reach a loca
 
 - You run on **Cloudflare Workers, Vercel Edge, Deno or Bun** and want fetching, redirect checks and byte limits included.
 - Your users paste links to **large pages**. linkpeek stops reading after `</head>`, which is where the gap in the table above comes from.
-- **Install size** matters: one runtime dependency instead of a full scraper stack.
+- **Install size** matters: 7 installed packages instead of 27.
 - You want **one flat, typed result** with `null` for missing fields instead of arrays of candidates.
 
 ## Migrate ogs() to preview() [#migrate]

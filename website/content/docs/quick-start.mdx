@@ -1,6 +1,7 @@
 ---
 title: "Quick start"
 metaTitle: "Quick start: link previews in TypeScript"
+heading: "Quick start: link previews in TypeScript"
 description: "Install linkpeek, fetch a URL with preview(), and render Open Graph, Twitter Card, and JSON-LD metadata as a link preview card."
 ---
 
@@ -40,7 +41,7 @@ The [API reference](/api/) lists all options, result fields and error codes.
 
 ## Parsing existing HTML [#parse-html]
 
-Use `parseHTML(html, baseUrl)` when you already have the HTML. It runs synchronously without network requests. See the [Open Graph parser guide](/guides/open-graph-parser/) for examples and an optional [interactive parser](/guides/open-graph-parser/#try-title).
+Use `parseHTML(html, baseUrl)` when you already have the HTML. It runs synchronously without network requests. See the [Open Graph parser guide](/guides/open-graph-parser/) for examples and an optional [interactive parser](/guides/open-graph-parser/#try).
 
 ## Presets [#presets]
 
@@ -56,11 +57,7 @@ These limits apply to retained bytes, not total network traffic.
 
 ## Performance [#performance]
 
-Most metadata lives in the `<head>`. The default preset stops reading there and cancels the rest of the response, so a large page costs about as much as a small one.
-
-<BenchmarkChart kind="large" />
-
-On small pages the packages are within about two milliseconds of each other, and network latency dominates. The [benchmarks](/benchmarks/) cover small pages, install size and the method.
+Most metadata lives in the `<head>`. The default preset stops reading there and cancels the rest of the response, so a large page costs about as much as a small one. The [benchmarks](/benchmarks/) measure this against five other packages.
 
 ## Integration guides [#integrations]
 

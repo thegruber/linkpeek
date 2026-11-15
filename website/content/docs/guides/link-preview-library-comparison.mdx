@@ -1,8 +1,8 @@
 ---
 title: "All libraries"
-metaTitle: "TypeScript link preview library comparison"
+metaTitle: "Link preview libraries for Node.js compared"
 description: "Compare linkpeek with link-preview-js, open-graph-scraper, metascraper, unfurl.js, and url-metadata by use case, API shape, security, and footprint."
-heading: "Compare preview libraries"
+heading: "Link preview libraries compared"
 ---
 
 linkpeek is a focused choice for server-side preview cards with typed output and safe network defaults. Broader scraping, text-to-URL detection, rich oEmbed fetching, and provider-specific rules are different jobs with different good tools.
@@ -17,16 +17,14 @@ Comparing two specific packages? [linkpeek vs link-preview-js](/guides/link-prev
 | `link-preview-js` | Previewing a URL or finding the first URL in text | Broader input API; a different result shape and runtime focus |
 | `open-graph-scraper` | Node-oriented Open Graph scraping with broader scraper controls | Larger install tree; edge parse-only users may prefer its separate lite package |
 | `metascraper` | Composable, provider-specific metadata rules | More setup and dependencies for a much broader extraction framework |
-| `unfurl.js` | Rich nested metadata and fetched oEmbed data in Node.js | [Archived upstream](https://github.com/jacktuck/unfurl) as of this guide; not focused on a small edge-runtime preview path |
+| `unfurl.js` | Rich nested metadata and fetched oEmbed data in Node.js | [Archived upstream](https://github.com/jacktuck/unfurl) as of November 2026; not focused on a small edge-runtime preview path |
 | `url-metadata` | Broad page metadata in Node.js | Broader output and dependency surface than a preview-card utility |
 
 This is a fit comparison, not a universal ranking. Verify the linked dated evidence before using it in an architectural decision.
 
 ## Speed and install size [#speed]
 
-Measured on <BenchmarkDate /> with the same pages and a local server, so the numbers show library overhead rather than network latency. On small pages the packages are within about two milliseconds of each other; the [benchmarks](/benchmarks/) include those results and the method.
-
-<BenchmarkChart kind="large" />
+Measured on <BenchmarkDate /> with the same pages and a local server, so the numbers show library overhead rather than network latency. On large pages linkpeek is fastest because it stops after `</head>`; on small pages the packages are within about two milliseconds of each other. The [benchmarks](/benchmarks/) have every result and the method.
 
 <BenchmarkChart kind="install" />
 
@@ -61,8 +59,6 @@ These are dated architectural notes, not security ratings. Every server-side URL
 ## Migration considerations [#migrate]
 
 ```ts
-npm install linkpeek
-
 import { preview } from "linkpeek";
 
 const result = await preview(url);
