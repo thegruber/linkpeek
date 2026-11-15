@@ -8,7 +8,9 @@ tags: node, typescript, webdev, security
 <!--
 Draft for dev.to / Hashnode. Publish from the author's account.
 - Keep the disclosure line below.
-- Numbers come from website/data/benchmarks.json (measured 2026-11-14). Re-run
+- Numbers come from the 2.1.7 release run in
+  benchmarks/competitive/results/2026-11-14 (website/data/benchmarks.json has
+  since moved to newer source). Re-run
   benchmarks/competitive and re-check the security notes in docs/comparison.md
   if this is published more than a few weeks later.
 - Hashnode: paste without the front matter and set the tags manually.

@@ -62,16 +62,16 @@ linkpeek focuses on server-side preview cards: fetch a URL, read only enough HTM
 
 ## Benchmarks
 
-Same-corpus benchmark against five other preview packages, measured on 14 November 2026 (Linux x64, Node.js 24.22, median of three runs, local server, so library overhead only):
+Same-corpus benchmark against five other preview packages, measured on 15 November 2026 from the current source (Linux x64, Node.js 24.22, median of three runs, local server, so library overhead only):
 
 | Package | 500 kB page | Small pages (0.6–2.3 kB) | Clean install |
 | --- | ---: | ---: | ---: |
-| **linkpeek** 2.1.7 | **2.80 ms** | 1.10 ms | **1.3 MB, 7 packages** |
-| unfurl.js 6.4.0 | 11.0 ms | 0.78 ms | 3.2 MB, 16 packages |
-| url-metadata 6.3.1 | 47.6 ms | 2.77 ms | 10.4 MB, 30 packages |
-| link-preview-js 6.0.0 | 51.7 ms | 1.70 ms | 7.9 MB, 18 packages |
-| metascraper 5.58.6 (+7 rules) | 59.8 ms | 2.58 ms | 81.1 MB, 128 packages |
-| open-graph-scraper 6.13.0 | 384 ms | 1.85 ms | 11.1 MB, 27 packages |
+| **linkpeek** | **2.63 ms** | 1.17 ms | **1.3 MB, 7 packages** |
+| unfurl.js 6.4.0 | 11.1 ms | 0.79 ms | 3.2 MB, 16 packages |
+| link-preview-js 6.0.0 | 48.4 ms | 1.64 ms | 7.9 MB, 18 packages |
+| metascraper 5.58.6 (+7 rules) | 65.9 ms | 2.54 ms | 81.1 MB, 128 packages |
+| url-metadata 6.3.1 | 68.8 ms | 2.80 ms | 10.4 MB, 30 packages |
+| open-graph-scraper 6.13.0 | 395 ms | 1.89 ms | 11.1 MB, 27 packages |
 
 On large pages linkpeek stops after `</head>` and cancels the stream. On small pages the differences are fractions of a millisecond, and `unfurl.js` was faster in this run. Charts, method and raw runs: [benchmarks](https://thegruber.github.io/linkpeek/benchmarks/). Every dated result and the reproduction commands are in the [comparison notes](https://github.com/thegruber/linkpeek/blob/main/docs/comparison.md).
 

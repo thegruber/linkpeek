@@ -1,9 +1,9 @@
 {
-	"date": "2026-11-14",
+	"date": "2026-11-15",
 	"environment": {
 		"platform": "Linux x64, 2 vCPU Intel Xeon 2.20 GHz",
 		"node": "24.22.2",
-		"npm": "11.21.1"
+		"npm": "11.19.1"
 	},
 	"method": "Median of three runs. Each run reports the median end-to-end preview time per fixture from a local HTTP server in the same Node.js process, after 5 warmups. Every timed result must extract the expected title.",
 	"source": "benchmarks/competitive/bench.mjs",
@@ -16,6 +16,7 @@
 		"metascraper": "5.58.6"
 	},
 	"notes": {
+		"linkpeek": "Measured from unreleased source after 2.1.7 (the package-hardening branch); the install size is the published 2.1.7.",
 		"link-preview-js": "Measured as native fetch plus getPreviewFromContent(); its URL API rejects the private IP-literal benchmark host.",
 		"open-graph-scraper": "Measured as native fetch plus ogs({ html }); since 6.13.0 its URL API rejects non-public addresses with no opt-out.",
 		"metascraper": "Native fetch plus metascraper with 7 rule packages; metascraper does not fetch."
@@ -26,12 +27,12 @@
 			"bytes": 611,
 			"iterations": 150,
 			"medianMs": {
-				"unfurl.js": 1.02,
-				"linkpeek": 1.36,
-				"open-graph-scraper": 1.96,
-				"link-preview-js": 1.94,
-				"url-metadata": 2.96,
-				"metascraper": 3.33
+				"unfurl.js": 1.01,
+				"linkpeek": 1.53,
+				"open-graph-scraper": 1.86,
+				"link-preview-js": 1.88,
+				"url-metadata": 2.92,
+				"metascraper": 3.35
 			}
 		},
 		{
@@ -39,11 +40,11 @@
 			"bytes": 2320,
 			"iterations": 150,
 			"medianMs": {
-				"unfurl.js": 0.78,
-				"linkpeek": 1.23,
-				"metascraper": 1.9,
-				"link-preview-js": 1.92,
-				"open-graph-scraper": 2,
+				"linkpeek": 1.28,
+				"unfurl.js": 0.82,
+				"link-preview-js": 1.89,
+				"metascraper": 1.7,
+				"open-graph-scraper": 2.08,
 				"url-metadata": 3.08
 			}
 		},
@@ -52,12 +53,12 @@
 			"bytes": 724,
 			"iterations": 150,
 			"medianMs": {
-				"unfurl.js": 0.53,
+				"unfurl.js": 0.55,
 				"linkpeek": 0.71,
-				"link-preview-js": 1.23,
-				"open-graph-scraper": 1.58,
-				"url-metadata": 2.28,
-				"metascraper": 2.52
+				"link-preview-js": 1.15,
+				"open-graph-scraper": 1.74,
+				"url-metadata": 2.4,
+				"metascraper": 2.57
 			}
 		},
 		{
@@ -65,12 +66,12 @@
 			"bytes": 500871,
 			"iterations": 40,
 			"medianMs": {
-				"linkpeek": 2.8,
-				"unfurl.js": 11.01,
-				"url-metadata": 47.61,
-				"metascraper": 59.82,
-				"link-preview-js": 51.73,
-				"open-graph-scraper": 384.28
+				"linkpeek": 2.63,
+				"unfurl.js": 11.11,
+				"url-metadata": 68.79,
+				"link-preview-js": 48.42,
+				"metascraper": 65.88,
+				"open-graph-scraper": 395.1
 			}
 		}
 	],

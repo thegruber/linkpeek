@@ -1,0 +1,242 @@
+{
+	"date": "2026-11-15T08:40:58.229Z",
+	"source": {
+		"commit": "bacb95ae055e776172b1015d95321bc1f5f0f88b",
+		"dirty": true
+	},
+	"node": "v24.22.2",
+	"platform": "linux",
+	"arch": "x64",
+	"versions": {
+		"link-preview-js": "6.0.0",
+		"linkpeek": "2.1.7",
+		"metascraper": "5.58.6",
+		"metascraper-author": "5.58.5",
+		"metascraper-date": "5.58.4",
+		"metascraper-description": "5.58.4",
+		"metascraper-image": "5.58.4",
+		"metascraper-publisher": "5.58.4",
+		"metascraper-title": "5.58.4",
+		"metascraper-url": "5.58.4",
+		"open-graph-scraper": "6.13.0",
+		"unfurl.js": "6.4.0",
+		"url-metadata": "6.3.1"
+	},
+	"warmup": 5,
+	"adapters": {
+		"linkpeek": "preview(url, { allowPrivateIPs: true })",
+		"link-preview-js (E2E)": "getLinkPreview(url)",
+		"link-preview-js (fetch+parse)": "fetch().text() + getPreviewFromContent()",
+		"open-graph-scraper (E2E)": "ogs({ url })",
+		"open-graph-scraper (fetch+parse)": "fetch().text() + ogs({ html })",
+		"unfurl.js": "unfurl(url)",
+		"url-metadata": "urlMetadata(url, { allowPrivateIPAddress: true })",
+		"metascraper (native fetch)": "fetch().text() + metascraper({ html, url })"
+	},
+	"results": [
+		{
+			"fixture": "og-standard.html",
+			"bytes": 611,
+			"iterations": 150,
+			"rows": [
+				{
+					"name": "unfurl.js",
+					"median": 1.037456,
+					"p95": 1.517333,
+					"title": "The Open Graph Title"
+				},
+				{
+					"name": "linkpeek",
+					"median": 1.341956,
+					"p95": 4.348434,
+					"title": "The Open Graph Title"
+				},
+				{
+					"name": "open-graph-scraper (fetch+parse)",
+					"median": 1.862147,
+					"p95": 3.413685,
+					"title": "The Open Graph Title"
+				},
+				{
+					"name": "link-preview-js (fetch+parse)",
+					"median": 1.869191,
+					"p95": 3.683257,
+					"title": "The Open Graph Title"
+				},
+				{
+					"name": "url-metadata",
+					"median": 2.918722,
+					"p95": 4.306869,
+					"title": "The Open Graph Title"
+				},
+				{
+					"name": "metascraper (native fetch)",
+					"median": 3.44212,
+					"p95": 5.35368,
+					"title": "The Open Graph Title"
+				},
+				{
+					"name": "link-preview-js (E2E)",
+					"failed": "link-preview-js did not receive a valid a url or text"
+				},
+				{
+					"name": "open-graph-scraper (E2E)",
+					"failed": "Requests to non-public IP addresses are not allowed"
+				}
+			]
+		},
+		{
+			"fixture": "all-fields.html",
+			"bytes": 2320,
+			"iterations": 150,
+			"rows": [
+				{
+					"name": "unfurl.js",
+					"median": 0.756826,
+					"p95": 1.236071,
+					"title": "All Fields OG Title"
+				},
+				{
+					"name": "linkpeek",
+					"median": 1.28205,
+					"p95": 2.187976,
+					"title": "All Fields OG Title"
+				},
+				{
+					"name": "metascraper (native fetch)",
+					"median": 1.700557,
+					"p95": 2.582279,
+					"title": "All Fields OG Title"
+				},
+				{
+					"name": "link-preview-js (fetch+parse)",
+					"median": 1.855448,
+					"p95": 3.067175,
+					"title": "All Fields OG Title"
+				},
+				{
+					"name": "open-graph-scraper (fetch+parse)",
+					"median": 2.08216,
+					"p95": 3.23881,
+					"title": "All Fields OG Title"
+				},
+				{
+					"name": "url-metadata",
+					"median": 3.075081,
+					"p95": 4.707059,
+					"title": "All Fields OG Title"
+				},
+				{
+					"name": "link-preview-js (E2E)",
+					"failed": "link-preview-js did not receive a valid a url or text"
+				},
+				{
+					"name": "open-graph-scraper (E2E)",
+					"failed": "Requests to non-public IP addresses are not allowed"
+				}
+			]
+		},
+		{
+			"fixture": "recipe-blog.html",
+			"bytes": 724,
+			"iterations": 150,
+			"rows": [
+				{
+					"name": "unfurl.js",
+					"median": 0.579535,
+					"p95": 0.995322,
+					"title": "Best Chocolate Chip Cookies"
+				},
+				{
+					"name": "linkpeek",
+					"median": 0.714671,
+					"p95": 1.129577,
+					"title": "Best Chocolate Chip Cookies"
+				},
+				{
+					"name": "link-preview-js (fetch+parse)",
+					"median": 1.070678,
+					"p95": 1.595185,
+					"title": "Best Chocolate Chip Cookies"
+				},
+				{
+					"name": "open-graph-scraper (fetch+parse)",
+					"median": 1.792784,
+					"p95": 2.547416,
+					"title": "Best Chocolate Chip Cookies"
+				},
+				{
+					"name": "url-metadata",
+					"median": 2.43466,
+					"p95": 3.138733,
+					"title": "Best Chocolate Chip Cookies"
+				},
+				{
+					"name": "metascraper (native fetch)",
+					"median": 2.569795,
+					"p95": 3.847718,
+					"title": "Best Chocolate Chip Cookies"
+				},
+				{
+					"name": "link-preview-js (E2E)",
+					"failed": "link-preview-js did not receive a valid a url or text"
+				},
+				{
+					"name": "open-graph-scraper (E2E)",
+					"failed": "Requests to non-public IP addresses are not allowed"
+				}
+			]
+		},
+		{
+			"fixture": "large-500kb.html",
+			"bytes": 500871,
+			"iterations": 40,
+			"rows": [
+				{
+					"name": "linkpeek",
+					"median": 2.717461,
+					"p95": 10.964094,
+					"title": "Large Page OG Title"
+				},
+				{
+					"name": "unfurl.js",
+					"median": 11.113255,
+					"p95": 19.932688,
+					"title": "Large Page OG Title"
+				},
+				{
+					"name": "link-preview-js (fetch+parse)",
+					"median": 48.42402,
+					"p95": 186.861717,
+					"title": "Large Page OG Title"
+				},
+				{
+					"name": "url-metadata",
+					"median": 68.785644,
+					"p95": 191.061373,
+					"title": "Large Page OG Title"
+				},
+				{
+					"name": "metascraper (native fetch)",
+					"median": 99.743674,
+					"p95": 419.889185,
+					"title": "Large Page OG Title"
+				},
+				{
+					"name": "open-graph-scraper (fetch+parse)",
+					"median": 391.544177,
+					"p95": 603.133675,
+					"title": "Large Page OG Title"
+				},
+				{
+					"name": "link-preview-js (E2E)",
+					"failed": "link-preview-js did not receive a valid a url or text"
+				},
+				{
+					"name": "open-graph-scraper (E2E)",
+					"failed": "Requests to non-public IP addresses are not allowed"
+				}
+			]
+		}
+	]
+}
