@@ -16,7 +16,7 @@ open-graph-scraper 6.13 only fetches public addresses, so it cannot reach a loca
 ## Choose open-graph-scraper when [#choose-open-graph-scraper]
 
 - You need its **breadth of scraped fields and options** on Node.js.
-- You want **resolved-address checks on Node.js** built in: since 6.13 it only requests destinations whose resolved IP addresses are public. linkpeek leaves DNS to the platform `fetch`.
+- You want **resolved-address checks on Node.js** built in: since 6.13 it only requests destinations whose resolved IP addresses are public. linkpeek checks DNS answers on every hop only when you pass `resolveHost`, and does not pin the connection.
 - You already own the fetch and only need parsing: its maintainers point edge and parse-only users to `open-graph-scraper-lite`.
 
 ## Choose linkpeek when [#choose-linkpeek]
@@ -44,7 +44,7 @@ const card = await preview(url);
 // card.title, card.description, card.image
 ```
 
-linkpeek falls back from Open Graph to Twitter Card, JSON-LD and the document title on its own, so one field holds the best value. HTTP error pages resolve with their `statusCode`; check it before caching. The [API reference](/api/) lists every field and error code.
+linkpeek falls back from Open Graph to Twitter Card, Dublin Core, the document title and JSON-LD on its own, so one field holds the best value. HTTP error pages resolve with their `statusCode`; check it before caching. The [API reference](/api/) lists every field and error code.
 
 For a public preview endpoint on Node.js, pair linkpeek with outbound network rules, as the [security model](/security/) explains.
 

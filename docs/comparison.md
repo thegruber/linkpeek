@@ -37,7 +37,7 @@ Same-corpus speed, median of three run medians in ms per end-to-end preview:
 
 | Package | og-standard (611 B) | all-fields (2.3 kB) | recipe-blog (724 B) | large (500 kB) |
 | --- | ---: | ---: | ---: | ---: |
-| linkpeek (unreleased 3.0.0) | 1.44 | 1.58 | 0.73 | 2.76 |
+| linkpeek 3.0.0 | 1.44 | 1.58 | 0.73 | 2.76 |
 | unfurl.js 6.4.0 | 1.02 | 0.84 | 0.54 | 10.99 |
 | link-preview-js 6.0.0 (fetch+parse)* | 1.95 | 1.99 | 1.22 | 48.57 |
 | open-graph-scraper 6.13.0 (fetch+parse)** | 1.93 | 2.16 | 1.72 | 376.79 |
@@ -66,7 +66,7 @@ Honest reading: unfurl.js is faster than linkpeek on every small fixture on this
 
 - `open-graph-scraper` 6.13.0 (2026-10-29) limits requests to HTTP(S) destinations whose **resolved** IP addresses are public, checks redirect destinations before requesting them, and ignores custom Undici dispatchers ([README](https://github.com/jshemas/openGraphScraper#readme)).
 - `link-preview-js` 6.0.0 (2026-11-10) resolves every hostname, including each redirect hop, with `dns.lookup`, rejects private results, and pins the connection to the checked addresses through an Undici dispatcher to defeat DNS rebinding. `resolveDNSHost: false` disables resolution ([README](https://github.com/OP-Engineering/link-preview-js#readme)).
-- linkpeek 2.1.7 validates hostnames and literal IPs on the initial URL and every redirect, but leaves DNS resolution to the platform `fetch`. Against these two releases, linkpeek's network defaults are **weaker for hostnames that resolve to private addresses**. Do not describe linkpeek as safer than either.
+- linkpeek 3.0.0 validates hostnames and literal IPs on the initial URL and every redirect. By default it does not resolve DNS; the opt-in `resolveHost` option checks each hop's DNS answers for private addresses but does not pin the connection, because platform `fetch` resolves the name again. So linkpeek's defaults are **weaker for hostnames that resolve to private addresses** than both releases above, and even with `resolveHost` it is weaker than link-preview-js 6's pinning on Node.js. Do not describe linkpeek as safer than either.
 
 ## Measured install footprint (2026-08-26)
 
@@ -153,7 +153,7 @@ column as "fastest" or infer live-network latency from this local benchmark.
 
 The table above is a historical measurement of the listed versions, not a claim
 about the current checkout. The current benchmark lockfile includes security
-updates (including url-metadata 6.3.0). Every warmup and timed result must match
+updates (including url-metadata 6.3.1). Every warmup and timed result must match
 the fixture's expected title; failed extraction is reported separately from latency.
 
 ```bash
@@ -176,7 +176,7 @@ Verify each claim against the source before citing it in marketing material. Thi
 - `open-graph-scraper`: the full package is Node-oriented; maintainers point edge/parse-only consumers to `open-graph-scraper-lite` in issues [#203](https://github.com/jshemas/openGraphScraper/issues/203) and [#252](https://github.com/jshemas/openGraphScraper/issues/252).
 - `url-metadata`: uses `node-fetch` and Node HTTP plumbing. Issue [#103](https://github.com/laurengarcia/url-metadata/issues/103) was fixed in 5.2.2; [#92](https://github.com/laurengarcia/url-metadata/issues/92) documents a narrower Node-stream compatibility problem and does not prove failure in every edge runtime.
 - `metascraper`: actively maintained (Microlink); browser/edge described as "not oriented for that" ([#746](https://github.com/microlinkhq/metascraper/issues/746)).
-- linkpeek's own documented limit: platform `fetch` owns final DNS resolution, so DNS-rebinding protection varies by runtime (see SECURITY.md). State this limit in any security-focused comparison; the same class of caveat applies to every package above.
+- linkpeek's own documented limit: platform `fetch` owns final DNS resolution, so DNS-rebinding protection varies by runtime (see SECURITY.md); the opt-in `resolveHost` checks answers on every hop but does not pin. State this limit in any security-focused comparison. link-preview-js 6 pins addresses on Node.js; the other packages have similar or larger gaps.
 
 ## Claim Policy
 

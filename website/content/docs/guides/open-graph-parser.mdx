@@ -23,7 +23,7 @@ result.title; // "Example article"
 result.image; // "https://example.com/images/preview.jpg"
 ```
 
-The parser uses a streaming SAX tokenizer rather than constructing a browser DOM. Title precedence starts with Open Graph, then Twitter Card, JSON-LD, Dublin Core, and the document title.
+The parser uses a streaming SAX tokenizer rather than constructing a browser DOM. Title precedence is Open Graph, Twitter Card, Dublin Core, the document `<title>`, then JSON-LD from the page's main entity.
 
 ## Resolve relative URLs [#relative]
 

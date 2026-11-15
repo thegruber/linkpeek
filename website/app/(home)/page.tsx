@@ -152,8 +152,8 @@ export default async function HomePage() {
 					<p className="text-sm text-white/75 leading-relaxed">
 						Preview metadata lives in the <code>&lt;head&gt;</code>. linkpeek
 						parses the response as a stream and cancels it at{" "}
-						<code>&lt;/head&gt;</code>, so a large page costs about as much as a
-						small one.
+						<code>&lt;/head&gt;</code>, so most of a large page is never
+						downloaded or parsed.
 					</p>
 				</div>
 				<div className="grid min-w-0 gap-6 px-5 py-10 sm:px-8 lg:col-span-3 lg:py-12">

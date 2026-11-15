@@ -71,7 +71,7 @@ These limits apply to retained bytes, not total network traffic.
 
 ## Performance [#performance]
 
-Most metadata lives in the `<head>`. The default preset stops reading there and cancels the rest of the response, so a large page costs about as much as a small one. The [benchmarks](/benchmarks/) measure this against five other packages.
+Most metadata lives in the `<head>`. The default preset stops reading there and cancels the rest of the response, so most of a large page is never downloaded or parsed. The [benchmarks](/benchmarks/) measure this against five other packages.
 
 ## Integration guides [#integrations]
 
@@ -85,7 +85,7 @@ Most metadata lives in the `<head>`. The default preset stops reading there and 
 
 ## Security and limitations [#boundaries]
 
-linkpeek validates redirect targets and blocks literal private and non-global addresses by default. The runtime’s `fetch` resolves hostnames; public endpoints also need outbound network controls. Never forward caller credentials to arbitrary URLs. Read the [security model](/security/) before exposing an endpoint.
+linkpeek validates redirect targets and blocks literal private and non-global addresses by default. The runtime’s `fetch` resolves hostnames; on Node.js pass `resolveHost` to check DNS answers on every hop, and give public endpoints outbound network controls. Never forward caller credentials to arbitrary URLs. Read the [security model](/security/) before exposing an endpoint.
 
 linkpeek does not execute page JavaScript, extract full articles or fetch oEmbed payloads. See [troubleshooting](/guides/troubleshooting/) for missing metadata and HTTP errors, or the [library comparison](/guides/link-preview-library-comparison/) for other use cases.
 

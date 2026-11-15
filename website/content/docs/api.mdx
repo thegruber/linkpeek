@@ -29,7 +29,7 @@ if (result.statusCode < 400) {
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
 | `timeout` | `number` | `8000` | Deadline in milliseconds for the whole call (redirects, body read and any meta-refresh hop), from 0 to 2,147,483,647. Throws `LinkpeekError` code `TIMEOUT` when elapsed; invalid values throw `INVALID_OPTIONS` |
-| `maxBytes` | `number` | `30_000` | Maximum decoded response-body bytes to retain. `result.truncated` reports when the limit cut the head |
+| `maxBytes` | `number` | `30_000` | Maximum decoded response-body bytes to retain. `result.truncated` reports when the limit cut the head (or the document, with `includeBodyContent`) |
 | `userAgent` | `string` | `"Twitterbot/1.0"` | User-Agent sent with requests |
 | `followRedirects` | `boolean` | `true` | Follow HTTP redirects after validating each target |
 | `maxRedirects` | `number` | `10` | Maximum redirects per call, HTTP and meta refresh combined. Must be a non-negative integer; invalid values throw `INVALID_OPTIONS` |
@@ -120,7 +120,7 @@ await preview(url, { ...presets.quality, timeout: 5_000 });
 
 ## URL validation helpers [#validation]
 
-`validateUrl(url, allowPrivateIPs?)` returns `void` on success or throws `LinkpeekError`. `isPrivateHost(hostname)` returns a boolean for hostnames and literal IPs covered by the blocklist. It normalises the host the way `fetch()` does, so shorthand IPv4 such as `127.1`, `2130706433` or `0x7f000001` is caught, and it blocks internal names (`localhost`, `*.internal`, `*.local`, `*.localdomain`, `*.home.arpa`, single-label names such as `metadata`). Neither helper performs DNS resolution.
+`validateUrl(url, allowPrivateIPs?)` returns `void` on success or throws `LinkpeekError`. `isPrivateHost(hostname)` returns a boolean for hostnames and literal IPs covered by the blocklist. It normalises the host the way `fetch()` does, so shorthand IPv4 such as `127.1`, `2130706433` or `0x7f000001` is caught, and it blocks internal names (`localhost`, `*.internal`, `*.local`, `*.localdomain`, `*.intranet`, `*.private`, `*.corp`, `*.home`, `*.lan`, `*.home.arpa`, single-label names such as `metadata`). Neither helper performs DNS resolution.
 
 ```ts
 import { isPrivateHost, validateUrl } from "linkpeek";

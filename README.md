@@ -33,7 +33,7 @@ result.siteName;     // string
 result.canonicalUrl; // absolute final/canonical URL
 ```
 
-<p align="center"><a href="https://thegruber.github.io/linkpeek/"><img src="https://raw.githubusercontent.com/thegruber/linkpeek/main/assets/brand/readme-hero.png" alt="Calling preview(url) in TypeScript returns a typed result and a link preview card; measured 3.9 times faster than the next package on a 500 kB page, a 2.4 times smaller install, one runtime dependency, and at most 30 kB kept by default (benchmarks measured 14 November 2026)." width="800"></a></p>
+<p align="center"><a href="https://thegruber.github.io/linkpeek/"><img src="https://raw.githubusercontent.com/thegruber/linkpeek/main/assets/brand/readme-hero.png" alt="Calling preview(url) in TypeScript returns a typed result and a link preview card; measured 4.0 times faster than the next package on a 500 kB page, a 2.4 times smaller install, one runtime dependency, and at most 30 kB kept by default (benchmarks measured 15 November 2026)." width="800"></a></p>
 
 Guides: [Next.js](https://thegruber.github.io/linkpeek/integrations/nextjs/) · [Cloudflare Workers](https://thegruber.github.io/linkpeek/integrations/cloudflare-workers/) · [Express](https://thegruber.github.io/linkpeek/integrations/node-express/) · [AI agents](https://thegruber.github.io/linkpeek/integrations/ai-agents/) · [All libraries compared](https://thegruber.github.io/linkpeek/guides/link-preview-library-comparison/)
 
@@ -54,11 +54,11 @@ CI tests Node 22, Node 24, Node 26, Bun, and Deno.
 
 linkpeek focuses on server-side preview cards: fetch a URL, read only enough HTML for useful metadata, and return a stable result shape without a DOM-heavy scraper stack.
 
-- **3.9× faster than the next package** on a 500 kB page, with a 2.4× smaller install ([benchmarks](#benchmarks))
+- **4.0× faster than the next package** on a 500 kB page, with a 2.4× smaller install ([benchmarks](#benchmarks))
 - **1 runtime dependency**: `htmlparser2`
 - **30 KB fast default** with a strict byte limit and early stream cancellation after the head
 - **Head-first SAX parsing** with no DOM construction, HTTP client or native module
-- **Safe network defaults**: literal private/internal IP targets and credential-bearing requests are blocked, and every redirect is checked; DNS resolution stays with the runtime's fetch ([limits](https://thegruber.github.io/linkpeek/security/))
+- **Safe network defaults**: literal private/internal IP targets and credential-bearing requests are blocked, and every redirect is checked; DNS answers can be checked on every hop with the opt-in `resolveHost`, while the runtime's fetch still resolves the name ([limits](https://thegruber.github.io/linkpeek/security/))
 - **Dual ESM/CJS package output** with TypeScript declarations for both module systems
 
 > Call `preview()` on a server or at the edge: browsers may not read other sites' pages (CORS), which is why Slack, Discord and X build previews on a server too. Put it behind an API route and return only the metadata your client needs. `parseHTML()` also runs in the browser.
@@ -273,9 +273,9 @@ try {
 } catch (err) {
   if (err instanceof LinkpeekError) {
     switch (err.code) {
-      case "INVALID_URL":              // not a parseable URL
+      case "INVALID_URL":              // unparseable URL or embedded credentials
       case "UNSUPPORTED_PROTOCOL":     // not http/https
-      case "PRIVATE_NETWORK_BLOCKED":  // private or non-global IP target blocked
+      case "PRIVATE_NETWORK_BLOCKED":  // private/internal host, IP, or resolveHost answer
       case "SENSITIVE_HEADER":         // credential-bearing custom header
       case "TOO_MANY_REDIRECTS":
       case "TIMEOUT":                  // whole-call deadline elapsed
@@ -303,7 +303,7 @@ Fetches a URL and extracts link preview metadata. Returns `Promise<PreviewResult
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
 | `timeout` | `number` | `8000` | Deadline in milliseconds for the whole call (redirects, body read and any meta-refresh hop), from 0 to 2,147,483,647. Throws `LinkpeekError` code `TIMEOUT` when elapsed; invalid values throw `INVALID_OPTIONS` |
-| `maxBytes` | `number` | `30_000` | Maximum decoded response-body bytes to retain. `result.truncated` reports when the limit cut the head |
+| `maxBytes` | `number` | `30_000` | Maximum decoded response-body bytes to retain. `result.truncated` reports when the limit cut the head (or the document, with `includeBodyContent`) |
 | `userAgent` | `string` | `"Twitterbot/1.0"` | User-Agent sent with requests |
 | `followRedirects` | `boolean` | `true` | Follow HTTP redirects after validating each target |
 | `maxRedirects` | `number` | `10` | Maximum redirects per call, HTTP and meta refresh combined. Must be a non-negative integer; invalid values throw `INVALID_OPTIONS` |
@@ -379,7 +379,7 @@ validateUrl("http://169.254.169.254/"); // throws PRIVATE_NETWORK_BLOCKED
 
 **`title` is `null` for a single-page app.** The page renders its metadata with JavaScript; linkpeek deliberately does not run a browser. `presets.quality` catches body JSON-LD that many SPAs ship; beyond that you need a headless browser, which is out of scope.
 
-**Can I call it from the browser?** Run `preview()` behind a server or edge endpoint; browser CORS restrictions prevent arbitrary page retrieval. `parseHTML()` makes no network requests and can parse HTML strings locally, including in a browser bundle. The [interactive parser](https://thegruber.github.io/linkpeek/guides/open-graph-parser/#try-title) demonstrates this distinction.
+**Can I call it from the browser?** Run `preview()` behind a server or edge endpoint; browser CORS restrictions prevent arbitrary page retrieval. `parseHTML()` makes no network requests and can parse HTML strings locally, including in a browser bundle. The [interactive parser](https://thegruber.github.io/linkpeek/guides/open-graph-parser/#try) demonstrates this distinction.
 
 **I got a preview card for a 404 page.** HTTP error pages that return HTML resolve normally with their `statusCode` set. Check `result.statusCode` before caching or rendering (see [Error Handling](#error-handling)).
 

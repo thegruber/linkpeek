@@ -9,8 +9,8 @@
  * linkpeek, light only, like a printed spec sheet: white paper, charcoal
  * ink, 1px charcoal rules that cut the page into rectangles, light grey for
  * large shapes, and one signal orange: pale for blocks, full for what linkpeek
- * reads (the <head>, the band the eyes in the mark peek over, the underline
- * under "link" in the wordmark). Ordered-dither art is the
+ * reads (the <head>, the band the eyes in the mark peek over). Ordered-dither
+ * art is the
  * only texture. Square corners everywhere.
  */
 @theme {

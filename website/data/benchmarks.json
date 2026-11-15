@@ -8,7 +8,7 @@
 	"method": "Median of three runs. Each run reports the median end-to-end preview time per fixture from a local HTTP server in the same Node.js process, after 5 warmups. Every timed result must extract the expected title.",
 	"source": "benchmarks/competitive/bench.mjs",
 	"versions": {
-		"linkpeek": "2.1.7",
+		"linkpeek": "3.0.0",
 		"unfurl.js": "6.4.0",
 		"link-preview-js": "6.0.0",
 		"open-graph-scraper": "6.13.0",
@@ -16,7 +16,7 @@
 		"metascraper": "5.58.6"
 	},
 	"notes": {
-		"linkpeek": "Measured from unreleased 3.0.0 source (merge commit bd1c9df); the install size is the published 2.1.7.",
+		"linkpeek": "Measured from the 3.0.0 source before publishing (merge commit bd1c9df); the install size is the published 2.1.7, which has the same single runtime dependency.",
 		"link-preview-js": "Measured as native fetch plus getPreviewFromContent(); its URL API rejects the private IP-literal benchmark host.",
 		"open-graph-scraper": "Measured as native fetch plus ogs({ html }); since 6.13.0 its URL API rejects non-public addresses with no opt-out.",
 		"metascraper": "Native fetch plus metascraper with 7 rule packages; metascraper does not fetch."

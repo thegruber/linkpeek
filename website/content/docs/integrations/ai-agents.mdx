@@ -55,7 +55,7 @@ For an MCP integration, your server must register a tool with an input schema an
 
 ## Production setup [#production]
 
-Keep private-IP access disabled, never forward user cookies or service credentials, rate-limit public callers, cache successful results, and enforce infrastructure egress policy. Platform `fetch` owns final DNS resolution, so application-level checks do not replace network controls.
+Keep private-IP access disabled, never forward user cookies or service credentials, rate-limit public callers, cache successful results, and enforce infrastructure egress policy. On Node.js pass `resolveHost`. Platform `fetch` owns final DNS resolution, so application-level checks do not replace network controls.
 
 <Related
 	items={[

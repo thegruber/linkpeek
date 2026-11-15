@@ -12,11 +12,10 @@ Most apps upgrade without code changes. Check these if you rely on them:
 - **New `LinkpeekErrorCode` member `FETCH_FAILED`.** Exhaustive `switch` statements over error codes need a case for it.
 - **`<title>` now beats JSON-LD for `title`,** and JSON-LD fields come from the page's main entity. Some titles change, usually for the better: a site-wide `Organization` name no longer becomes the title, and an `Organization`-only page no longer fills `title`/`description` from it.
 - **`parseHTML(html, baseUrl)` throws `INVALID_URL`** when `baseUrl` is not an absolute `http(s)` URL, instead of returning made-up `example.com` values.
-- **Single-label and internal hosts are private:** `http://intranet/`, `*.internal`, `*.local`, `*.localdomain`, `*.home.arpa` and `localhost.` variants are blocked unless `allowPrivateIPs: true`.
+- **Single-label and internal hosts are private:** `http://intranet/`, `*.internal`, `*.local`, `*.localdomain`, `*.intranet`, `*.private`, `*.corp`, `*.home`, `*.lan`, `*.home.arpa` and `localhost.` variants are blocked unless `allowPrivateIPs: true`.
 - **`maxRedirects` and `timeout` cover the whole `preview()` call,** including a meta-refresh hop. `maxRedirects: 0` therefore also stops meta refresh.
 - **`PreviewResult` has a new required field, `truncated`.** Code that constructs result objects (mocks, fixtures) must add it.
 - **A relative `response.url` from a custom `fetch`** is resolved against the request URL and validated like any redirect target.
-
 
 ### Fixed
 

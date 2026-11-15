@@ -53,6 +53,8 @@ The response header helps browsers and shared proxies, but a server-side cache a
 
 - Keep `allowPrivateIPs` disabled for untrusted input.
 
+- Pass a `resolveHost` lookup from `node:dns/promises` so every hop's DNS answers are checked ([DNS limits](/security/#dns)).
+
 - Never forward caller cookies, authorization headers, or internal tokens.
 
 - Treat returned titles, descriptions, images, and links as untrusted data.

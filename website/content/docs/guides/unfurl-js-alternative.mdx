@@ -22,10 +22,10 @@ unfurl.js was faster than linkpeek on every small page in this run, by a fractio
 
 ## Choose linkpeek when [#choose-linkpeek]
 
-- You want a **maintained dependency**. unfurl.js is archived; the still-open [PR #117](https://github.com/jacktuck/unfurl/pull/117) documents that URLs pass to `node-fetch` without destination validation. linkpeek blocks private and special-use IP literals and checks every redirect before following it. It leaves DNS to the platform `fetch`, so a hostname that resolves to a private address needs egress rules, as the [security model](/security/#dns) explains.
+- You want a **maintained dependency**. unfurl.js is archived; the still-open [PR #117](https://github.com/jacktuck/unfurl/pull/117) documents that URLs pass to `node-fetch` without destination validation. linkpeek blocks private and special-use IP literals and checks every redirect before following it. On Node.js, pass `resolveHost` to check each hop's DNS answers; `fetch` resolves the name again, so keep egress rules too, as the [security model](/security/#dns) explains.
 - You run on **Cloudflare Workers, Vercel Edge, Deno or Bun**. unfurl.js is built on `node-fetch` and documents Node.js only; linkpeek uses platform `fetch`, Web Streams and `TextDecoder`.
 - Your users paste links to **large pages**, where reading only the head pays off.
-- You want **one value per field**: linkpeek falls back from Open Graph to Twitter Card, JSON-LD and the document title on its own, and types every field as a value or `null`.
+- You want **one value per field**: linkpeek falls back from Open Graph to Twitter Card, Dublin Core, the document title and JSON-LD on its own, and types every field as a value or `null`.
 
 ## Migrate unfurl() to preview() [#migrate]
 

@@ -53,7 +53,7 @@ try {
 
 ## Blocked URLs [#blocked]
 
-`PRIVATE_NETWORK_BLOCKED` means the target matched a blocked hostname or literal address, or a `resolveHost` lookup returned a private address. Single-label hosts such as `http://intranet/` and names under `.internal`, `.local`, `.localdomain` or `.home.arpa` count as internal. Keep private access disabled on public endpoints. For an intentionally internal, trusted workflow, review [the security model](/security/) before using `allowPrivateIPs`.
+`PRIVATE_NETWORK_BLOCKED` means the target matched a blocked hostname or literal address, or a `resolveHost` lookup returned a private address. Single-label hosts such as `http://intranet/` and names under `.internal`, `.local`, `.localdomain`, `.intranet`, `.private`, `.corp`, `.home`, `.lan` or `.home.arpa` count as internal. Keep private access disabled on public endpoints. For an intentionally internal, trusted workflow, review [the security model](/security/) before using `allowPrivateIPs`.
 
 `SENSITIVE_HEADER` means a custom header carries credentials. Remove it. A custom `fetch` must honor manual redirects and abort signals so target checks remain effective.
 

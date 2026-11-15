@@ -8,9 +8,8 @@ tags: node, typescript, webdev, security
 <!--
 Draft for dev.to / Hashnode. Publish from the author's account.
 - Keep the disclosure line below.
-- Numbers come from the 2.1.7 release run in
-  benchmarks/competitive/results/2026-11-14 (website/data/benchmarks.json has
-  since moved to newer source). Re-run
+- Numbers come from website/data/benchmarks.json (linkpeek 3.0.0, raw runs in
+  benchmarks/competitive/results/2026-11-15). Re-run
   benchmarks/competitive and re-check the security notes in docs/comparison.md
   if this is published more than a few weeks later.
 - Hashnode: paste without the front matter and set the tags manually.
@@ -29,7 +28,7 @@ Every chat app, CMS, feed and bookmarking tool eventually needs the same feature
 The harness lives in the [linkpeek repository](https://github.com/thegruber/linkpeek/tree/main/benchmarks/competitive). It serves identical HTML fixtures from a local HTTP server in the same Node.js process and calls each library with its defaults, plus only the option it needs to reach `127.0.0.1`. Every timed call must extract the expected title, so a fast wrong answer counts as a failure.
 
 - Machine: Linux x64, 2 vCPU Intel Xeon 2.20 GHz, Node.js 24.22.2
-- Versions (latest on npm that day): linkpeek 2.1.7, unfurl.js 6.4.0, link-preview-js 6.0.0, open-graph-scraper 6.13.0, url-metadata 6.3.1, metascraper 5.58.6 with seven rule packages
+- Versions (latest on npm that day): linkpeek 3.0.0, unfurl.js 6.4.0, link-preview-js 6.0.0, open-graph-scraper 6.13.0, url-metadata 6.3.1, metascraper 5.58.6 with seven rule packages
 - Result: median of three runs, each reporting the median of 150 calls (40 for the large page) after 5 warmups
 
 Localhost makes the network almost free, so these numbers isolate library overhead. They do not predict latency against real websites, where the network usually dominates.
@@ -40,27 +39,27 @@ Three adapters need a note, and two of them are a good sign. link-preview-js and
 
 | Package | Median per preview |
 | --- | ---: |
-| linkpeek | 2.80 ms |
+| linkpeek | 2.76 ms |
 | unfurl.js | 11.0 ms |
-| url-metadata | 47.6 ms |
-| link-preview-js | 51.7 ms |
-| metascraper | 59.8 ms |
-| open-graph-scraper | 384 ms |
+| link-preview-js | 48.6 ms |
+| url-metadata | 49.5 ms |
+| metascraper | 62.6 ms |
+| open-graph-scraper | 377 ms |
 
-This is the case where design matters most. linkpeek parses the response as a stream and cancels it after `</head>`; in a controlled probe it requested 2 kB of the 500 kB body. Libraries that read the whole response before parsing pay for every byte of the body, every time. (metascraper's runs varied between 52 and 95 ms; the others were stable.)
+This is the case where design matters most. linkpeek parses the response as a stream and cancels it after `</head>`; in a controlled probe it requested 2 kB of the 500 kB body. Libraries that read the whole response before parsing pay for every byte of the body, every time. (metascraper's runs varied between 61 and 72 ms; the others were stable.)
 
 ## Small pages (0.6–2.3 kB)
 
 | Package | Mean of three fixture medians |
 | --- | ---: |
-| unfurl.js | 0.78 ms |
-| linkpeek | 1.10 ms |
-| link-preview-js | 1.70 ms |
-| open-graph-scraper | 1.85 ms |
-| metascraper | 2.58 ms |
-| url-metadata | 2.77 ms |
+| unfurl.js | 0.80 ms |
+| linkpeek | 1.25 ms |
+| link-preview-js | 1.72 ms |
+| open-graph-scraper | 1.94 ms |
+| metascraper | 2.71 ms |
+| url-metadata | 2.89 ms |
 
-unfurl.js wins every small fixture. The gaps are fractions of a millisecond, which a real network round trip will swamp. If your previews come from small pages only, speed is not a reason to pick any of these over another.
+unfurl.js wins every small fixture. Part of that is the HTTP client: unfurl.js uses `node-fetch` on Node's `http` module, while linkpeek uses the platform `fetch` so the same code runs on Bun, Deno and Workers; among the packages measured on `fetch`, linkpeek was fastest on every page. The gaps are fractions of a millisecond, which a real network round trip will swamp. If your previews come from small pages only, speed is not a reason to pick any of these over another.
 
 ## Install footprint
 
@@ -86,11 +85,11 @@ If users can submit URLs, someone will submit `http://169.254.169.254/latest/met
 - Does it limit how many bytes it reads, so a multi-gigabyte response can't exhaust memory?
 - Does it keep your auth headers off cross-origin redirects?
 
-Where things stood on 14 November 2026. This moved fast: two of these libraries shipped major SSRF hardening in the four weeks before I wrote this.
+Where things stood on 15 November 2026. This moved fast: two of these libraries shipped major SSRF hardening in the four weeks before I wrote this.
 
 - **link-preview-js 6.0.0** resolves the hostname of the URL and of every redirect hop with `dns.lookup`, rejects private results, and pins the connection to the addresses it checked, which defeats DNS rebinding. This is the strongest default of the six on Node.js. It needs Node's `undici`; the separate mobile entry point skips the check.
 - **open-graph-scraper 6.13.0** only requests destinations whose resolved addresses are public, checks redirects before following them, and has no opt-out.
-- **linkpeek 2.1.7** blocks private and special-use IP literals (including mapped IPv6, NAT64 and 6to4 forms), validates every redirect hop, caps retained bytes (30 kB by default), and rejects common credential headers. It does **not** resolve hostnames itself, because it runs on any runtime's `fetch`, including Workers and Deno, where DNS isn't exposed. A hostname that resolves to an internal address needs egress policy at the network layer. That is a real gap compared with the two libraries above on Node.js.
+- **linkpeek 3.0.0** blocks private and special-use IP literals in every spelling (including mapped IPv6, NAT64 and 6to4 forms) and internal names such as `*.internal` and single-label hosts, validates every redirect hop, caps retained bytes (30 kB by default), and rejects common credential headers. It runs on any runtime's `fetch`, including Workers and Deno where DNS isn't exposed, so it does not resolve hostnames by default. On Node.js an opt-in `resolveHost` option checks the DNS answers for every hop, but it does not pin the connection the way link-preview-js does, so a hostile DNS server can still answer differently when `fetch` connects. Pair it with egress policy at the network layer.
 - **unfurl.js** is [archived](https://github.com/jacktuck/unfurl), with no release since February 2024. An open [pull request](https://github.com/jacktuck/unfurl/pull/117) describes URLs reaching `node-fetch` without destination validation.
 - **metascraper** doesn't fetch, so redirect validation, address policy, timeouts and byte limits are your fetch layer's job.
 - **url-metadata** exposes request-filtering agent options; review its defaults against your threat model.
@@ -99,7 +98,7 @@ None of this is a security rating. Whatever you pick, rate-limit the endpoint, c
 
 ## Which one should you use?
 
-- **Small, fast previews on edge runtimes (Workers, Vercel Edge, Deno, Bun) or for large pages:** linkpeek. That is what I built it for. On a public Node.js endpoint, pair it with egress rules.
+- **Small, fast previews on edge runtimes (Workers, Vercel Edge, Deno, Bun) or for large pages:** linkpeek. That is what I built it for. On a public Node.js endpoint, pass `resolveHost` and pair it with egress rules.
 - **The strictest built-in SSRF defense on Node.js:** link-preview-js 6.
 - **Rich article metadata with provider-specific rules:** metascraper.
 - **Finding the first URL inside free text:** link-preview-js.

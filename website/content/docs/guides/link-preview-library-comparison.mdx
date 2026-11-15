@@ -45,9 +45,9 @@ The packages expose similar concepts through different keys. In the benchmarked 
 
 For a public preview endpoint, the important question is not merely whether metadata parses: it is which layer validates an untrusted destination and every redirect before the next request.
 
-| Package | Security consideration as of 14 November 2026 |
+| Package | Security consideration as of 15 November 2026 |
 | --- | --- |
-| linkpeek | Blocks credential-bearing input, common secret headers, private/special-use IP literals, and redirect targets by default. It does not resolve hostnames itself: platform `fetch` owns DNS, so a hostname that resolves to a private address needs egress controls. |
+| linkpeek | Blocks credential-bearing input, common secret headers, private/special-use IP literals, and redirect targets by default. By default it does not resolve hostnames. The opt-in `resolveHost` checks DNS answers on every hop but does not pin the connection: platform `fetch` owns DNS, so a hostname that resolves to a private address needs egress controls. |
 | `link-preview-js` | Version 6.0.0 resolves each hostname and redirect hop, rejects private results, and pins the connection to the checked addresses in Node.js. Versions through 4.0.0 were affected by [CVE-2026-43897](https://github.com/advisories/GHSA-4gp8-rjrq-ch6q). |
 | `open-graph-scraper` | Since 6.13.0 the main package only requests destinations whose resolved addresses are public and checks redirects first, with no opt-out. If you already own the fetch, compare the parse-only [`open-graph-scraper-lite`](https://github.com/jshemas/openGraphScraper/issues/203). |
 | `metascraper` | The application supplies HTML, so redirect validation, address policy, timeouts, byte limits, and credentials belong to the caller's fetch implementation. |

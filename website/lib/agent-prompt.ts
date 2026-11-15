@@ -20,9 +20,9 @@ export const agentPrompt = `Add link previews to this app with linkpeek.
 4. Cache successful results (\`statusCode < 400\`) for about a day, keyed by URL. Do not cache errors.
 
 ## Rules
-- Keep linkpeek's defaults: \`allowPrivateIPs\` stays off, timeouts and byte limits stay on.
+- Keep linkpeek's defaults: \`allowPrivateIPs\` stays off, timeouts and byte limits stay on. On Node.js, pass \`resolveHost\` (a \`node:dns/promises\` lookup) so every hop's DNS answers are checked.
 - Never forward the user's cookies or authorization headers to the previewed URL.
-- Catch \`LinkpeekError\` and branch on \`error.code\` (\`INVALID_URL\`, \`UNSUPPORTED_PROTOCOL\`, \`PRIVATE_NETWORK_BLOCKED\`, \`TIMEOUT\`, \`TOO_MANY_REDIRECTS\`); return 400 for invalid input and 422 for the rest.
+- Catch \`LinkpeekError\` and branch on \`error.code\` (\`INVALID_URL\`, \`UNSUPPORTED_PROTOCOL\`, \`PRIVATE_NETWORK_BLOCKED\`, \`TIMEOUT\`, \`TOO_MANY_REDIRECTS\`, \`FETCH_FAILED\`); return 400 for invalid input and 422 for the rest.
 - Rate-limit the endpoint if it is public. Render returned strings as text, never as HTML.
 
 ## Done when

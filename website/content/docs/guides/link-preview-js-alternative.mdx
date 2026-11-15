@@ -16,12 +16,12 @@ link-preview-js 6 refuses private addresses entirely, so it cannot reach a local
 ## Choose link-preview-js when [#choose-link-preview-js]
 
 - You start from **free text** and need the first URL in it detected for you.
-- You need the **strictest built-in SSRF defense on Node.js**: version 6 resolves every hostname and redirect hop with `dns.lookup` and pins the connection to the checked addresses, which defeats DNS rebinding. linkpeek leaves DNS to the platform `fetch`.
+- You need the **strictest built-in SSRF defense on Node.js**: version 6 resolves every hostname and redirect hop with `dns.lookup` and pins the connection to the checked addresses, which defeats DNS rebinding. linkpeek checks DNS answers on every hop only when you pass `resolveHost`, and does not pin the connection.
 
 ## Choose linkpeek when [#choose-linkpeek]
 
 - You run on **Cloudflare Workers, Vercel Edge, Deno or Bun**. linkpeek uses only platform `fetch`, Web Streams and `TextDecoder`.
-- Your users paste links to **large pages**. linkpeek stops reading after `</head>` and cancels the stream; a 500 kB page costs about as much as a small one.
+- Your users paste links to **large pages**. linkpeek stops reading after `</head>` and cancels the stream; most of a 500 kB page is never downloaded or parsed.
 - **Install size** matters for cold starts or container images: one runtime dependency.
 - You want a **typed, flat result** (`title`, `description`, `image`, `siteName`, `canonicalUrl`, `favicon`) and typed error codes.
 
