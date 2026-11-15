@@ -4,8 +4,12 @@ export const appName = "linkpeek";
 export const siteOrigin = (
 	process.env.LINKPEEK_DOCS_ORIGIN ?? "https://thegruber.github.io"
 ).replace(/\/$/, "");
+// NEXT_PUBLIC_BASE_PATH is set in next.config and inlined into client code,
+// so server and browser agree on the base path; plain env vars are not.
 export const basePath = normalizeBase(
-	process.env.LINKPEEK_DOCS_BASE ?? "/linkpeek/",
+	process.env.NEXT_PUBLIC_BASE_PATH ??
+		process.env.LINKPEEK_DOCS_BASE ??
+		"/linkpeek/",
 );
 export const siteUrl = `${siteOrigin}${basePath}`;
 export const repository = "https://github.com/thegruber/linkpeek";
@@ -20,7 +24,7 @@ export const previewApi =
 export const home = {
 	title: "TypeScript link preview library",
 	description:
-		"Fast, safe TypeScript link preview library and URL metadata extractor for Open Graph, Twitter Cards, and JSON-LD on Node.js, Bun, Deno, and edge runtimes.",
+		"Fast, safe link preview library and URL unfurler for TypeScript. Extracts Open Graph, Twitter Card and JSON-LD metadata on Node.js, Bun, Deno and the edge.",
 };
 
 export const openGraphDefaults = {
