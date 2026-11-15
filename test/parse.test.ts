@@ -1217,6 +1217,20 @@ describe("title and JSON-LD precedence", () => {
 		expect(r.siteName).toBe("Acme News");
 	});
 
+	it("falls back to the WebPage description when the Article has none (Yoast)", () => {
+		const html = `<head><script type="application/ld+json">{"@graph":[{"@type":"Article","headline":"Story","author":{"@id":"#ann"}},{"@type":"WebPage","name":"Story - Site","description":"WP desc"},{"@type":"Person","@id":"#ann","name":"Ann"}]}</script></head>`;
+		const r = parseHTML(html, BASE);
+		expect(r.title).toBe("Story");
+		expect(r.description).toBe("WP desc");
+		expect(r.author).toBe("Ann");
+	});
+
+	it("prefers a typed @graph entity over an untyped wrapper with a name", () => {
+		const html = `<head><script type="application/ld+json">{"@context":"https://schema.org","name":"Ctx","@graph":[{"@type":"NewsArticle","headline":"News headline"}]}</script></head>`;
+		const r = parseHTML(html, BASE);
+		expect(r.title).toBe("News headline");
+	});
+
 	it("uses the JSON-LD WebSite name as a site name fallback", () => {
 		const html = `<head><script type="application/ld+json">{"@type":"WebSite","name":"Acme Docs"}</script><title>Intro</title></head>`;
 		const r = parseHTML(html, BASE);

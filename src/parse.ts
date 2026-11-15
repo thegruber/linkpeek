@@ -633,15 +633,16 @@ function typeName(type: unknown): string {
 	return type.slice(cut + 1).toLowerCase();
 }
 
-/** 0: site/furniture, 1: page wrapper, 2: content entity. */
+/** 0: site/furniture, 1: page wrapper, 2: untyped node, 3: typed content entity. */
 function entityRank(item: JsonObject): number {
 	const raw = item["@type"];
+	// Untyped nodes (often a @graph wrapper) lose to typed content entities.
 	if (raw == null) return 2;
 	let rank = 0;
 	for (const type of Array.isArray(raw) ? raw : [raw]) {
 		const name = typeName(type);
 		if (PAGE_ENTITY_TYPES.has(name)) rank = Math.max(rank, 1);
-		else if (!SITE_ENTITY_TYPES.has(name)) return 2;
+		else if (!SITE_ENTITY_TYPES.has(name)) return 3;
 	}
 	return rank;
 }
@@ -741,12 +742,16 @@ function extractJsonLd(jsonLdRaw: string[]): JsonLdData {
 	const byId = new Map<string, JsonObject>();
 	let primary: JsonObject | null = null;
 	let primaryRank = 0;
+	// Yoast-style graphs put the description on the WebPage, not the Article.
+	let pageDescription: string | null = null;
 	for (const item of items) {
 		const id = item["@id"];
 		if (typeof id === "string" && !byId.has(id)) byId.set(id, item);
 		if (!jsonLd.siteName && isWebSite(item))
 			jsonLd.siteName = jsonText(item.name);
-		if (primaryRank < 2) {
+		if (!pageDescription && entityRank(item) === 1)
+			pageDescription = jsonText(item.description) || null;
+		if (primaryRank < 3) {
 			const rank = entityRank(item);
 			if (rank > primaryRank && hasContentField(item)) {
 				primary = item;
@@ -757,7 +762,7 @@ function extractJsonLd(jsonLdRaw: string[]): JsonLdData {
 	if (!primary) return jsonLd;
 
 	jsonLd.title = jsonText(primary.headline) || jsonText(primary.name);
-	jsonLd.description = jsonText(primary.description);
+	jsonLd.description = jsonText(primary.description) || pageDescription;
 	jsonLd.image = jsonUrl(primary.image, byId);
 	jsonLd.thumbnailUrl = jsonUrl(primary.thumbnailUrl, byId);
 	jsonLd.author =
