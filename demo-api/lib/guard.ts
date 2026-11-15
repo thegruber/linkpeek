@@ -4,6 +4,8 @@ import { isIP } from "node:net";
 
 export const ALLOWED_ORIGINS = new Set([
 	"https://thegruber.github.io",
+	// The noindex preview of the docs site on Vercel.
+	"https://linkpeek-site.vercel.app",
 	"http://localhost:3000",
 	"http://localhost:4199",
 ]);

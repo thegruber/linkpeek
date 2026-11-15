@@ -60,11 +60,17 @@ export async function GET(request: Request): Promise<Response> {
 				title: result.title,
 				description: result.description,
 				image: result.image,
+				imageAlt: result.imageAlt,
+				imageWidth: result.imageWidth,
+				imageHeight: result.imageHeight,
+				twitterCard: result.twitterCard,
 				favicon: result.favicon,
 				siteName: result.siteName,
 				canonicalUrl: result.canonicalUrl,
 				statusCode: result.statusCode,
 				ms: Math.round(performance.now() - started),
+				// Cached answers keep this, so the page can say how old they are.
+				fetchedAt: new Date().toISOString(),
 			},
 			origin,
 			result.statusCode < 400

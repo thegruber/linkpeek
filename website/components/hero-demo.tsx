@@ -1,22 +1,20 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { TextMorph } from "torph/react";
+import { type CheckInput, previewChecks } from "@/lib/preview-checks";
 import { previewApi } from "@/lib/shared";
 import type { ShowcaseCard } from "@/lib/showcase";
 
-interface Card {
+interface Card extends CheckInput {
 	url: string;
 	host: string;
-	title: string | null;
-	description: string | null;
-	image: string | null;
 }
 
 type State =
 	| { kind: "example"; index: number }
 	| { kind: "loading"; url: string }
 	| { kind: "error"; message: string }
-	| { kind: "result"; card: Card; ms: number };
+	| { kind: "result"; card: Card; ms: number; age: number };
 
 const ROTATE_MS = 3600;
 
@@ -89,7 +87,8 @@ export function HeroDemo({
 		setState({ kind: "loading", url });
 		try {
 			const response = await fetch(
-				`${previewApi}?url=${encodeURIComponent(url)}`,
+				// v names the response shape, so older edge-cached answers are skipped.
+				`${previewApi}?url=${encodeURIComponent(url)}&v=2`,
 			);
 			if (response.status === 429) {
 				setState({
@@ -111,12 +110,20 @@ export function HeroDemo({
 			setState({
 				kind: "result",
 				ms: Number(data.ms) || 0,
+				// Seconds since linkpeek fetched it; the endpoint caches for a day.
+				age: Math.max(
+					0,
+					(Date.now() - Date.parse(data.fetchedAt ?? "")) / 1000 || 0,
+				),
 				card: {
 					url: canonical,
 					host: new URL(canonical).host.replace(/^www\./, ""),
 					title: data.title ?? null,
 					description: data.description ?? null,
 					image: data.image ?? null,
+					imageAlt: data.imageAlt ?? null,
+					twitterCard: data.twitterCard ?? null,
+					favicon: data.favicon ?? null,
 				},
 			});
 		} catch {
@@ -133,7 +140,9 @@ export function HeroDemo({
 			: state.kind === "error"
 				? state.message
 				: state.kind === "result"
-					? `Live: fetched and parsed just now in ${state.ms} ms`
+					? state.age < 120
+						? `Live: fetched and parsed just now in ${state.ms} ms`
+						: `Live result from ${ago(state.age)} (cached), fetched and parsed in ${state.ms} ms`
 					: example
 						? `Read ${kb(example.headBytes)} of ${kb(example.pageBytes)}, then stopped`
 						: "";
@@ -223,29 +232,7 @@ export function HeroDemo({
 						</span>
 					</a>
 				) : null}
-				{card && (
-					<dl className="grid grid-cols-2 border-ink border-t border-l font-mono text-[0.7rem] sm:grid-cols-4">
-						{(
-							[
-								["title", card.title],
-								["description", card.description],
-								["image", card.image],
-								["site", card.host],
-							] as const
-						).map(([key, value]) => (
-							<div key={key} className="border-ink border-r border-b px-3 py-2">
-								<dt className="text-fd-muted-foreground">{key}</dt>
-								<dd className="truncate">
-									{value
-										? key === "image"
-											? "absolute URL"
-											: `${value.length} chars`
-										: "null"}
-								</dd>
-							</div>
-						))}
-					</dl>
-				)}
+				{card && <Checks card={card} />}
 				{!card && (
 					<div className="grid aspect-[1200/630] place-items-center border border-rule border-dashed text-fd-muted-foreground text-sm">
 						The preview card appears here.
@@ -286,6 +273,47 @@ export function HeroDemo({
 			</p>
 		</div>
 	);
+}
+
+// What linkpeek found, as plain presence checks on the fields Slack, X,
+// iMessage and LinkedIn read to draw the card.
+function Checks({ card }: { card: CheckInput }) {
+	const checks = previewChecks(card);
+	const found = checks.filter((check) => check.ok).length;
+	return (
+		<div className="border border-ink font-mono text-[0.7rem]">
+			<p className="flex items-center justify-between gap-3 border-ink border-b px-3 py-2">
+				<span className="uppercase tracking-[0.06em]">Preview tags</span>
+				<span>
+					{found}/{checks.length} found
+				</span>
+			</p>
+			<ul className="grid grid-cols-2 gap-px bg-ink sm:grid-cols-3">
+				{checks.map((check) => (
+					<li
+						key={check.label}
+						className="flex items-center gap-2 bg-fd-background px-3 py-2"
+					>
+						<span
+							aria-hidden="true"
+							className={`size-2 shrink-0 ${check.ok ? "bg-mark" : "border border-ink"}`}
+						/>
+						<span className={check.ok ? "" : "text-fd-muted-foreground"}>
+							{check.label}
+						</span>
+						<span className="sr-only">{check.ok ? "found" : "missing"}</span>
+					</li>
+				))}
+			</ul>
+		</div>
+	);
+}
+
+function ago(seconds: number): string {
+	const minutes = Math.round(seconds / 60);
+	return minutes < 60
+		? `${minutes} min ago`
+		: `${Math.round(minutes / 60)} h ago`;
 }
 
 function kb(bytes: number): string {

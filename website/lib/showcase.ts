@@ -24,6 +24,9 @@ export interface ShowcaseCard {
 	title: string;
 	description: string | null;
 	image: string;
+	imageAlt: string | null;
+	twitterCard: string | null;
+	favicon: string | null;
 	/** Bytes up to and including </head>, and of the whole HTML document. */
 	headBytes: number;
 	pageBytes: number;
@@ -59,6 +62,9 @@ export function showcase(): Promise<ShowcaseCard[]> {
 					title: result.title,
 					description: result.description,
 					image: result.image,
+					imageAlt: result.imageAlt,
+					twitterCard: result.twitterCard,
+					favicon: result.favicon,
 					...sizes,
 				};
 			} catch {
