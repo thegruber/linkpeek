@@ -91,12 +91,14 @@ export async function GET(request: Request): Promise<Response> {
 				: SHORT_CACHE,
 		);
 	} catch (error) {
+		// linkpeek 3 wraps errors from a custom fetch as FETCH_FAILED with the
+		// original as cause, so the guard's refusal is checked first.
 		const code =
-			error instanceof LinkpeekError
-				? error.code
-				: error instanceof BlockedAddressError ||
-						(error as { cause?: unknown })?.cause instanceof BlockedAddressError
-					? "PRIVATE_NETWORK_BLOCKED"
+			error instanceof BlockedAddressError ||
+			(error as { cause?: unknown })?.cause instanceof BlockedAddressError
+				? "PRIVATE_NETWORK_BLOCKED"
+				: error instanceof LinkpeekError
+					? error.code
 					: "FETCH_FAILED";
 		const message =
 			code === "PRIVATE_NETWORK_BLOCKED"
