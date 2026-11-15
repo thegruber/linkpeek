@@ -58,9 +58,9 @@ export function RollingFigure({
 					minimumFractionDigits: decimals,
 					maximumFractionDigits: decimals,
 				}}
-				spinTiming={{ duration: 700, easing: "cubic-bezier(0.23, 1, 0.32, 1)" }}
+				spinTiming={{ duration: 300, easing: "cubic-bezier(0.23, 1, 0.32, 1)" }}
 				transformTiming={{
-					duration: 500,
+					duration: 250,
 					easing: "cubic-bezier(0.23, 1, 0.32, 1)",
 				}}
 			/>

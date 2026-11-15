@@ -18,7 +18,7 @@ type State =
 	| { kind: "error"; message: string }
 	| { kind: "result"; card: Card; ms: number; waitMs: number; age: number };
 
-const ROTATE_MS = 3600;
+const ROTATE_MS = 6000;
 
 /**
  * The hero: a URL field and the card linkpeek builds from it. It opens on
@@ -219,7 +219,7 @@ export function HeroDemo({
 							key={card.url}
 							href={card.url}
 							rel="nofollow noopener noreferrer ugc"
-							className={`${firstCard.current ? "unfurl" : "swap"} grid border border-ink bg-fd-background transition-opacity sm:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] ${state.kind === "loading" ? "opacity-40" : ""}`}
+							className={`${state.kind === "example" && state.index === 0 && firstCard.current ? "unfurl" : "swap"} grid border border-ink bg-fd-background transition-opacity sm:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] ${state.kind === "loading" ? "opacity-40" : ""}`}
 						>
 							{card.image && (
 								// biome-ignore lint/performance/noImgElement: third-party Open Graph images
@@ -268,8 +268,9 @@ export function HeroDemo({
 					className={`relative flex min-h-11 min-w-0 items-center justify-between gap-4 border-ink border-t px-4 py-3 font-mono text-xs ${state.kind === "error" ? "text-fd-foreground" : "text-fd-muted-foreground"}`}
 					aria-live={state.kind === "example" ? "off" : "polite"}
 				>
-					{/* Errors can be long, so they wrap instead of morphing on one line. */}
-					{state.kind === "error" ? (
+					{/* Rotating examples and errors swap plainly; the morph is kept for
+					    the visitor's own request, from "Fetching" to its result. */}
+					{state.kind === "error" || state.kind === "example" ? (
 						<span className="min-w-0">{status}</span>
 					) : (
 						<TextMorph

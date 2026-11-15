@@ -137,7 +137,7 @@ body {
 		transform: scaleX(0);
 	}
 	.bars[data-visible="true"] .bar {
-		animation: bar-grow 600ms var(--ease-out) both;
+		animation: bar-grow 300ms var(--ease-out) both;
 		animation-delay: calc(
 			min(var(--i, 0), 5) *
 			(60ms - min(var(--i, 0), 5) * 6ms)
@@ -235,7 +235,7 @@ body {
 }
 
 .unfurl {
-	animation: unfurl 400ms var(--ease-out) 200ms both;
+	animation: unfurl 300ms var(--ease-out) 120ms both;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -378,9 +378,11 @@ div:has(> [role="tablist"]) figure.shiki {
 	letter-spacing: 0.06em;
 	text-transform: uppercase;
 }
-.page-actions > button:hover,
-.page-actions [aria-haspopup]:hover {
-	background: var(--color-block);
+@media (hover: hover) and (pointer: fine) {
+	.page-actions > button:hover,
+	.page-actions [aria-haspopup]:hover {
+		background: var(--color-block);
+	}
 }
 #nd-sidebar a:empty {
 	display: none;
@@ -446,13 +448,11 @@ a[href="#nd-page"].sr-only:focus-visible {
 }
 
 .cell,
-:is(#nd-sidebar, #nd-sidebar-mobile) a[data-active="false"],
 #nd-page > .\@container > a {
 	position: relative;
 	isolation: isolate;
 }
 .cell::before,
-:is(#nd-sidebar, #nd-sidebar-mobile) a[data-active="false"]::before,
 #nd-page > .\@container > a::before {
 	content: "";
 	position: absolute;
@@ -468,18 +468,16 @@ a[href="#nd-page"].sr-only:focus-visible {
 }
 @media (hover: hover) and (pointer: fine) {
 	.cell:hover::before,
-	:is(#nd-sidebar, #nd-sidebar-mobile) a[data-active="false"]:hover::before,
 	#nd-page > .\@container > a:hover::before {
 		transform: scaleX(1);
 	}
-	.cell:hover .cell-arrow,
+	:is(.cell, .group):hover .cell-arrow,
 	#nd-page > .\@container > a:hover svg {
 		transform: translateX(3px);
 	}
 }
 /* Pressing deepens the fill: the cell heard you, without scaling the grid. */
 .cell:active::before,
-:is(#nd-sidebar, #nd-sidebar-mobile) a[data-active="false"]:active::before,
 #nd-page > .\@container > a:active::before {
 	transform: scaleX(1);
 	background: #ffd3c2;
@@ -492,9 +490,19 @@ a[href="#nd-page"].sr-only:focus-visible {
 #nd-page > .\@container > a:hover {
 	background: transparent;
 }
-:is(#nd-sidebar, #nd-sidebar-mobile) a[data-active="false"]:hover {
-	background: transparent;
-	color: var(--color-ink);
+/* Sidebar rows are passed over dozens of times: an instant tint, no sweep. */
+@media (hover: hover) and (pointer: fine) {
+	:is(#nd-sidebar, #nd-sidebar-mobile) a[data-active="false"]:hover {
+		background: var(--color-block);
+		color: var(--color-ink);
+	}
+}
+:is(#nd-sidebar, #nd-sidebar-mobile) a[data-active="false"]:active {
+	background: #ffd3c2;
+}
+/* The first figure tile is already pale orange, so its fill goes one step deeper. */
+.cell.bg-block::before {
+	background: #ffd3c2;
 }
 :is(#nd-sidebar, #nd-sidebar-mobile) a[data-active] {
 	transition: color 150ms ease;
@@ -543,40 +551,40 @@ figure.shiki button:active,
 /* Preview tags: found ones pop in, one after another, for each new card. */
 @media (prefers-reduced-motion: no-preference) {
 	.tag-dot[data-ok] {
-		animation: tag-in 260ms var(--ease-out) both;
+		animation: tag-in 200ms var(--ease-out) both;
 		animation-delay: calc(var(--i, 0) * 35ms + 80ms);
 	}
 }
 @keyframes tag-in {
 	from {
 		opacity: 0;
-		transform: scale(0.4);
+		transform: scale(0.9);
 	}
 }
 
 @media (prefers-reduced-motion: reduce) {
 	.u-line::after,
 	.cell::before,
-	:is(#nd-sidebar, #nd-sidebar-mobile) a[data-active="false"]::before,
 	#nd-page > .\@container > a::before {
 		transform: none;
 		opacity: 0;
 		transition: opacity 150ms ease;
 	}
 	.u-line[aria-current="page"]::after,
-	.u-line:focus-visible::after {
-		opacity: 1;
-	}
-	.u-line:hover::after,
-	.cell:hover::before,
+	.u-line:focus-visible::after,
 	.cell:active::before,
-	:is(#nd-sidebar, #nd-sidebar-mobile)
-		a[data-active="false"]:is(:hover, :active)::before,
-	#nd-page > .\@container > a:is(:hover, :active)::before {
+	#nd-page > .\@container > a:active::before {
 		opacity: 1;
 	}
 	.cell-arrow,
 	.prose a:not([data-card]) {
 		transition: none;
+	}
+}
+@media (prefers-reduced-motion: reduce) and (hover: hover) and (pointer: fine) {
+	.u-line:hover::after,
+	.cell:hover::before,
+	#nd-page > .\@container > a:hover::before {
+		opacity: 1;
 	}
 }
