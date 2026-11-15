@@ -1,0 +1,91 @@
+---
+title: "vs unfurl.js"
+metaTitle: "unfurl.js alternative for TypeScript"
+description: "Compare linkpeek with unfurl.js, which is archived upstream: speed, install size, oEmbed, edge runtimes, and migrating unfurl() to preview()."
+heading: "linkpeek vs unfurl.js"
+---
+
+unfurl.js is a Node.js metadata scraper that returns nested Open Graph, Twitter Card and oEmbed data. Its [GitHub repository is archived](https://github.com/jacktuck/unfurl) and its last npm release, 6.4.0, dates from February 2024. linkpeek covers the same preview-card job with a flat typed result, runs on any runtime with `fetch` and is maintained.
+
+## Measured side by side [#numbers]
+
+<VersusTable other="unfurl.js" />
+
+unfurl.js was faster than linkpeek on every small page in this run, by a fraction of a millisecond. On the large page linkpeek was faster because it stops reading after `</head>`. Both were measured through their own fetch against the same local server. See the [benchmarks](/benchmarks/) for the method and every package.
+
+## Choose unfurl.js when [#choose-unfurl-js]
+
+- You want **oEmbed payloads fetched for you**. unfurl.js requests the discovered oEmbed endpoint by default and returns the parsed result. linkpeek returns the endpoint as `oEmbedUrl` and does not fetch it.
+- You want the **full nested structure**: every Open Graph image and video, Twitter Card players and app links, article times and tags.
+- You preview **small pages on Node.js** and the last fraction of a millisecond matters.
+- Your code already works and you accept a dependency that will not receive upstream fixes.
+
+## Choose linkpeek when [#choose-linkpeek]
+
+- You want a **maintained dependency**. unfurl.js is archived; the still-open [PR #117](https://github.com/jacktuck/unfurl/pull/117) documents that URLs pass to `node-fetch` without destination validation. linkpeek blocks private and special-use IP literals and checks every redirect before following it. It leaves DNS to the platform `fetch`, so a hostname that resolves to a private address needs egress rules, as the [security model](/security/#dns) explains.
+- You run on **Cloudflare Workers, Vercel Edge, Deno or Bun**. unfurl.js is built on `node-fetch` and documents Node.js only; linkpeek uses platform `fetch`, Web Streams and `TextDecoder`.
+- Your users paste links to **large pages**, where reading only the head pays off.
+- You want **one value per field**: linkpeek falls back from Open Graph to Twitter Card, JSON-LD and the document title on its own, and types every field as a value or `null`.
+
+## Migrate unfurl() to preview() [#migrate]
+
+```bash
+npm uninstall unfurl.js
+npm install linkpeek
+```
+
+```ts
+// unfurl.js
+import { unfurl } from "unfurl.js";
+const data = await unfurl(url);
+const card = {
+  title: data.open_graph?.title ?? data.title,
+  description: data.open_graph?.description ?? data.description,
+  image: data.open_graph?.images?.[0]?.url,
+  favicon: data.favicon,
+  canonical: data.canonical_url,
+};
+
+// linkpeek
+import { preview } from "linkpeek";
+const result = await preview(url);
+const card = {
+  title: result.title,
+  description: result.description,
+  image: result.image,
+  favicon: result.favicon,
+  canonical: result.canonicalUrl,
+};
+```
+
+The options map closely: `timeout` stays `timeout`, `follow` becomes `maxRedirects`, `size` becomes `maxBytes` and `headers` stays `headers`. unfurl.js sends `facebookexternalhit` as its user agent; if some sites only served tags to that, set `userAgent` explicitly.
+
+HTTP error pages resolve with their metadata and a `statusCode`, so check `result.statusCode < 400` before caching. Blocked targets, timeouts and network failures throw a `LinkpeekError` with a `code`; the [API reference](/api/) lists them.
+
+### If you used the oEmbed data [#oembed]
+
+Fetch `oEmbedUrl` yourself, and only for providers you trust. The URL comes from the page, so treat it like any other untrusted destination:
+
+```ts
+const OEMBED_HOSTS = new Set(["www.youtube.com", "vimeo.com"]);
+
+let oEmbed: unknown = null;
+if (result.oEmbedUrl && OEMBED_HOSTS.has(new URL(result.oEmbedUrl).hostname)) {
+  const response = await fetch(result.oEmbedUrl, {
+    redirect: "error",
+    signal: AbortSignal.timeout(5000),
+  });
+  if (response.ok) oEmbed = await response.json();
+}
+```
+
+New to linkpeek? The [quick start](/quick-start/) covers install, presets and where it runs.
+
+<Related
+	items={[
+		["Benchmarks", "/benchmarks/"],
+		["Security model", "/security/"],
+		["All libraries", "/guides/link-preview-library-comparison/"],
+		["vs url-metadata", "/guides/url-metadata-alternative/"],
+	]}
+/>
