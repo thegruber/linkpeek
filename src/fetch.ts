@@ -44,7 +44,7 @@ export function validateUrl(url: string, allowPrivateIPs = false): void {
 			"URLs with embedded credentials are not allowed",
 		);
 
-	if (!allowPrivateIPs && isPrivateHost(parsed.hostname))
+	if (!allowPrivateIPs && isPrivateUrlHost(parsed.hostname))
 		throw new LinkpeekError(
 			"PRIVATE_NETWORK_BLOCKED",
 			"URLs pointing to private/internal networks are not allowed",
@@ -83,7 +83,12 @@ export function isPrivateHost(hostname: string): boolean {
 	} catch {
 		return true;
 	}
-	host = host.replace(/\.+$/, "");
+	return isPrivateUrlHost(host);
+}
+
+/** isPrivateHost for a hostname the URL parser already normalised. */
+function isPrivateUrlHost(hostname: string): boolean {
+	const host = hostname.replace(/\.+$/, "");
 	if (!host) return true;
 
 	if (host.startsWith("[")) {
@@ -266,6 +271,7 @@ export interface FetchContext {
 	readonly signal: AbortSignal;
 	readonly timeout: number;
 	readonly maxRedirects: number;
+	readonly startUrl: string;
 	readonly startOrigin: string;
 	redirects: number;
 	timedOut: boolean;
@@ -300,6 +306,7 @@ export function createFetchContext(
 		signal: controller.signal,
 		timeout,
 		maxRedirects,
+		startUrl: url,
 		startOrigin: new URL(url).origin,
 		redirects: 0,
 		timedOut: false,
@@ -327,7 +334,8 @@ export async function fetchUrl(
 ): Promise<FetchResult> {
 	const context = sharedContext ?? createFetchContext(url, options);
 	try {
-		validateUrl(url, options.allowPrivateIPs);
+		// createFetchContext already validated the starting URL.
+		if (url !== context.startUrl) validateUrl(url, options.allowPrivateIPs);
 		const maxBytes = normalizeMaxBytes(options.maxBytes ?? DEFAULT_MAX_BYTES);
 		const userAgent = options.userAgent ?? DEFAULT_USER_AGENT;
 		const fetchImpl = options.fetch ?? fetch;
@@ -553,6 +561,9 @@ async function readFetchResponse(
 		};
 	}
 
+	// Unknown labels (charset=bogus) fall through to the document prescan.
+	const headerCharset = supportedEncoding(extractHeaderCharset(contentType));
+
 	// Stream body with byte limit
 	const reader = response.body.getReader();
 	const chunks: Uint8Array[] = [];
@@ -584,7 +595,7 @@ async function readFetchResponse(
 				// Wait only for a possible split BOM. ASCII-compatible encodings
 				// share the head markup; final text decoding uses the full prescan.
 				const buffered = combineChunks(chunks, totalBytes);
-				headDecoder = createTextDecoder(detectCharset(contentType, buffered));
+				headDecoder = createTextDecoder(detectCharset(headerCharset, buffered));
 				headDetector.write(headDecoder.decode(buffered, { stream: true }));
 			}
 			if (headDetector.headClosed) break;
@@ -599,7 +610,7 @@ async function readFetchResponse(
 	const combined = combineChunks(chunks, totalBytes);
 	if (sniffing && sniffHtml(combined, true)) isHtml = true;
 	if (headDetector && !headDecoder && isHtml) {
-		headDecoder = createTextDecoder(detectCharset(contentType, combined));
+		headDecoder = createTextDecoder(detectCharset(headerCharset, combined));
 		headDetector.write(headDecoder.decode(combined, { stream: true }));
 	}
 	if (!isHtml) {
@@ -613,7 +624,7 @@ async function readFetchResponse(
 		};
 	}
 
-	const html = createTextDecoder(detectCharset(contentType, combined)).decode(
+	const html = createTextDecoder(detectCharset(headerCharset, combined)).decode(
 		combined,
 	);
 	// In fast mode a cut only matters when it came before the head ended.
@@ -649,6 +660,7 @@ function sniffHtml(bytes: Uint8Array, final: boolean): boolean | null {
 }
 
 function combineChunks(chunks: Uint8Array[], totalBytes: number): Uint8Array {
+	if (chunks.length === 1) return chunks[0];
 	const combined = new Uint8Array(totalBytes);
 	let offset = 0;
 	for (const chunk of chunks) {
@@ -684,7 +696,10 @@ function extractHeaderCharset(contentType: string): string | null {
 // Content-Type header does not specify one (mirrors browser prescan behavior).
 const CHARSET_PRESCAN_BYTES = 1024;
 
-function detectCharset(contentType: string, bytes: Uint8Array): string {
+function detectCharset(
+	headerCharset: string | null,
+	bytes: Uint8Array,
+): string {
 	// A BOM takes precedence over HTTP and document declarations.
 	// Byte order marks
 	if (
@@ -699,8 +714,6 @@ function detectCharset(contentType: string, bytes: Uint8Array): string {
 	if (bytes.length >= 2 && bytes[0] === 0xfe && bytes[1] === 0xff)
 		return "utf-16be";
 
-	// Unknown labels (charset=bogus) fall through to the document prescan.
-	const headerCharset = supportedEncoding(extractHeaderCharset(contentType));
 	if (headerCharset) return headerCharset;
 
 	// Parse only the bounded prescan: comments and raw script/style text must
