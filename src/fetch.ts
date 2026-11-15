@@ -56,6 +56,7 @@ export function validateUrl(url: string, allowPrivateIPs = false): void {
 const INTERNAL_NAME_SUFFIXES = [
 	"localhost",
 	"local",
+	"localdomain",
 	"internal",
 	"intranet",
 	"private",
@@ -327,6 +328,22 @@ export function createFetchContext(
  * always enforcing maxBytes on retained decoded response-body bytes.
  * Returns the HTML string and metadata about the response.
  */
+/** response.url resolved against the request, without its fragment. */
+function reportedUrl(value: string, base: string): string | undefined {
+	if (!value) return undefined;
+	try {
+		return withoutHash(new URL(value, base).href);
+	} catch {
+		return undefined;
+	}
+}
+
+function withoutHash(value: string): string {
+	const url = new URL(value);
+	url.hash = "";
+	return url.href;
+}
+
 export async function fetchUrl(
 	url: string,
 	options: PreviewOptions = {},
@@ -384,16 +401,20 @@ export async function fetchUrl(
 
 			// A custom fetch that ignored redirect: "manual" reports where it
 			// ended up; that target never passed through the checks above.
-			if (response.url && response.url !== currentUrl) {
+			// Compared without the fragment and after URL normalisation, so a
+			// fetch that merely reports "https://Example.com" as
+			// "https://example.com/" is not checked a second time.
+			const reported = reportedUrl(response.url, currentUrl);
+			if (reported && reported !== withoutHash(currentUrl)) {
 				try {
-					validateUrl(response.url, options.allowPrivateIPs);
+					validateUrl(reported, options.allowPrivateIPs);
 					if (checksDns)
-						await checkResolvedHost(response.url, options, context.signal);
+						await checkResolvedHost(reported, options, context.signal);
 				} catch (error) {
 					response.body?.cancel().catch(() => {});
 					throw error;
 				}
-				currentUrl = response.url;
+				currentUrl = reported;
 			}
 
 			return await readFetchResponse(
@@ -575,7 +596,8 @@ async function readFetchResponse(
 		const { done, value } = await reader.read();
 		if (done) break;
 		const remaining = maxBytes - totalBytes;
-		const chunk = value.length > remaining ? value.slice(0, remaining) : value;
+		const cut = value.length > remaining;
+		const chunk = cut ? value.slice(0, remaining) : value;
 		chunks.push(chunk);
 		totalBytes += chunk.length;
 
@@ -601,7 +623,8 @@ async function readFetchResponse(
 			if (headDetector.headClosed) break;
 		}
 		if (totalBytes >= maxBytes) {
-			hitLimit = true;
+			// A body that ends exactly at the limit was not cut: look once.
+			hitLimit = cut || !(await reader.read()).done;
 			break;
 		}
 	}
@@ -642,6 +665,14 @@ const HTML_SNIFF_PATTERN =
 function sniffHtml(bytes: Uint8Array, final: boolean): boolean | null {
 	let start = 0;
 	if (bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf) start = 3;
+	// The first bytes of a BOM split across chunks: wait for the rest.
+	else if (
+		!final &&
+		bytes.length < 3 &&
+		bytes[0] === 0xef &&
+		(bytes.length < 2 || bytes[1] === 0xbb)
+	)
+		return null;
 	while (
 		start < bytes.length &&
 		(bytes[start] === 0x09 ||

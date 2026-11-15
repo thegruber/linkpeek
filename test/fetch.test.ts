@@ -971,6 +971,28 @@ describe("fetch hardening", () => {
 		expect(result.finalUrl).toBe("https://www.example.com/moved");
 	});
 
+	it("checks a normalised response.url once, not as a second target", async () => {
+		const customFetch = vi.fn(async () =>
+			withUrl(htmlResponse(["<title>Home</title>"]), "https://example.com/"),
+		);
+		const resolveHost = vi.fn(async () => ["93.184.215.14"]);
+		await fetchUrl("https://Example.com#top", {
+			fetch: customFetch,
+			resolveHost,
+		});
+		expect(resolveHost).toHaveBeenCalledTimes(1);
+	});
+
+	it("resolves a relative response.url against the request", async () => {
+		const customFetch = vi.fn(async () =>
+			withUrl(htmlResponse(["<title>Moved</title>"]), "/moved"),
+		);
+		const result = await fetchUrl("https://example.com/start", {
+			fetch: customFetch,
+		});
+		expect(result.finalUrl).toBe("https://example.com/moved");
+	});
+
 	it("falls through an unknown Content-Type charset label to the meta prescan", async () => {
 		// "Привет" in windows-1251
 		const cyrillic = new Uint8Array([0xcf, 0xf0, 0xe8, 0xe2, 0xe5, 0xf2]);
@@ -1043,6 +1065,39 @@ describe("fetch hardening", () => {
 				},
 			}),
 		).rejects.toBe(reason);
+	});
+
+	it("does not report truncated when the body is exactly maxBytes long", async () => {
+		const page = "<html><head><title>x</title></head><body>done</body></html>";
+		const result = await fetchUrl("https://example.com", {
+			fetch: async () => htmlResponse([page]),
+			includeBodyContent: true,
+			maxBytes: encoder.encode(page).length,
+		});
+		expect(result.truncated).toBe(false);
+	});
+
+	it("waits for a UTF-8 BOM split across chunks before sniffing", async () => {
+		const result = await fetchUrl("https://example.com", {
+			fetch: async () => {
+				const body = new ReadableStream<Uint8Array>({
+					start(controller) {
+						controller.enqueue(new Uint8Array([0xef]));
+						controller.enqueue(
+							new Uint8Array([
+								0xbb,
+								0xbf,
+								...encoder.encode("<!doctype html><title>BOM</title>"),
+							]),
+						);
+						controller.close();
+					},
+				});
+				return new Response(body);
+			},
+		});
+		expect(result.isHtml).toBe(true);
+		expect(result.html).toContain("<title>BOM</title>");
 	});
 
 	it("reports truncated when maxBytes ends before </head>", async () => {

@@ -261,6 +261,7 @@ describe("isPrivateHost normalization", () => {
 		"LOCALHOST..",
 		"app.localhost.",
 		"printer.local.",
+		"box.localdomain",
 		"metadata",
 		"intranet",
 	])("blocks the internal name %s", (host) => {

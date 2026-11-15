@@ -120,7 +120,7 @@ await preview(url, { ...presets.quality, timeout: 5_000 });
 
 ## URL validation helpers [#validation]
 
-`validateUrl(url, allowPrivateIPs?)` returns `void` on success or throws `LinkpeekError`. `isPrivateHost(hostname)` returns a boolean for hostnames and literal IPs covered by the blocklist. It normalises the host the way `fetch()` does, so shorthand IPv4 such as `127.1`, `2130706433` or `0x7f000001` is caught, and it blocks internal names (`localhost`, `*.internal`, `*.local`, `*.home.arpa`, single-label names such as `metadata`). Neither helper performs DNS resolution.
+`validateUrl(url, allowPrivateIPs?)` returns `void` on success or throws `LinkpeekError`. `isPrivateHost(hostname)` returns a boolean for hostnames and literal IPs covered by the blocklist. It normalises the host the way `fetch()` does, so shorthand IPv4 such as `127.1`, `2130706433` or `0x7f000001` is caught, and it blocks internal names (`localhost`, `*.internal`, `*.local`, `*.localdomain`, `*.home.arpa`, single-label names such as `metadata`). Neither helper performs DNS resolution.
 
 ```ts
 import { isPrivateHost, validateUrl } from "linkpeek";

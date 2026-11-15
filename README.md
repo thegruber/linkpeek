@@ -224,7 +224,7 @@ Treat every returned field as untrusted external data, never as instructions to 
 
 ## Security Defaults
 
-`preview()` rejects credential-bearing input URLs and validates the initial URL and every HTTP redirect before fetching the next target. By default it blocks localhost plus literal private, link-local, cloud-metadata, multicast, documentation, and other non-global special-use IP ranges in any IPv4 spelling (`127.1`, `0x7f000001`, `2130706433`), including IPv6 forms that embed blocked IPv4 targets, and internal names such as `*.internal`, `*.local`, `*.home.arpa` and single-label hosts like `metadata`.
+`preview()` rejects credential-bearing input URLs and validates the initial URL and every HTTP redirect before fetching the next target. By default it blocks localhost plus literal private, link-local, cloud-metadata, multicast, documentation, and other non-global special-use IP ranges in any IPv4 spelling (`127.1`, `0x7f000001`, `2130706433`), including IPv6 forms that embed blocked IPv4 targets, and internal names such as `*.internal`, `*.local`, `*.localdomain`, `*.home.arpa` and single-label hosts like `metadata`.
 
 ## Production checklist
 
