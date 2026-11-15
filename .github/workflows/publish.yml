@@ -39,8 +39,8 @@ jobs:
       - name: Verify CHANGELOG entry exists
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
-          if ! grep -q "^## ${VERSION} " CHANGELOG.md; then
-            echo "::error::No CHANGELOG.md entry for ${VERSION}"
+          if ! grep -qE "^## ${VERSION} - [0-9]{4}-[0-9]{2}-[0-9]{2}$" CHANGELOG.md; then
+            echo "::error::No dated CHANGELOG.md entry for ${VERSION}"
             exit 1
           fi
 
