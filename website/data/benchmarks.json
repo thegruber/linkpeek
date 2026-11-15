@@ -16,7 +16,7 @@
 		"metascraper": "5.58.6"
 	},
 	"notes": {
-		"linkpeek": "Measured from unreleased source after 2.1.7 (the package-hardening branch); the install size is the published 2.1.7.",
+		"linkpeek": "Measured from unreleased 3.0.0 source (merge commit bd1c9df); the install size is the published 2.1.7.",
 		"link-preview-js": "Measured as native fetch plus getPreviewFromContent(); its URL API rejects the private IP-literal benchmark host.",
 		"open-graph-scraper": "Measured as native fetch plus ogs({ html }); since 6.13.0 its URL API rejects non-public addresses with no opt-out.",
 		"metascraper": "Native fetch plus metascraper with 7 rule packages; metascraper does not fetch."
@@ -27,12 +27,12 @@
 			"bytes": 611,
 			"iterations": 150,
 			"medianMs": {
-				"unfurl.js": 1.01,
-				"linkpeek": 1.53,
-				"open-graph-scraper": 1.86,
-				"link-preview-js": 1.88,
-				"url-metadata": 2.92,
-				"metascraper": 3.35
+				"unfurl.js": 1.02,
+				"linkpeek": 1.44,
+				"open-graph-scraper": 1.93,
+				"link-preview-js": 1.95,
+				"url-metadata": 3.1,
+				"metascraper": 3.49
 			}
 		},
 		{
@@ -40,12 +40,12 @@
 			"bytes": 2320,
 			"iterations": 150,
 			"medianMs": {
-				"linkpeek": 1.28,
-				"unfurl.js": 0.82,
-				"link-preview-js": 1.89,
-				"metascraper": 1.7,
-				"open-graph-scraper": 2.08,
-				"url-metadata": 3.08
+				"unfurl.js": 0.84,
+				"linkpeek": 1.58,
+				"metascraper": 1.94,
+				"link-preview-js": 1.99,
+				"open-graph-scraper": 2.16,
+				"url-metadata": 3.22
 			}
 		},
 		{
@@ -53,12 +53,12 @@
 			"bytes": 724,
 			"iterations": 150,
 			"medianMs": {
-				"unfurl.js": 0.55,
-				"linkpeek": 0.71,
-				"link-preview-js": 1.15,
-				"open-graph-scraper": 1.74,
-				"url-metadata": 2.4,
-				"metascraper": 2.57
+				"unfurl.js": 0.54,
+				"linkpeek": 0.73,
+				"link-preview-js": 1.22,
+				"open-graph-scraper": 1.72,
+				"url-metadata": 2.36,
+				"metascraper": 2.71
 			}
 		},
 		{
@@ -66,12 +66,12 @@
 			"bytes": 500871,
 			"iterations": 40,
 			"medianMs": {
-				"linkpeek": 2.63,
-				"unfurl.js": 11.11,
-				"url-metadata": 68.79,
-				"link-preview-js": 48.42,
-				"metascraper": 65.88,
-				"open-graph-scraper": 395.1
+				"linkpeek": 2.76,
+				"unfurl.js": 10.99,
+				"link-preview-js": 48.57,
+				"url-metadata": 49.48,
+				"metascraper": 62.6,
+				"open-graph-scraper": 376.79
 			}
 		}
 	],

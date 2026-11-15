@@ -17,7 +17,7 @@ Each package previews the same 500 kB page whose metadata sits in the `<head>`. 
 
 ## Small pages [#small-pages]
 
-On small pages the packages are within about two milliseconds of each other, and real network latency dominates. `unfurl.js` was faster than linkpeek on every small fixture in this run.
+On small pages the packages are within about two milliseconds of each other, and real network latency dominates. `unfurl.js` was faster than linkpeek on every small fixture in this run: it requests pages with `node-fetch` over Node's `http` module, while linkpeek uses the platform `fetch` so the same code runs on Bun, Deno and Workers. Among the packages measured on `fetch`, linkpeek was fastest on every page.
 
 <BenchmarkChart kind="small" />
 

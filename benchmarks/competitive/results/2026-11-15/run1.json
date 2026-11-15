@@ -1,7 +1,7 @@
 {
-	"date": "2026-11-15T08:39:40.105Z",
+	"date": "2026-11-15T18:12:10.260Z",
 	"source": {
-		"commit": "bacb95ae055e776172b1015d95321bc1f5f0f88b",
+		"commit": "bd1c9dff53af24daf5e3811f0641fca4519c4cef",
 		"dirty": true
 	},
 	"node": "v24.22.2",
@@ -41,38 +41,38 @@
 			"rows": [
 				{
 					"name": "unfurl.js",
-					"median": 0.976626,
-					"p95": 2.508969,
+					"median": 1.01763,
+					"p95": 1.615234,
 					"title": "The Open Graph Title"
 				},
 				{
 					"name": "linkpeek",
-					"median": 1.530249,
-					"p95": 4.345757,
+					"median": 1.43953,
+					"p95": 5.94382,
 					"title": "The Open Graph Title"
 				},
 				{
 					"name": "open-graph-scraper (fetch+parse)",
-					"median": 1.88003,
-					"p95": 3.53885,
+					"median": 1.932585,
+					"p95": 3.326032,
 					"title": "The Open Graph Title"
 				},
 				{
 					"name": "link-preview-js (fetch+parse)",
-					"median": 1.881929,
-					"p95": 4.075289,
+					"median": 2.00393,
+					"p95": 4.052791,
 					"title": "The Open Graph Title"
 				},
 				{
 					"name": "url-metadata",
-					"median": 2.987969,
-					"p95": 4.365166,
+					"median": 3.008097,
+					"p95": 4.131283,
 					"title": "The Open Graph Title"
 				},
 				{
 					"name": "metascraper (native fetch)",
-					"median": 3.349643,
-					"p95": 5.479514,
+					"median": 3.487564,
+					"p95": 7.344308,
 					"title": "The Open Graph Title"
 				},
 				{
@@ -91,39 +91,39 @@
 			"iterations": 150,
 			"rows": [
 				{
-					"name": "linkpeek",
-					"median": 1.186105,
-					"p95": 2.57211,
-					"title": "All Fields OG Title"
-				},
-				{
 					"name": "unfurl.js",
-					"median": 1.342672,
-					"p95": 4.366807,
+					"median": 0.796755,
+					"p95": 1.382047,
 					"title": "All Fields OG Title"
 				},
 				{
-					"name": "link-preview-js (fetch+parse)",
-					"median": 2.037814,
-					"p95": 3.187407,
+					"name": "linkpeek",
+					"median": 1.598409,
+					"p95": 2.510458,
 					"title": "All Fields OG Title"
 				},
 				{
 					"name": "metascraper (native fetch)",
-					"median": 2.785233,
-					"p95": 18.073091,
+					"median": 1.750746,
+					"p95": 3.026465,
+					"title": "All Fields OG Title"
+				},
+				{
+					"name": "link-preview-js (fetch+parse)",
+					"median": 2.116711,
+					"p95": 3.471517,
 					"title": "All Fields OG Title"
 				},
 				{
 					"name": "open-graph-scraper (fetch+parse)",
-					"median": 2.989618,
-					"p95": 7.973384,
+					"median": 2.15804,
+					"p95": 3.371276,
 					"title": "All Fields OG Title"
 				},
 				{
 					"name": "url-metadata",
-					"median": 4.814245,
-					"p95": 24.488409,
+					"median": 3.216796,
+					"p95": 4.94173,
 					"title": "All Fields OG Title"
 				},
 				{
@@ -143,38 +143,38 @@
 			"rows": [
 				{
 					"name": "unfurl.js",
-					"median": 0.538681,
-					"p95": 0.857923,
+					"median": 0.515702,
+					"p95": 0.901322,
 					"title": "Best Chocolate Chip Cookies"
 				},
 				{
 					"name": "linkpeek",
-					"median": 0.730495,
-					"p95": 1.063913,
+					"median": 0.729993,
+					"p95": 1.076507,
 					"title": "Best Chocolate Chip Cookies"
 				},
 				{
 					"name": "link-preview-js (fetch+parse)",
-					"median": 1.156981,
-					"p95": 1.920535,
+					"median": 1.225051,
+					"p95": 2.0522,
 					"title": "Best Chocolate Chip Cookies"
 				},
 				{
 					"name": "open-graph-scraper (fetch+parse)",
-					"median": 1.743625,
-					"p95": 2.435464,
+					"median": 1.722331,
+					"p95": 2.535115,
 					"title": "Best Chocolate Chip Cookies"
 				},
 				{
 					"name": "url-metadata",
-					"median": 2.34264,
-					"p95": 3.259857,
+					"median": 2.287247,
+					"p95": 3.238744,
 					"title": "Best Chocolate Chip Cookies"
 				},
 				{
 					"name": "metascraper (native fetch)",
-					"median": 2.448851,
-					"p95": 4.007939,
+					"median": 2.78789,
+					"p95": 3.697269,
 					"title": "Best Chocolate Chip Cookies"
 				},
 				{
@@ -194,38 +194,38 @@
 			"rows": [
 				{
 					"name": "linkpeek",
-					"median": 2.565468,
-					"p95": 3.874527,
+					"median": 2.760579,
+					"p95": 8.644868,
 					"title": "Large Page OG Title"
 				},
 				{
 					"name": "unfurl.js",
-					"median": 10.875359,
-					"p95": 18.158296,
+					"median": 10.919022,
+					"p95": 20.308844,
 					"title": "Large Page OG Title"
 				},
 				{
 					"name": "url-metadata",
-					"median": 45.925476,
-					"p95": 185.920452,
+					"median": 47.93554,
+					"p95": 167.215707,
 					"title": "Large Page OG Title"
 				},
 				{
 					"name": "link-preview-js (fetch+parse)",
-					"median": 47.417278,
-					"p95": 181.664784,
+					"median": 49.048766,
+					"p95": 183.016599,
 					"title": "Large Page OG Title"
 				},
 				{
 					"name": "metascraper (native fetch)",
-					"median": 59.142365,
-					"p95": 112.562496,
+					"median": 62.597549,
+					"p95": 121.819248,
 					"title": "Large Page OG Title"
 				},
 				{
 					"name": "open-graph-scraper (fetch+parse)",
-					"median": 395.09886,
-					"p95": 509.956085,
+					"median": 378.402104,
+					"p95": 499.651135,
 					"title": "Large Page OG Title"
 				},
 				{

@@ -69,14 +69,14 @@ Same-corpus benchmark against five other preview packages, measured on 15 Novemb
 
 | Package | 500 kB page | Small pages (0.6–2.3 kB) | Clean install |
 | --- | ---: | ---: | ---: |
-| **linkpeek** | **2.63 ms** | 1.17 ms | **1.3 MB, 7 packages** |
-| unfurl.js 6.4.0 | 11.1 ms | 0.79 ms | 3.2 MB, 16 packages |
-| link-preview-js 6.0.0 | 48.4 ms | 1.64 ms | 7.9 MB, 18 packages |
-| metascraper 5.58.6 (+7 rules) | 65.9 ms | 2.54 ms | 81.1 MB, 128 packages |
-| url-metadata 6.3.1 | 68.8 ms | 2.80 ms | 10.4 MB, 30 packages |
-| open-graph-scraper 6.13.0 | 395 ms | 1.89 ms | 11.1 MB, 27 packages |
+| **linkpeek** | **2.76 ms** | 1.25 ms | **1.3 MB, 7 packages** |
+| unfurl.js 6.4.0 | 11.0 ms | 0.80 ms | 3.2 MB, 16 packages |
+| link-preview-js 6.0.0 | 48.6 ms | 1.72 ms | 7.9 MB, 18 packages |
+| url-metadata 6.3.1 | 49.5 ms | 2.89 ms | 10.4 MB, 30 packages |
+| metascraper 5.58.6 (+7 rules) | 62.6 ms | 2.71 ms | 81.1 MB, 128 packages |
+| open-graph-scraper 6.13.0 | 377 ms | 1.94 ms | 11.1 MB, 27 packages |
 
-On large pages linkpeek stops after `</head>` and cancels the stream. On small pages the differences are fractions of a millisecond, and `unfurl.js` was faster in this run. Charts, method and raw runs: [benchmarks](https://thegruber.github.io/linkpeek/benchmarks/). Every dated result and the reproduction commands are in the [comparison notes](https://github.com/thegruber/linkpeek/blob/main/docs/comparison.md).
+On large pages linkpeek stops after `</head>` and cancels the stream. On small pages the differences are fractions of a millisecond: `unfurl.js` was faster, because it uses Node's `http` module through `node-fetch`, while linkpeek uses the platform `fetch` so the same code runs on Bun, Deno and Workers. Among the packages measured on `fetch`, linkpeek was fastest on every page. Charts, method and raw runs: [benchmarks](https://thegruber.github.io/linkpeek/benchmarks/). Every dated result and the reproduction commands are in the [comparison notes](https://github.com/thegruber/linkpeek/blob/main/docs/comparison.md).
 
 ## Use cases
 

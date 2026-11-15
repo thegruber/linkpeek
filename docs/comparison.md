@@ -31,23 +31,23 @@ Do not position linkpeek as:
 
 ## Latest measurements (2026-11-15)
 
-Linux x64 (2 vCPU Intel Xeon 2.20 GHz), Node.js 24.22.2, npm 11.19.1. The website's [benchmark page](https://thegruber.github.io/linkpeek/benchmarks/) renders these numbers from [`website/data/benchmarks.json`](../website/data/benchmarks.json); the three raw harness runs are in [`benchmarks/competitive/results/2026-11-15`](../benchmarks/competitive/results/2026-11-15). linkpeek was measured from unreleased source after 2.1.7 (the package-hardening changes, `src/` at commit `bacb95a`); the runs report `dirty: true` only because the results directory itself was uncommitted. The previous release run is kept in [`results/2026-11-14`](../benchmarks/competitive/results/2026-11-14): 1.36, 1.23, 0.71 and 2.80 ms for linkpeek 2.1.7.
+Linux x64 (2 vCPU Intel Xeon 2.20 GHz), Node.js 24.22.2, npm 11.19.1. The website's [benchmark page](https://thegruber.github.io/linkpeek/benchmarks/) renders these numbers from [`website/data/benchmarks.json`](../website/data/benchmarks.json); the three raw harness runs are in [`benchmarks/competitive/results/2026-11-15`](../benchmarks/competitive/results/2026-11-15). linkpeek was measured from the unreleased 3.0.0 source (merge commit `bd1c9df`); the runs report `dirty: true` only because an untracked, generated `website/AGENTS.md` was present. The previous release run is kept in [`results/2026-11-14`](../benchmarks/competitive/results/2026-11-14): 1.36, 1.23, 0.71 and 2.80 ms for linkpeek 2.1.7.
 
 Same-corpus speed, median of three run medians in ms per end-to-end preview:
 
 | Package | og-standard (611 B) | all-fields (2.3 kB) | recipe-blog (724 B) | large (500 kB) |
 | --- | ---: | ---: | ---: | ---: |
-| linkpeek (unreleased, after 2.1.7) | 1.53 | 1.28 | 0.71 | 2.63 |
-| unfurl.js 6.4.0 | 1.01 | 0.82 | 0.55 | 11.11 |
-| link-preview-js 6.0.0 (fetch+parse)* | 1.88 | 1.89 | 1.15 | 48.42 |
-| open-graph-scraper 6.13.0 (fetch+parse)** | 1.86 | 2.08 | 1.74 | 395.10 |
-| url-metadata 6.3.1 | 2.92 | 3.08 | 2.40 | 68.79 |
-| metascraper 5.58.6 (+7 rules) | 3.35 | 1.70 | 2.57 | 65.88 |
+| linkpeek (unreleased 3.0.0) | 1.44 | 1.58 | 0.73 | 2.76 |
+| unfurl.js 6.4.0 | 1.02 | 0.84 | 0.54 | 10.99 |
+| link-preview-js 6.0.0 (fetch+parse)* | 1.95 | 1.99 | 1.22 | 48.57 |
+| open-graph-scraper 6.13.0 (fetch+parse)** | 1.93 | 2.16 | 1.72 | 376.79 |
+| url-metadata 6.3.1 | 3.10 | 3.22 | 2.36 | 49.48 |
+| metascraper 5.58.6 (+7 rules) | 3.49 | 1.94 | 2.71 | 62.60 |
 
 \* link-preview-js rejects private IP-literal hosts and is measured via native fetch plus `getPreviewFromContent()`.
 \*\* open-graph-scraper 6.13.0 rejects non-public addresses with no opt-out and is measured via native fetch plus `ogs({ html })`. Earlier tables measured its own fetch path, so its large-page number is not comparable across dates.
 
-Large-page runs varied widely for url-metadata (45.9, 68.8 and 100.0 ms) and metascraper (59.1, 65.9 and 99.7 ms). On this 2-vCPU machine small-page run medians also vary: linkpeek's og-standard runs were 1.53, 2.22 and 1.34 ms, so differences of a few tenths of a millisecond are within noise.
+These runs were steady: every package's three large-page medians stayed within about 20%. On this 2-vCPU machine small-page medians can still move between runs (linkpeek's all-fields runs were 1.60, 1.58 and 1.34 ms; an earlier run of `src/` at `bacb95a` gave 1.28 ms, and an interleaved same-process A/B of the two builds measured them within 2% of each other), so differences of a few tenths of a millisecond are within noise.
 
 Clean install footprint (`npm install --ignore-scripts`, same command as below):
 
@@ -60,7 +60,7 @@ Clean install footprint (`npm install --ignore-scripts`, same command as below):
 | open-graph-scraper | 6.13.0 | 27 | 11,316 KiB |
 | metascraper + 7 rules | 5.58.6 (rules 5.58.4–5.58.5) | 128 | 83,088 KiB |
 
-Honest reading: unfurl.js is faster than linkpeek on every small fixture on this machine; the gap is a fraction of a millisecond. On the large head-first fixture linkpeek is about 4.2× faster than unfurl.js and 18× or more faster than the other packages because it stops after the head. Absolute timings are higher than the August Apple-silicon run; do not mix the two tables.
+Honest reading: unfurl.js is faster than linkpeek on every small fixture on this machine; the gap is a fraction of a millisecond. unfurl.js (like url-metadata) requests pages with `node-fetch` over Node's `http` module, which costs less per request than the platform `fetch` linkpeek uses to run unchanged on Bun, Deno and Workers. Among the packages measured on `fetch`, linkpeek is fastest on every fixture. On the large head-first fixture linkpeek is about 4.0× faster than unfurl.js and 17× or more faster than the other packages because it stops after the head. Absolute timings are higher than the August Apple-silicon run; do not mix the two tables.
 
 ### Security changes since August (verified 2026-11-14)
 
