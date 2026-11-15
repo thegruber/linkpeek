@@ -11,7 +11,7 @@ The root export provides `preview`, `parseHTML`, `presets`, URL validation helpe
 
 `preview(url, options?)` returns `Promise<PreviewResult>`.
 
-Fetch an HTTP(S) URL, validate redirects, enforce timeout and byte limits, then extract preview metadata. Network failures propagate; invalid input and policy failures throw `LinkpeekError`.
+Fetch an HTTP(S) URL, validate redirects, enforce timeout and byte limits, then extract preview metadata. Invalid input, policy failures, timeouts and network failures throw `LinkpeekError`; a caller abort rethrows the signal's reason.
 
 HTML responses with an HTTP error status still resolve with extracted metadata. Check `result.statusCode` before caching or displaying a successful card. Direct image, video and audio responses populate the corresponding media URL field.
 
@@ -28,15 +28,16 @@ if (result.statusCode < 400) {
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
-| `timeout` | `number` | `8000` | Request timeout in milliseconds, from 0 to 2,147,483,647. Throws `LinkpeekError` code `TIMEOUT` when elapsed; invalid values throw `INVALID_OPTIONS` |
-| `maxBytes` | `number` | `30_000` | Maximum decoded response-body bytes to retain |
+| `timeout` | `number` | `8000` | Deadline in milliseconds for the whole call (redirects, body read and any meta-refresh hop), from 0 to 2,147,483,647. Throws `LinkpeekError` code `TIMEOUT` when elapsed; invalid values throw `INVALID_OPTIONS` |
+| `maxBytes` | `number` | `30_000` | Maximum decoded response-body bytes to retain. `result.truncated` reports when the limit cut the head |
 | `userAgent` | `string` | `"Twitterbot/1.0"` | User-Agent sent with requests |
 | `followRedirects` | `boolean` | `true` | Follow HTTP redirects after validating each target |
-| `maxRedirects` | `number` | `10` | Maximum HTTP redirects to follow. Must be a non-negative integer; invalid values throw `INVALID_OPTIONS` |
+| `maxRedirects` | `number` | `10` | Maximum redirects per call, HTTP and meta refresh combined. Must be a non-negative integer; invalid values throw `INVALID_OPTIONS` |
 | `headers` | `Record<string, string>` | `{}` | Extra non-sensitive request headers. Common credential-bearing headers are rejected; custom headers are not forwarded on cross-origin redirects |
 | `allowPrivateIPs` | `boolean` | `false` | Allow private/internal IP targets |
+| `resolveHost` | `(hostname) => Promise<string[]>` | none | Opt-in DNS check on the first request and every redirect hop; private answers throw `PRIVATE_NETWORK_BLOCKED`. See [DNS checks](/security/#dns) |
 | `signal` | `AbortSignal` | none | Cancel the request from the caller side |
-| `fetch` | `typeof fetch` | `globalThis.fetch` | Custom fetch implementation. It must honor manual redirects and the supplied abort signal |
+| `fetch` | `typeof fetch` | `globalThis.fetch` | Custom fetch implementation. It must honor manual redirects and the supplied abort signal; a `response.url` it reports is validated too |
 | `followMetaRefresh` | `boolean` | `false` | Follow one `<head>` `<meta http-equiv="refresh">` redirect with a delay of 10s or less |
 | `includeBodyContent` | `boolean` | `false` | Continue scanning `<body>` for JSON-LD and image fallbacks |
 
@@ -44,19 +45,19 @@ if (result.statusCode < 400) {
 
 All result fields are present. Optional metadata uses `null` when unavailable; titles and images are not guaranteed.
 
-Extracted resource URLs are resolved against the document base and limited to HTTP(S).
+Extracted resource URLs are resolved against the document base and limited to HTTP(S). Text fields are trimmed with whitespace runs collapsed; blank values count as missing. JSON-LD fields all come from one entity: the first article, product or similar content entity, else a page entity, never a site-wide `Organization` or `WebSite`. For every field the first usable tag wins.
 
 | Field | Type | Description |
 | --- | --- | --- |
 | `url` | `string` | Final fetched URL; `parseHTML()` returns the canonical URL |
 | `statusCode` | `number` | HTTP status code. `parseHTML()` returns `0` |
-| `title` | `string \| null` | `og:title` -\> `twitter:title` -\> JSON-LD -\> Dublin Core -\> `<title>` |
+| `title` | `string \| null` | `og:title` -\> `twitter:title` -\> Dublin Core -\> `<title>` -\> JSON-LD headline or name of the page's main entity |
 | `description` | `string \| null` | `og:description` -\> `twitter:description` -\> `meta[name=description]` -\> JSON-LD -\> Dublin Core |
 | `image` | `string \| null` | Preview image URL |
 | `imageAlt` | `string \| null` | Image alt text |
 | `imageWidth` | `number \| null` | `og:image:width` |
 | `imageHeight` | `number \| null` | `og:image:height` |
-| `siteName` | `string` | `og:site_name` -\> JSON-LD publisher -\> hostname |
+| `siteName` | `string` | `og:site_name` -\> JSON-LD publisher -\> JSON-LD `WebSite` name -\> hostname |
 | `favicon` | `string \| null` | Declared favicon, or the origin’s /favicon.ico as a fallback guess |
 | `mediaType` | `string` | `og:type`, defaults to `"website"` |
 | `canonicalUrl` | `string` | Canonical URL, `og:url`, or fetched URL |
@@ -72,10 +73,11 @@ Extracted resource URLs are resolved against the document base and limited to HT
 | `twitterCreator` | `string \| null` | Twitter creator handle |
 | `themeColor` | `string \| null` | Theme color |
 | `oEmbedUrl` | `string \| null` | Discovered oEmbed endpoint URL. Not fetched |
+| `truncated` | `boolean` | `maxBytes` cut the response before the end of `<head>` (or of the document with `includeBodyContent`); raise `maxBytes` to read later tags. `parseHTML()` returns `false` |
 
 ## Parse existing HTML [#parse]
 
-`parseHTML(html, baseUrl, options?)` returns `PreviewResult` synchronously, with `statusCode: 0`. It makes no network requests. Both `url` and `canonicalUrl` contain the resolved canonical URL. The options object accepts `includeBodyContent`; fetch options such as `maxBytes` do not limit a supplied HTML string.
+`parseHTML(html, baseUrl, options?)` returns `PreviewResult` synchronously, with `statusCode: 0`. It makes no network requests. `baseUrl` must be an absolute HTTP(S) URL; anything else throws `LinkpeekError` code `INVALID_URL` rather than inventing a site name, favicon and canonical URL. Both `url` and `canonicalUrl` contain the resolved canonical URL. The options object accepts `includeBodyContent`; fetch options such as `maxBytes` do not limit a supplied HTML string.
 
 Use the parser directly when HTML is already available. Default parsing stops tokenizing at the end of the head. Set `includeBodyContent: true` only when body JSON-LD or image fallback is worth the extra work.
 
@@ -93,7 +95,7 @@ try {
 }
 ```
 
-Use `code`, never message matching, for program flow. Caller abort reasons and network failures propagate as-is and need not be `LinkpeekError` instances.
+Use `code`, never message matching, for program flow. A caller abort rethrows the signal's reason as-is; every other failure is a `LinkpeekError`.
 
 | Code | Meaning |
 | --- | --- |
@@ -102,8 +104,9 @@ Use `code`, never message matching, for program flow. Caller abort reasons and n
 | `PRIVATE_NETWORK_BLOCKED` | Target matches a blocked hostname or literal address |
 | `SENSITIVE_HEADER` | Custom headers include a prohibited credential-bearing name |
 | `INVALID_OPTIONS` | An option fails validation |
-| `TOO_MANY_REDIRECTS` | The HTTP redirect limit was reached |
-| `TIMEOUT` | The request exceeded its timeout |
+| `TOO_MANY_REDIRECTS` | The redirect limit was reached |
+| `TIMEOUT` | The call exceeded its timeout |
+| `FETCH_FAILED` | The network request, body read or `resolveHost` lookup failed; the original error is `cause` |
 
 ## Presets [#presets]
 
@@ -117,12 +120,14 @@ await preview(url, { ...presets.quality, timeout: 5_000 });
 
 ## URL validation helpers [#validation]
 
-`validateUrl(url, allowPrivateIPs?)` returns `void` on success or throws `LinkpeekError`. `isPrivateHost(hostname)` returns a boolean for hostnames and literal IPs covered by the blocklist. Neither helper performs DNS resolution.
+`validateUrl(url, allowPrivateIPs?)` returns `void` on success or throws `LinkpeekError`. `isPrivateHost(hostname)` returns a boolean for hostnames and literal IPs covered by the blocklist. It normalises the host the way `fetch()` does, so shorthand IPv4 such as `127.1`, `2130706433` or `0x7f000001` is caught, and it blocks internal names (`localhost`, `*.internal`, `*.local`, `*.localdomain`, `*.home.arpa`, single-label names such as `metadata`). Neither helper performs DNS resolution.
 
 ```ts
 import { isPrivateHost, validateUrl } from "linkpeek";
 
 isPrivateHost("127.0.0.1"); // true
+isPrivateHost("2130706433"); // true (127.0.0.1)
+isPrivateHost("metadata.google.internal"); // true
 validateUrl("http://169.254.169.254/"); // throws PRIVATE_NETWORK_BLOCKED
 ```
 

@@ -1,5 +1,9 @@
 export interface PreviewOptions {
-	/** Request timeout in milliseconds, from 0 to 2_147_483_647 (default: 8000) */
+	/**
+	 * Timeout in milliseconds for the whole `preview()` call, from 0 to
+	 * 2_147_483_647, covering redirects, the body read and any meta-refresh hop
+	 * (default: 8000)
+	 */
 	timeout?: number;
 	/** Maximum decoded response-body bytes to retain (default: 30_000) */
 	maxBytes?: number;
@@ -7,12 +11,29 @@ export interface PreviewOptions {
 	userAgent?: string;
 	/** Follow HTTP redirects (default: true) */
 	followRedirects?: boolean;
-	/** Maximum HTTP redirects to follow; must be a non-negative integer (default: 10) */
+	/**
+	 * Maximum redirects per call, HTTP and meta refresh combined; must be a
+	 * non-negative integer (default: 10)
+	 */
 	maxRedirects?: number;
 	/** Extra non-sensitive request headers. Common credential-bearing headers are rejected. */
 	headers?: Record<string, string>;
 	/** Allow fetching private/internal IPs (default: false) */
 	allowPrivateIPs?: boolean;
+	/**
+	 * Opt-in DNS check. Called with the hostname of the first request and of
+	 * every redirect hop (IP literals are skipped); the request is blocked with
+	 * `PRIVATE_NETWORK_BLOCKED` if any returned address is private. Errors and
+	 * empty answers throw `FETCH_FAILED`. Platform fetch still resolves the name
+	 * again, so this narrows DNS rebinding rather than pinning the address.
+	 * Ignored when `allowPrivateIPs` is true.
+	 *
+	 * @example Node.js
+	 * import { lookup } from "node:dns/promises";
+	 * resolveHost: async (host) =>
+	 *   (await lookup(host, { all: true })).map((a) => a.address)
+	 */
+	resolveHost?: (hostname: string) => Promise<string[]>;
 	/**
 	 * Abort the request from the caller side. Combined with the timeout —
 	 * whichever fires first wins. A caller abort is rethrown as-is; a timeout
@@ -22,7 +43,8 @@ export interface PreviewOptions {
 	/**
 	 * Custom fetch implementation, e.g. a proxy-aware or caching wrapper.
 	 * It must honor RequestInit.redirect ("manual") and the supplied abort signal
-	 * so redirects stay inside linkpeek's validation loop.
+	 * so redirects stay inside linkpeek's validation loop. If it follows
+	 * redirects anyway, the final `response.url` is still validated.
 	 * (default: globalThis.fetch)
 	 */
 	fetch?: typeof globalThis.fetch;
@@ -46,7 +68,7 @@ export interface PreviewResult {
 	url: string;
 	/** HTTP status code of the final response. `parseHTML()` returns 0. */
 	statusCode: number;
-	/** og:title → twitter:title → JSON-LD → Dublin Core → <title> */
+	/** og:title → twitter:title → Dublin Core → <title> → JSON-LD headline/name of the page's main entity */
 	title: string | null;
 	/** og:description → twitter:description → meta description → JSON-LD → Dublin Core */
 	description: string | null;
@@ -58,7 +80,7 @@ export interface PreviewResult {
 	imageWidth: number | null;
 	/** og:image:height, when numeric */
 	imageHeight: number | null;
-	/** og:site_name → JSON-LD publisher → hostname */
+	/** og:site_name → JSON-LD publisher → JSON-LD WebSite name → hostname */
 	siteName: string;
 	/** Declared favicon, or the origin's /favicon.ico as a fallback guess */
 	favicon: string | null;
@@ -90,4 +112,11 @@ export interface PreviewResult {
 	themeColor: string | null;
 	/** Discovered oEmbed endpoint URL. Not fetched. */
 	oEmbedUrl: string | null;
+	/**
+	 * True when `maxBytes` cut the response before linkpeek saw everything it
+	 * reads (the end of `<head>`, or the whole document with
+	 * `includeBodyContent`), so later metadata may be missing. Raise `maxBytes`
+	 * to recover it. `parseHTML()` returns false.
+	 */
+	truncated: boolean;
 }

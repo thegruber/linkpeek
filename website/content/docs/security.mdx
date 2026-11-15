@@ -11,7 +11,9 @@ A public link-preview endpoint turns user input into outbound network traffic. l
 
 - Non-HTTP(S) protocols and URLs with embedded credentials
 
-- localhost and literal private, link-local, multicast, documentation, and other non-global IP ranges
+- localhost and literal private, link-local, multicast, documentation, and other non-global IP ranges, in any IPv4 spelling the URL parser accepts (`127.1`, `0x7f000001`, `2130706433`)
+
+- Internal names: `*.localhost`, `*.local`, `*.internal` (including `metadata.google.internal`), `*.localdomain`, `*.home.arpa`, and single-label names such as `metadata`
 
 - IPv4 embedded through mapped IPv6, NAT64, and 6to4 forms
 
@@ -21,7 +23,7 @@ A public link-preview endpoint turns user input into outbound network traffic. l
 
 ## Redirect validation [#redirects]
 
-Platform fetch runs with `redirect: "manual"`. Each Location target is resolved and validated before another request starts. Custom headers are dropped when a redirect crosses origins.
+Platform fetch runs with `redirect: "manual"`. Each Location target is resolved and validated before another request starts. Custom headers are dropped when a redirect crosses origins. A meta-refresh hop counts against the same `maxRedirects` budget and `timeout` deadline. If a custom `fetch` follows redirects itself, the final `response.url` it reports is still validated, but the hops in between are not, so honor `redirect: "manual"`.
 
 ## Cookies and credentials [#credentials]
 
@@ -29,13 +31,29 @@ Do not attach user cookies, authorization headers, cloud tokens, or internal ser
 
 ## DNS resolution and rebinding [#dns]
 
-**The runtime resolves hostnames.** Hostnames are not resolved and pinned by linkpeek. DNS rebinding protection therefore varies by runtime and network path.
+**The runtime resolves hostnames.** linkpeek does not pin addresses, so DNS rebinding protection varies by runtime and network path.
+
+`resolveHost` adds an opt-in DNS check without a dependency. linkpeek calls it with the hostname of the first request and of every redirect hop, skipping IP literals. If any returned address is private, the hop throws `PRIVATE_NETWORK_BLOCKED`; resolver errors and empty answers throw `FETCH_FAILED`. Edge runtimes without a DNS API can omit it.
+
+```ts
+import { lookup } from "node:dns/promises";
+import { preview } from "linkpeek";
+
+await preview(url, {
+  resolveHost: async (hostname) =>
+    (await lookup(hostname, { all: true })).map((entry) => entry.address),
+});
+```
+
+This catches public names that point at internal addresses. It does not close rebinding completely: platform fetch resolves the name again before connecting, and a hostile DNS server can answer differently the second time.
 
 For hostile public input, add outbound firewall or platform egress policy so the worker cannot reach metadata services or internal networks even if DNS changes between validation and connection.
 
 ## Production checklist [#checklist]
 
 - Keep `allowPrivateIPs` false.
+
+- On Node.js, pass a `resolveHost` lookup.
 
 - Rate-limit public endpoints and cap concurrency.
 
