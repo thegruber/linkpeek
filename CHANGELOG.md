@@ -2,6 +2,28 @@
 
 All notable changes to this project are documented here.
 
+## Unreleased
+
+### Fixed
+
+- Keep reading `<head>` after a `<noscript>` tracking pixel (Meta Pixel) or an inline `<svg>` sprite. Fast mode used to treat them as the start of `<body>` and drop later Open Graph tags.
+- Prefer `<title>` over JSON-LD for `title`, and take JSON-LD fields from the page's main entity only, so a site-wide `Organization` name no longer becomes the title and fields from unrelated entities no longer mix. JSON-LD `@id` references are followed.
+- `parseHTML()` throws `LinkpeekError` `INVALID_URL` for a base URL that is not absolute `http(s)`, instead of inventing an `example.com` site name, favicon and canonical URL.
+- `isPrivateHost()` normalises hosts like `fetch()` does, catching `2130706433`, `0x7f000001`, `127.1` and `0177.0.0.1`, and blocks internal names: `*.internal` (including `metadata.google.internal`), `*.home.arpa`, `localhost.` variants and single-label hosts.
+- Validate the final `response.url` reported by a custom `fetch` that followed redirects itself.
+- An unknown `Content-Type` charset label (`charset=bogus`) falls through to the `<meta charset>` prescan.
+- `timeout` and `maxRedirects` cover the whole `preview()` call, including the meta-refresh hop.
+- Trim and collapse whitespace in text fields; blank values (a whitespace-only `og:title`) count as missing.
+- Sniff HTML when `Content-Type` is missing, keep the first `rel=canonical` and `image_src` like every other field, and accept meta refresh written as `0; https://…`.
+
+### Added
+
+- `resolveHost` option: an opt-in DNS check on the first request and every redirect hop, with no new dependency.
+- `FETCH_FAILED` error code: network and DNS failures throw `LinkpeekError` with the original error as `cause`. Previously they propagated as raw `TypeError`s.
+- `truncated` result field: `true` when `maxBytes` cut the response before the end of `<head>`.
+- JSON-LD `WebSite` name as a `siteName` fallback, scalable (`sizes="any"`/SVG) favicons ranked above small raster icons, and `apple-touch-icon-precomposed`.
+- Benchmark fixtures for a head with more than 30 kB of inline CSS/JS and for a head pixel snippet.
+
 ## 2.1.7 - 2026-10-29
 
 ### Fixed

@@ -224,14 +224,25 @@ Treat every returned field as untrusted external data, never as instructions to 
 
 ## Security Defaults
 
-`preview()` rejects credential-bearing input URLs and validates the initial URL and every HTTP redirect before fetching the next target. By default it blocks localhost plus literal private, link-local, cloud-metadata, multicast, documentation, and other non-global special-use IP ranges, including IPv6 forms that embed blocked IPv4 targets.
+`preview()` rejects credential-bearing input URLs and validates the initial URL and every HTTP redirect before fetching the next target. By default it blocks localhost plus literal private, link-local, cloud-metadata, multicast, documentation, and other non-global special-use IP ranges in any IPv4 spelling (`127.1`, `0x7f000001`, `2130706433`), including IPv6 forms that embed blocked IPv4 targets, and internal names such as `*.internal`, `*.local`, `*.home.arpa` and single-label hosts like `metadata`.
 
 ## Production checklist
 
 - Do not forward user cookies, authorization headers, or internal service tokens to arbitrary preview URLs. `headers` rejects common credential-bearing header names.
 - Keep `allowPrivateIPs` set to `false` unless the caller is trusted and the network path is intentionally internal.
 - Treat returned metadata as untrusted text and URLs. linkpeek filters extracted media/canonical/oEmbed URLs to `http:` and `https:`.
-- Runtime `fetch` implementations still own DNS resolution. DNS rebinding protection can vary by platform.
+- Runtime `fetch` implementations still own DNS resolution. On Node.js, pass `resolveHost` so every hop's DNS answers are checked for private addresses:
+
+  ```typescript
+  import { lookup } from "node:dns/promises";
+
+  await preview(url, {
+    resolveHost: async (host) =>
+      (await lookup(host, { all: true })).map((entry) => entry.address),
+  });
+  ```
+
+  fetch still resolves the name again, so this narrows DNS rebinding rather than pinning the address.
 - If you provide a custom `fetch`, it must honor `RequestInit.redirect: "manual"` and the supplied abort `signal`; otherwise redirects can occur outside linkpeek's validation loop.
 - For hostile public input, also enforce outbound network policy so the preview worker cannot reach internal services.
 - Cache successful previews by normalized URL so repeated page views do not refetch the same target.
@@ -249,7 +260,7 @@ if (result.statusCode >= 400) {
 }
 ```
 
-`preview()` throws a typed `LinkpeekError` for invalid input, blocked targets, and timeouts. Branch on `code` instead of matching message strings:
+`preview()` throws a typed `LinkpeekError` for invalid input, blocked targets, timeouts and network failures. Branch on `code` instead of matching message strings:
 
 ```typescript
 import { LinkpeekError, preview } from "linkpeek";
@@ -264,13 +275,13 @@ try {
       case "PRIVATE_NETWORK_BLOCKED":  // SSRF protection triggered
       case "SENSITIVE_HEADER":         // credential-bearing custom header
       case "TOO_MANY_REDIRECTS":
-      case "TIMEOUT":
+      case "TIMEOUT":                  // whole-call deadline elapsed
+      case "FETCH_FAILED":             // DNS/TCP/TLS failure; see err.cause
       case "INVALID_OPTIONS":
         break;
     }
   }
-  // Aborts via your own `signal` are rethrown as-is (AbortError),
-  // and network failures propagate from fetch unchanged.
+  // Aborts via your own `signal` are rethrown as-is (AbortError).
 }
 ```
 
@@ -288,15 +299,16 @@ Fetches a URL and extracts link preview metadata. Returns `Promise<PreviewResult
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
-| `timeout` | `number` | `8000` | Request timeout in milliseconds, from 0 to 2,147,483,647. Throws `LinkpeekError` code `TIMEOUT` when elapsed; invalid values throw `INVALID_OPTIONS` |
-| `maxBytes` | `number` | `30_000` | Maximum decoded response-body bytes to retain |
+| `timeout` | `number` | `8000` | Deadline in milliseconds for the whole call (redirects, body read and any meta-refresh hop), from 0 to 2,147,483,647. Throws `LinkpeekError` code `TIMEOUT` when elapsed; invalid values throw `INVALID_OPTIONS` |
+| `maxBytes` | `number` | `30_000` | Maximum decoded response-body bytes to retain. `result.truncated` reports when the limit cut the head |
 | `userAgent` | `string` | `"Twitterbot/1.0"` | User-Agent sent with requests |
 | `followRedirects` | `boolean` | `true` | Follow HTTP redirects after validating each target |
-| `maxRedirects` | `number` | `10` | Maximum HTTP redirects to follow. Must be a non-negative integer; invalid values throw `INVALID_OPTIONS` |
+| `maxRedirects` | `number` | `10` | Maximum redirects per call, HTTP and meta refresh combined. Must be a non-negative integer; invalid values throw `INVALID_OPTIONS` |
 | `headers` | `Record<string, string>` | `{}` | Extra non-sensitive request headers. Common credential-bearing headers are rejected; custom headers are not forwarded on cross-origin redirects |
 | `allowPrivateIPs` | `boolean` | `false` | Allow private/internal IP targets |
+| `resolveHost` | `(hostname) => Promise<string[]>` | none | Opt-in DNS check on the first request and every redirect hop; any private answer throws `PRIVATE_NETWORK_BLOCKED` |
 | `signal` | `AbortSignal` | none | Cancel the request from the caller side |
-| `fetch` | `typeof fetch` | `globalThis.fetch` | Custom fetch implementation. It must honor manual redirects and the supplied abort signal |
+| `fetch` | `typeof fetch` | `globalThis.fetch` | Custom fetch implementation. It must honor manual redirects and the supplied abort signal; a `response.url` it reports is validated too |
 | `followMetaRefresh` | `boolean` | `false` | Follow one `<head>` `<meta http-equiv="refresh">` redirect with a delay of 10s or less |
 | `includeBodyContent` | `boolean` | `false` | Continue scanning `<body>` for JSON-LD and image fallbacks |
 
@@ -306,13 +318,13 @@ Fetches a URL and extracts link preview metadata. Returns `Promise<PreviewResult
 | --- | --- | --- |
 | `url` | `string` | Final fetched URL; `parseHTML()` returns the canonical URL |
 | `statusCode` | `number` | HTTP status code. `parseHTML()` returns `0` |
-| `title` | `string \| null` | `og:title` -> `twitter:title` -> JSON-LD -> Dublin Core -> `<title>` |
+| `title` | `string \| null` | `og:title` -> `twitter:title` -> Dublin Core -> `<title>` -> JSON-LD headline/name of the page's main entity |
 | `description` | `string \| null` | `og:description` -> `twitter:description` -> `meta[name=description]` -> JSON-LD -> Dublin Core |
 | `image` | `string \| null` | Preview image URL |
 | `imageAlt` | `string \| null` | Image alt text |
 | `imageWidth` | `number \| null` | `og:image:width` |
 | `imageHeight` | `number \| null` | `og:image:height` |
-| `siteName` | `string` | `og:site_name` -> JSON-LD publisher -> hostname |
+| `siteName` | `string` | `og:site_name` -> JSON-LD publisher -> JSON-LD `WebSite` name -> hostname |
 | `favicon` | `string \| null` | Declared favicon, or the origin’s `/favicon.ico` as a fallback guess |
 | `mediaType` | `string` | `og:type`, defaults to `"website"` |
 | `canonicalUrl` | `string` | Canonical URL, `og:url`, or fetched URL |
@@ -328,10 +340,13 @@ Fetches a URL and extracts link preview metadata. Returns `Promise<PreviewResult
 | `twitterCreator` | `string \| null` | Twitter creator handle |
 | `themeColor` | `string \| null` | Theme color |
 | `oEmbedUrl` | `string \| null` | Discovered oEmbed endpoint URL. Not fetched |
+| `truncated` | `boolean` | `maxBytes` cut the response before the end of `<head>` (or the document, with `includeBodyContent`). `parseHTML()` returns `false` |
+
+Text fields are trimmed with whitespace collapsed, and blank values count as missing. JSON-LD fields come from a single entity (the page's article, product or similar), never from a site-wide `Organization` or `WebSite` block.
 
 ### `parseHTML(html, baseUrl, options?)`
 
-Parses an HTML string directly. Use this when you already have the HTML.
+Parses an HTML string directly. Use this when you already have the HTML. `baseUrl` must be an absolute `http:` or `https:` URL; anything else throws `LinkpeekError` with code `INVALID_URL`.
 Pass `{ includeBodyContent: true }` to continue into `<body>` for JSON-LD and image fallbacks; by default parsing stops tokenizing when the head ends. Relative metadata and meta-refresh URLs honor the document's first safe `<base href>`.
 
 ```typescript
@@ -347,7 +362,7 @@ console.log(result.title); // "Hello"
 
 ### `validateUrl(url, allowPrivateIPs?)` and `isPrivateHost(hostname)`
 
-The SSRF-hardening helpers are exported for pre-validating URLs before queueing preview jobs. `validateUrl` rejects embedded credentials and throws a `LinkpeekError` (`INVALID_URL`, `UNSUPPORTED_PROTOCOL`, or `PRIVATE_NETWORK_BLOCKED`); `isPrivateHost` returns a boolean for hostnames and literal IP addresses covered by linkpeek's blocklist.
+The SSRF-hardening helpers are exported for pre-validating URLs before queueing preview jobs. `validateUrl` rejects embedded credentials and throws a `LinkpeekError` (`INVALID_URL`, `UNSUPPORTED_PROTOCOL`, or `PRIVATE_NETWORK_BLOCKED`); `isPrivateHost` returns a boolean for hostnames and literal IP addresses covered by linkpeek's blocklist, normalising the host the way `fetch()` does first (so `2130706433` and `127.1` count as loopback).
 
 ```typescript
 import { validateUrl } from "linkpeek";

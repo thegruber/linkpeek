@@ -9,7 +9,7 @@ Start with the response status and the HTML the server actually returns. A page 
 
 ## Missing title or image [#missing]
 
-Missing metadata is returned as `null`. The fast preset reads up to 30,000 decoded bytes and stops after the head. If metadata lives in body JSON-LD, try `presets.quality`, which allows 200,000 bytes and body fallbacks.
+Missing metadata is returned as `null`. The fast preset reads up to 30,000 decoded bytes and stops after the head. If `result.truncated` is `true`, the head was longer than that (large inline CSS or scripts) and later tags were not read: raise `maxBytes`. If metadata lives in body JSON-LD, try `presets.quality`, which allows 200,000 bytes and body fallbacks.
 
 ```ts
 import { preview, presets } from "linkpeek";
@@ -35,7 +35,7 @@ Bot challenges, rate limits and access restrictions can prevent server-side fetc
 
 ## Timeouts and cancellation [#timeout]
 
-The default timeout is 8,000 milliseconds. A timeout throws `LinkpeekError` with code `TIMEOUT`. Set a budget that fits your endpoint; do not retry indefinitely. Caller aborts and network failures propagate separately.
+The default timeout is 8,000 milliseconds for the whole call, including redirects and a meta-refresh hop. A timeout throws `LinkpeekError` with code `TIMEOUT`; DNS, connection and TLS failures throw `FETCH_FAILED` with the original error as `cause`. Set a budget that fits your endpoint; do not retry indefinitely. A caller abort rethrows the signal's reason.
 
 ```ts
 import { LinkpeekError, preview } from "linkpeek";
@@ -53,7 +53,7 @@ try {
 
 ## Blocked URLs [#blocked]
 
-`PRIVATE_NETWORK_BLOCKED` means the target matched a blocked hostname or literal address. Keep private access disabled on public endpoints. For an intentionally internal, trusted workflow, review [the security model](/security/) before using `allowPrivateIPs`.
+`PRIVATE_NETWORK_BLOCKED` means the target matched a blocked hostname or literal address, or a `resolveHost` lookup returned a private address. Single-label hosts such as `http://intranet/` and names under `.internal`, `.local` or `.home.arpa` count as internal. Keep private access disabled on public endpoints. For an intentionally internal, trusted workflow, review [the security model](/security/) before using `allowPrivateIPs`.
 
 `SENSITIVE_HEADER` means a custom header carries credentials. Remove it. A custom `fetch` must honor manual redirects and abort signals so target checks remain effective.
 
