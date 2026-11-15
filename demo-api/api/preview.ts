@@ -47,10 +47,22 @@ export async function GET(request: Request): Promise<Response> {
 		);
 	}
 
+	// Time spent waiting for the target (DNS check, connect, TLS, until its
+	// response headers arrive, summed over redirects), so the page can show
+	// it apart from linkpeek's own work: streaming and parsing the head.
+	let waitMs = 0;
+	const timedFetch: typeof fetch = async (input, init) => {
+		const start = performance.now();
+		try {
+			return await fetchPublicOnly(input, init);
+		} finally {
+			waitMs += performance.now() - start;
+		}
+	};
 	const started = performance.now();
 	try {
 		const result = await preview(target.url, {
-			fetch: fetchPublicOnly,
+			fetch: timedFetch,
 			timeout: 5000,
 			maxRedirects: 5,
 		});
@@ -69,6 +81,7 @@ export async function GET(request: Request): Promise<Response> {
 				canonicalUrl: result.canonicalUrl,
 				statusCode: result.statusCode,
 				ms: Math.round(performance.now() - started),
+				waitMs: Math.round(waitMs),
 				// Cached answers keep this, so the page can say how old they are.
 				fetchedAt: new Date().toISOString(),
 			},

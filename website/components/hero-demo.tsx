@@ -16,7 +16,7 @@ type State =
 	| { kind: "example"; index: number }
 	| { kind: "loading"; url: string }
 	| { kind: "error"; message: string }
-	| { kind: "result"; card: Card; ms: number; age: number };
+	| { kind: "result"; card: Card; ms: number; waitMs: number; age: number };
 
 const ROTATE_MS = 3600;
 
@@ -96,7 +96,7 @@ export function HeroDemo({
 		try {
 			const response = await fetch(
 				// v names the response shape, so older edge-cached answers are skipped.
-				`${previewApi}?url=${encodeURIComponent(url)}&v=2`,
+				`${previewApi}?url=${encodeURIComponent(url)}&v=3`,
 			);
 			if (response.status === 429) {
 				setState({
@@ -117,6 +117,7 @@ export function HeroDemo({
 			setState({
 				kind: "result",
 				ms: Number(data.ms) || 0,
+				waitMs: Number(data.waitMs) || 0,
 				// Seconds since linkpeek fetched it; the endpoint caches for a day.
 				age: Math.max(
 					0,
@@ -147,9 +148,8 @@ export function HeroDemo({
 			: state.kind === "error"
 				? state.message
 				: state.kind === "result"
-					? state.age < 120
-						? `Live · fetched just now · ${state.ms} ms`
-						: `Live · cached ${ago(state.age)} · ${state.ms} ms`
+					? // The site's answer time is not linkpeek's: show the two apart.
+						`${state.age < 120 ? "Live" : `Cached ${ago(state.age)}`} · site ${state.waitMs} ms · reading head ${Math.max(0, state.ms - state.waitMs)} ms`
 					: example
 						? `Read ${kb(example.headBytes)} of ${kb(example.pageBytes)}, then stopped`
 						: "";
@@ -250,7 +250,7 @@ export function HeroDemo({
 							</span>
 						</a>
 					) : null}
-					{card && <Checks key={card.url} card={card} />}
+					{card && <Checks key={`checks:${card.url}`} card={card} />}
 					{!card && (
 						<div className="grid aspect-[1200/630] place-items-center border border-rule border-dashed text-fd-muted-foreground text-sm">
 							The preview card appears here.

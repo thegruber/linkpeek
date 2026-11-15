@@ -5,7 +5,7 @@ description: "Reproducible link preview benchmarks: linkpeek against five packag
 heading: "Link preview benchmarks"
 ---
 
-linkpeek and five other link preview packages, measured on <BenchmarkDate /> with the same pages, the same local server and the same correctness check. Every number comes from an open harness you can run yourself. The [library comparison](/guides/link-preview-library-comparison/) covers what each package is best at, including where another one fits better.
+linkpeek and five other link preview packages, measured on <BenchmarkDate /> with the same pages, the same local server and the same correctness check. Every number comes from an open harness you can run yourself, and measures library overhead without network latency ([why a live preview takes longer](#live)). The [library comparison](/guides/link-preview-library-comparison/) covers what each package is best at, including where another one fits better.
 
 <BenchmarkHighlights />
 
@@ -37,6 +37,12 @@ The local stream probe serves a controlled 500 kB response in 1 kB chunks and re
 | Quality | ~202 kB | 200 kB | Continues for body fallbacks |
 
 “Source bytes” includes one queued 1 kB stream chunk; the retained byte ceiling remains exact. These are requested chunks, not exact network wire bytes.
+
+## Benchmarks and a live preview [#live]
+
+These runs use a local server, so they measure the library, not the internet. A live preview also waits for the target site: DNS, the connection, TLS and the server's own response time. That wait is usually far longer than the library's work, and no parser can shorten it.
+
+The homepage demo shows the two apart. "Site" is the time until the target's response headers arrive, summed over redirects. "Reading head" is linkpeek streaming the rest of the `<head>` and parsing it. Online, the head-first design still saves time on large pages: linkpeek stops downloading after `</head>` instead of transferring the whole document.
 
 ## Method [#method]
 
