@@ -23,6 +23,7 @@ No browser rendering, full article extraction, or fetched oEmbed payloads. Priva
 ## Documentation
 
 - [Overview](${siteUrl}index.md): What linkpeek does, install, usage and benchmark summary.
+- [Agent task](${siteUrl}prompt.md): A ready-to-run task for a coding agent that adds link previews to an app with linkpeek.
 ${pages}
 
 ## Optional

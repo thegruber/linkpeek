@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { AgentPromptBlock } from "@/components/agent-prompt-block";
 import { BenchmarkChart } from "@/components/benchmarks";
 import { Dither } from "@/components/dither";
 import { Downloads } from "@/components/downloads";
@@ -201,6 +202,31 @@ export default async function HomePage() {
 
 			<Showcase />
 
+			{/* For coding agents: the whole integration as one task. */}
+			<section className="grid border-ink border-b lg:grid-cols-4">
+				<div className="flex flex-col justify-between gap-6 px-5 pt-10 pb-6 sm:px-8 lg:border-ink lg:border-r lg:py-12">
+					<h2 className="font-normal text-[clamp(2.25rem,3.6vw,3.5rem)] uppercase leading-[0.92] tracking-[-0.04em]">
+						Let your agent add it.
+					</h2>
+					<p className="max-w-[34ch] text-fd-muted-foreground text-sm leading-relaxed">
+						One task for Claude Code, Cursor, Codex or Copilot: install, a
+						server endpoint, a card component, caching and the safety rules.
+						Agents can also read{" "}
+						<a href="prompt.md" className="u-line">
+							prompt.md
+						</a>{" "}
+						and{" "}
+						<a href="llms.txt" className="u-line">
+							llms.txt
+						</a>
+						.
+					</p>
+				</div>
+				<div className="min-w-0 px-5 pb-10 sm:px-8 lg:col-span-3 lg:py-12">
+					<AgentPromptBlock />
+				</div>
+			</section>
+
 			{/* Short lists. */}
 			<section className="grid border-ink border-b lg:grid-cols-3">
 				<div className="border-ink border-b px-5 py-10 sm:px-8 lg:border-r lg:border-b-0">
@@ -372,7 +398,7 @@ function ArrowIcon() {
 		<svg
 			viewBox="0 0 16 16"
 			aria-hidden="true"
-			className="cell-arrow size-4 shrink-0 group-hover:translate-x-[3px]"
+			className="cell-arrow size-4 shrink-0"
 			fill="none"
 			stroke="currentColor"
 			strokeWidth="1.5"

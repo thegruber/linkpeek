@@ -1,5 +1,6 @@
 import defaultMdxComponents from "fumadocs-ui/mdx";
 import type { MDXComponents } from "mdx/types";
+import { AgentPromptBlock } from "@/components/agent-prompt-block";
 import {
 	BenchmarkChart,
 	BenchmarkDate,
@@ -14,6 +15,7 @@ import { LiveResult } from "@/components/self-preview";
 export function getMDXComponents(components?: MDXComponents) {
 	return {
 		...defaultMdxComponents,
+		AgentPromptBlock,
 		BenchmarkChart,
 		BenchmarkDate,
 		BenchmarkHighlights,
