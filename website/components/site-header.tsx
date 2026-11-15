@@ -100,20 +100,20 @@ export function SiteHeader({
 						key={href}
 						href={href}
 						aria-current={section(href) ? "page" : undefined}
-						className={`${href.includes("comparison") ? "hidden sm:flex" : "flex"} min-h-11 items-center whitespace-nowrap decoration-[#ff5b1f] decoration-2 underline-offset-[6px] hover:underline aria-[current=page]:underline`}
+						className={`${href.includes("comparison") ? "hidden sm:flex" : "flex"} u-line min-h-11 items-center whitespace-nowrap [--line-y:0.6rem]`}
 					>
 						{label}
 					</Link>
 				))}
 				<a
 					href={repository}
-					className="hidden whitespace-nowrap hover:underline hover:underline-offset-4 xl:inline"
+					className="u-line hidden min-h-11 items-center whitespace-nowrap [--line-y:0.6rem] xl:flex"
 				>
 					GitHub
 				</a>
 				<a
 					href={npmUrl}
-					className="hidden whitespace-nowrap hover:underline hover:underline-offset-4 xl:inline"
+					className="u-line hidden min-h-11 items-center whitespace-nowrap [--line-y:0.6rem] xl:flex"
 				>
 					npm
 				</a>
@@ -121,7 +121,7 @@ export function SiteHeader({
 					<button
 						type="button"
 						onClick={() => search.setOpenSearch(true)}
-						className="ml-auto hidden items-center gap-2 font-mono text-fd-muted-foreground text-xs hover:text-fd-foreground xl:flex"
+						className="press ml-auto hidden items-center gap-2 font-mono text-fd-muted-foreground text-xs transition-[color,transform] hover:text-fd-foreground xl:flex"
 					>
 						Search <kbd className="border border-rule px-1.5">{shortcut}</kbd>
 					</button>
@@ -132,7 +132,7 @@ export function SiteHeader({
 					type="button"
 					aria-label="Search the docs"
 					onClick={() => search.setOpenSearch(true)}
-					className="grid w-14 place-items-center border-ink border-l xl:hidden"
+					className="cell grid w-14 place-items-center border-ink border-l xl:hidden"
 				>
 					<svg
 						viewBox="0 0 16 16"

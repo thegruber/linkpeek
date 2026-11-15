@@ -173,7 +173,7 @@ export default async function HomePage() {
 					<Link
 						key={item.label}
 						href="/benchmarks/"
-						className={`flex min-h-40 flex-col justify-between gap-6 border-ink px-5 py-6 sm:min-h-56 sm:px-8 ${index === 0 ? "bg-block" : ""} ${index % 2 === 0 ? "border-r" : "lg:border-r"} ${index < 2 ? "border-b lg:border-b-0" : ""}`}
+						className={`cell group flex min-h-40 flex-col justify-between gap-6 border-ink px-5 py-6 sm:min-h-56 sm:px-8 ${index === 0 ? "bg-block" : ""} ${index % 2 === 0 ? "border-r" : "lg:border-r"} ${index < 2 ? "border-b lg:border-b-0" : ""}`}
 					>
 						<RollingFigure
 							value={item.figure}
@@ -186,7 +186,7 @@ export default async function HomePage() {
 				))}
 				<Link
 					href="/api/#presets"
-					className="flex min-h-40 flex-col justify-between gap-6 px-5 py-6 sm:min-h-56 sm:px-8"
+					className="cell flex min-h-40 flex-col justify-between gap-6 px-5 py-6 sm:min-h-56 sm:px-8"
 				>
 					<RollingFigure
 						value={30}
@@ -225,12 +225,12 @@ export default async function HomePage() {
 					<h2 className="font-mono text-[0.72rem] uppercase tracking-[0.06em]">
 						Runs where fetch runs
 					</h2>
-					<ul className="mt-5 grid">
+					<ul className="-mx-3 mt-5 grid">
 						{runtimes.map(([name, href]) => (
 							<li key={name} className="border-ink border-t">
 								<Link
 									href={href}
-									className="group flex min-h-11 items-center justify-between text-[0.95rem] hover:bg-block"
+									className="cell group flex min-h-11 items-center justify-between px-3 text-[0.95rem]"
 								>
 									{name}
 									<ArrowIcon />
@@ -243,12 +243,12 @@ export default async function HomePage() {
 					<h2 className="font-mono text-[0.72rem] uppercase tracking-[0.06em]">
 						Choosing a library
 					</h2>
-					<ul className="mt-5 grid">
+					<ul className="-mx-3 mt-5 grid">
 						{comparisons.map(([label, href]) => (
 							<li key={label} className="border-ink border-t">
 								<Link
 									href={href}
-									className="group flex min-h-11 items-center justify-between text-[0.95rem] hover:bg-block"
+									className="cell group flex min-h-11 items-center justify-between px-3 text-[0.95rem]"
 								>
 									{label}
 									<ArrowIcon />
@@ -293,28 +293,37 @@ export default async function HomePage() {
 					aria-label="Documentation"
 					className="grid content-start border-ink border-b px-5 py-6 sm:px-8 lg:border-r lg:border-b-0"
 				>
-					<Link href="/quick-start/" className="py-1.5 hover:underline">
+					<Link
+						href="/quick-start/"
+						className="u-line w-fit py-1.5 [--line-y:3px]"
+					>
 						Quick start
 					</Link>
-					<Link href="/api/" className="py-1.5 hover:underline">
+					<Link href="/api/" className="u-line w-fit py-1.5 [--line-y:3px]">
 						API reference
 					</Link>
-					<Link href="/benchmarks/" className="py-1.5 hover:underline">
+					<Link
+						href="/benchmarks/"
+						className="u-line w-fit py-1.5 [--line-y:3px]"
+					>
 						Benchmarks
 					</Link>
 					<Link
 						href="/guides/troubleshooting/"
-						className="py-1.5 hover:underline"
+						className="u-line w-fit py-1.5 [--line-y:3px]"
 					>
 						Troubleshooting
 					</Link>
 					<Link
 						href="/guides/link-preview-library-comparison/"
-						className="py-1.5 hover:underline"
+						className="u-line w-fit py-1.5 [--line-y:3px]"
 					>
 						Compare libraries
 					</Link>
-					<Link href="/security/" className="py-1.5 hover:underline">
+					<Link
+						href="/security/"
+						className="u-line w-fit py-1.5 [--line-y:3px]"
+					>
 						Security
 					</Link>
 				</nav>
@@ -322,16 +331,19 @@ export default async function HomePage() {
 					aria-label="Resources"
 					className="grid content-start border-ink border-b px-5 py-6 sm:px-8 lg:border-r lg:border-b-0"
 				>
-					<a href={npmUrl} className="py-1.5 hover:underline">
+					<a href={npmUrl} className="u-line w-fit py-1.5 [--line-y:3px]">
 						npm
 					</a>
-					<a href={repository} className="py-1.5 hover:underline">
+					<a href={repository} className="u-line w-fit py-1.5 [--line-y:3px]">
 						GitHub
 					</a>
-					<a href={`${repository}/releases`} className="py-1.5 hover:underline">
+					<a
+						href={`${repository}/releases`}
+						className="u-line w-fit py-1.5 [--line-y:3px]"
+					>
 						Releases
 					</a>
-					<a href="llms.txt" className="py-1.5 hover:underline">
+					<a href="llms.txt" className="u-line w-fit py-1.5 [--line-y:3px]">
 						llms.txt
 					</a>
 				</nav>
@@ -360,7 +372,7 @@ function ArrowIcon() {
 		<svg
 			viewBox="0 0 16 16"
 			aria-hidden="true"
-			className="size-4 shrink-0 transition-transform group-hover:translate-x-0.5"
+			className="cell-arrow size-4 shrink-0 group-hover:translate-x-[3px]"
 			fill="none"
 			stroke="currentColor"
 			strokeWidth="1.5"

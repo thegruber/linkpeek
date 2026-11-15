@@ -38,7 +38,7 @@ function Card({ card }: { card: ShowcaseCard }) {
 			<a
 				href={card.url}
 				rel="nofollow noopener noreferrer"
-				className="group/card block h-full transition-colors hover:bg-fd-card"
+				className="cell group/card block h-full"
 			>
 				<span className="block overflow-hidden border-rule border-b bg-fd-muted">
 					{/* biome-ignore lint/performance/noImgElement: third-party Open Graph images */}

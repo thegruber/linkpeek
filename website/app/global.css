@@ -363,9 +363,6 @@ div:has(> [role="tablist"]) figure.shiki {
 	border-radius: 0;
 	box-shadow: none;
 }
-#nd-page > .\@container > a:hover {
-	background: var(--color-block);
-}
 [data-toc-popover-content],
 #nd-tocnav {
 	box-shadow: none;
@@ -409,5 +406,177 @@ a[href="#nd-page"].sr-only:focus-visible {
 	#nd-sidebar a[href^="https://github.com/thegruber"],
 	#nd-sidebar a[href^="https://www.npmjs.com"] {
 		display: none;
+	}
+}
+
+/*
+ * Interaction system. One vocabulary for everything you can press:
+ * - .u-line: text links. An orange line (the band from the mark) sweeps in
+ *   under the text on hover and marks the current page.
+ * - .cell: grid cells and rows. A pale orange fill sweeps in from the left
+ *   and the arrow (.cell-arrow) steps forward.
+ * - .press: buttons scale to 0.97 while pressed.
+ * Hover is gated to fine pointers; reduced motion swaps movement for fades.
+ */
+.u-line {
+	position: relative;
+}
+.u-line::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: var(--line-y, -3px);
+	height: 2px;
+	background: var(--color-mark);
+	transform: scaleX(0);
+	transform-origin: right center;
+	transition: transform 240ms var(--ease-out);
+	pointer-events: none;
+}
+@media (hover: hover) and (pointer: fine) {
+	.u-line:hover::after {
+		transform: scaleX(1);
+		transform-origin: left center;
+	}
+}
+.u-line:focus-visible::after,
+.u-line[aria-current="page"]::after {
+	transform: scaleX(1);
+}
+
+.cell,
+:is(#nd-sidebar, #nd-sidebar-mobile) a[data-active="false"],
+#nd-page > .\@container > a {
+	position: relative;
+	isolation: isolate;
+}
+.cell::before,
+:is(#nd-sidebar, #nd-sidebar-mobile) a[data-active="false"]::before,
+#nd-page > .\@container > a::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	background: var(--color-block);
+	transform: scaleX(0);
+	transform-origin: left center;
+	transition:
+		transform 260ms var(--ease-out),
+		background-color 120ms ease;
+	pointer-events: none;
+}
+@media (hover: hover) and (pointer: fine) {
+	.cell:hover::before,
+	:is(#nd-sidebar, #nd-sidebar-mobile) a[data-active="false"]:hover::before,
+	#nd-page > .\@container > a:hover::before {
+		transform: scaleX(1);
+	}
+	.cell:hover .cell-arrow,
+	#nd-page > .\@container > a:hover svg {
+		transform: translateX(3px);
+	}
+}
+/* Pressing deepens the fill: the cell heard you, without scaling the grid. */
+.cell:active::before,
+:is(#nd-sidebar, #nd-sidebar-mobile) a[data-active="false"]:active::before,
+#nd-page > .\@container > a:active::before {
+	transform: scaleX(1);
+	background: #ffd3c2;
+}
+.cell-arrow,
+#nd-page > .\@container > a svg {
+	transition: transform 200ms var(--ease-out);
+}
+/* The docs UI paints its own hover backgrounds; the sweep replaces them. */
+#nd-page > .\@container > a:hover {
+	background: transparent;
+}
+:is(#nd-sidebar, #nd-sidebar-mobile) a[data-active="false"]:hover {
+	background: transparent;
+	color: var(--color-ink);
+}
+:is(#nd-sidebar, #nd-sidebar-mobile) a[data-active] {
+	transition: color 150ms ease;
+}
+
+/* Prose links: the hero's highlighter, as a pale sweep behind the words. */
+.prose a:not([data-card]):not(:where(.not-prose *)) {
+	background:
+		linear-gradient(var(--color-block), var(--color-block)) no-repeat left / 0%
+		100%;
+	box-decoration-break: clone;
+	-webkit-box-decoration-break: clone;
+	transition: background-size 240ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+	.prose a:not([data-card]):not(:where(.not-prose *)):hover {
+		background-size: 100% 100%;
+	}
+}
+
+/* Docs buttons answer the press like the rest of the site. */
+.page-actions > button,
+.page-actions [aria-haspopup],
+figure.shiki button,
+[role="tab"],
+#nd-sidebar-mobile button,
+[data-search-full] {
+	transition:
+		transform 160ms var(--ease-out),
+		background-color 150ms ease,
+		color 150ms ease,
+		box-shadow 160ms ease;
+}
+.page-actions > button:active,
+.page-actions [aria-haspopup]:active,
+figure.shiki button:active,
+[role="tab"]:active,
+#nd-sidebar-mobile button:active {
+	transform: scale(0.97);
+}
+/* Package-manager tabs: the selected one carries the orange band. */
+[role="tab"][aria-selected="true"] {
+	box-shadow: inset 0 -2px var(--color-mark);
+}
+
+/* Preview tags: found ones pop in, one after another, for each new card. */
+@media (prefers-reduced-motion: no-preference) {
+	.tag-dot[data-ok] {
+		animation: tag-in 260ms var(--ease-out) both;
+		animation-delay: calc(var(--i, 0) * 35ms + 80ms);
+	}
+}
+@keyframes tag-in {
+	from {
+		opacity: 0;
+		transform: scale(0.4);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.u-line::after,
+	.cell::before,
+	:is(#nd-sidebar, #nd-sidebar-mobile) a[data-active="false"]::before,
+	#nd-page > .\@container > a::before {
+		transform: none;
+		opacity: 0;
+		transition: opacity 150ms ease;
+	}
+	.u-line[aria-current="page"]::after,
+	.u-line:focus-visible::after {
+		opacity: 1;
+	}
+	.u-line:hover::after,
+	.cell:hover::before,
+	.cell:active::before,
+	:is(#nd-sidebar, #nd-sidebar-mobile)
+		a[data-active="false"]:is(:hover, :active)::before,
+	#nd-page > .\@container > a:is(:hover, :active)::before {
+		opacity: 1;
+	}
+	.cell-arrow,
+	.prose a:not([data-card]) {
+		transition: none;
 	}
 }

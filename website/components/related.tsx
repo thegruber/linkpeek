@@ -13,7 +13,7 @@ export function Related({ items }: { items: Item[] }) {
 			{items.map(([label, href, note]) => {
 				const external = /^https?:/.test(href);
 				const className =
-					"group flex min-h-20 flex-col justify-between gap-3 border-ink border-r border-b px-4 py-3.5 transition-colors hover:bg-block";
+					"cell group flex min-h-20 flex-col justify-between gap-3 border-ink border-r border-b px-4 py-3.5";
 				const body = (
 					<>
 						<span className="font-mono text-[0.68rem] text-fd-muted-foreground uppercase tracking-[0.06em]">
@@ -24,7 +24,7 @@ export function Related({ items }: { items: Item[] }) {
 							<svg
 								viewBox="0 0 16 16"
 								aria-hidden="true"
-								className="size-4 shrink-0 transition-transform group-hover:translate-x-0.5"
+								className="cell-arrow size-4 shrink-0"
 								fill="none"
 								stroke="currentColor"
 								strokeWidth="1.5"

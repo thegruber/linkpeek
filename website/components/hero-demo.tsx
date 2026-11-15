@@ -1,4 +1,5 @@
 "use client";
+import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import { TextMorph } from "torph/react";
 import { PeekingEyes } from "@/components/gaze";
@@ -249,7 +250,7 @@ export function HeroDemo({
 							</span>
 						</a>
 					) : null}
-					{card && <Checks card={card} />}
+					{card && <Checks key={card.url} card={card} />}
 					{!card && (
 						<div className="grid aspect-[1200/630] place-items-center border border-rule border-dashed text-fd-muted-foreground text-sm">
 							The preview card appears here.
@@ -390,14 +391,16 @@ function Checks({ card }: { card: CheckInput }) {
 				</span>
 			</p>
 			<ul className="grid grid-cols-2 gap-px bg-ink sm:grid-cols-3">
-				{checks.map((check) => (
+				{checks.map((check, index) => (
 					<li
 						key={check.label}
 						className="flex items-center gap-2 bg-fd-background px-3 py-2"
 					>
 						<span
 							aria-hidden="true"
-							className={`size-2 shrink-0 ${check.ok ? "bg-mark" : "border border-ink"}`}
+							data-ok={check.ok || undefined}
+							style={{ "--i": index } as React.CSSProperties}
+							className={`tag-dot size-2 shrink-0 ${check.ok ? "bg-mark" : "border border-ink"}`}
 						/>
 						<span className={check.ok ? "" : "text-fd-muted-foreground"}>
 							{check.label}
