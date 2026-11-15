@@ -2,7 +2,7 @@ import { ShowcaseStrip } from "@/components/showcase-strip";
 import { capturedLabel, type ShowcaseCard, showcase } from "@/lib/showcase";
 
 // Real link previews, captured by linkpeek when this site was built. A
-// swipeable strip: scroll, drag on touch, or use the arrow buttons.
+// strip that drifts slowly and loops; scroll or swipe it at any time.
 export async function Showcase() {
 	const cards = await showcase();
 	if (cards.length < 4) return null;
@@ -34,7 +34,7 @@ export async function Showcase() {
 
 function Card({ card }: { card: ShowcaseCard }) {
 	return (
-		<li className="w-[19rem] shrink-0 snap-start border-ink border-r last:border-r-0">
+		<li className="w-[19rem] shrink-0 border-ink border-r">
 			<a
 				href={card.url}
 				rel="nofollow noopener noreferrer"
@@ -50,7 +50,7 @@ function Card({ card }: { card: ShowcaseCard }) {
 						loading="lazy"
 						decoding="async"
 						referrerPolicy="no-referrer"
-						className="aspect-[1200/630] w-full object-cover transition-transform duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover/card:scale-[1.03]"
+						className="aspect-[1200/630] w-full object-cover"
 					/>
 				</span>
 				<span className="grid gap-1 px-4 py-3.5">

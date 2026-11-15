@@ -1,8 +1,13 @@
 "use client";
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef } from "react";
 
-// A horizontal strip the reader moves themselves: native scroll and swipe
-// with snap points, plus arrow buttons for mouse and keyboard users.
+const SPEED = 24; // px per second: slow enough to read while it moves
+const RESUME_MS = 2500;
+
+// A strip of cards that drifts slowly on its own and loops, and that the
+// reader can scroll, swipe or wheel at any time. Hover, touch, focus or a
+// scroll pauses the drift; it resumes a moment after the reader lets go.
+// Under reduced motion it stays still and is a plain scroll region.
 export function ShowcaseStrip({
 	title,
 	children,
@@ -10,94 +15,105 @@ export function ShowcaseStrip({
 	title: ReactNode;
 	children: ReactNode;
 }) {
-	const list = useRef<HTMLUListElement>(null);
-	const [edges, setEdges] = useState({ start: true, end: false });
+	const scroller = useRef<HTMLElement>(null);
+	const first = useRef<HTMLUListElement>(null);
 
 	useEffect(() => {
-		const element = list.current;
-		if (!element) return;
-		const update = () =>
-			setEdges({
-				start: element.scrollLeft < 4,
-				end:
-					element.scrollLeft + element.clientWidth >= element.scrollWidth - 4,
-			});
-		update();
-		element.addEventListener("scroll", update, { passive: true });
-		window.addEventListener("resize", update);
+		const element = scroller.current;
+		const list = first.current;
+		if (!element || !list) return;
+		if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+		let pos = element.scrollLeft;
+		let last = 0;
+		let frame = 0;
+		let visible = false;
+		let hovering = false;
+		let heldUntil = 0;
+
+		const hold = () => {
+			heldUntil = performance.now() + RESUME_MS;
+		};
+		const tick = (now: number) => {
+			frame = requestAnimationFrame(tick);
+			const dt = last ? Math.min(64, now - last) : 0;
+			last = now;
+			if (hovering || now < heldUntil || document.hidden) {
+				pos = element.scrollLeft;
+				return;
+			}
+			pos += (SPEED * dt) / 1000;
+			// The second copy follows the first, so jumping back by one list
+			// width is invisible and the strip loops without an end.
+			const loop = list.offsetWidth;
+			if (loop > 0 && pos >= loop) pos -= loop;
+			element.scrollLeft = pos;
+		};
+		const start = () => {
+			if (!frame) {
+				last = 0;
+				frame = requestAnimationFrame(tick);
+			}
+		};
+		const stop = () => {
+			cancelAnimationFrame(frame);
+			frame = 0;
+		};
+		const observer = new IntersectionObserver(([entry]) => {
+			visible = entry.isIntersecting;
+			if (visible) start();
+			else stop();
+		});
+		observer.observe(element);
+
+		const fine = matchMedia("(hover: hover) and (pointer: fine)").matches;
+		const enter = () => {
+			if (fine) hovering = true;
+		};
+		const leave = () => {
+			hovering = false;
+			hold();
+		};
+		element.addEventListener("pointerenter", enter);
+		element.addEventListener("pointerleave", leave);
+		element.addEventListener("pointerdown", hold, { passive: true });
+		element.addEventListener("touchstart", hold, { passive: true });
+		element.addEventListener("wheel", hold, { passive: true });
+		element.addEventListener("focusin", hold);
+		element.addEventListener("keydown", hold);
 		return () => {
-			element.removeEventListener("scroll", update);
-			window.removeEventListener("resize", update);
+			stop();
+			observer.disconnect();
+			element.removeEventListener("pointerenter", enter);
+			element.removeEventListener("pointerleave", leave);
+			element.removeEventListener("pointerdown", hold);
+			element.removeEventListener("touchstart", hold);
+			element.removeEventListener("wheel", hold);
+			element.removeEventListener("focusin", hold);
+			element.removeEventListener("keydown", hold);
 		};
 	}, []);
 
-	const move = (direction: 1 | -1) => {
-		const element = list.current;
-		if (!element) return;
-		const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-		element.scrollBy({
-			left: direction * element.clientWidth * 0.8,
-			behavior: reduce ? "auto" : "smooth",
-		});
-	};
-
-	const button =
-		"press grid size-11 place-items-center border-ink border-l transition-[background-color,color,opacity,transform] hover:bg-ink hover:text-white disabled:pointer-events-none disabled:opacity-30";
-
 	return (
 		<>
-			<div className="flex items-stretch justify-between border-ink border-b">
-				<div className="flex flex-wrap items-baseline gap-x-6 gap-y-1 px-5 py-4 sm:px-8">
-					{title}
-				</div>
-				<div className="flex">
-					<button
-						type="button"
-						aria-label="Previous previews"
-						disabled={edges.start}
-						onClick={() => move(-1)}
-						className={button}
-					>
-						<svg
-							viewBox="0 0 16 16"
-							aria-hidden="true"
-							className="size-4"
-							fill="none"
-							stroke="currentColor"
-							strokeWidth="1.5"
-						>
-							<path d="M13 8H3M7 4 3 8l4 4" />
-						</svg>
-					</button>
-					<button
-						type="button"
-						aria-label="Next previews"
-						disabled={edges.end}
-						onClick={() => move(1)}
-						className={button}
-					>
-						<svg
-							viewBox="0 0 16 16"
-							aria-hidden="true"
-							className="size-4"
-							fill="none"
-							stroke="currentColor"
-							strokeWidth="1.5"
-						>
-							<path d="M3 8h10M9 4l4 4-4 4" />
-						</svg>
-					</button>
-				</div>
+			<div className="flex flex-wrap items-baseline gap-x-6 gap-y-1 border-ink border-b px-5 py-4 sm:px-8">
+				{title}
 			</div>
-			<ul
-				ref={list}
+			<section
+				ref={scroller}
 				// biome-ignore lint/a11y/noNoninteractiveTabindex: the scroll region must be reachable by keyboard
 				tabIndex={0}
 				aria-label="Captured link previews"
-				className="flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none] focus-visible:outline-offset-[-2px] [&::-webkit-scrollbar]:hidden"
+				className="flex overflow-x-auto overscroll-x-contain [scrollbar-width:none] focus-visible:outline-offset-[-2px] [&::-webkit-scrollbar]:hidden"
 			>
-				{children}
-			</ul>
+				<ul ref={first} className="flex shrink-0">
+					{children}
+				</ul>
+				{/* The loop's second copy: hidden from assistive tech and the tab order. */}
+				<ul className="flex shrink-0" aria-hidden="true" inert>
+					{children}
+				</ul>
+			</section>
 		</>
 	);
 }
