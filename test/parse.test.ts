@@ -535,6 +535,44 @@ describe("adversarial metadata", () => {
 	});
 });
 
+describe("video type", () => {
+	it("returns og:video:type with the video", () => {
+		const html = `<html><head>
+			<meta property="og:video" content="https://cdn.example.com/clip.mp4">
+			<meta property="og:video:type" content=" video/mp4 ">
+		</head></html>`;
+		const result = parseHTML(html, BASE);
+		expect(result.video).toBe("https://cdn.example.com/clip.mp4");
+		expect(result.videoType).toBe("video/mp4");
+	});
+
+	it("is null without a usable video URL", () => {
+		const typeOnly = parseHTML(
+			`<head><meta property="og:video:type" content="video/mp4"></head>`,
+			BASE,
+		);
+		expect(typeOnly.videoType).toBeNull();
+
+		const unsafeVideo = parseHTML(
+			`<head>
+				<meta property="og:video" content="javascript:alert(1)">
+				<meta property="og:video:type" content="video/mp4">
+			</head>`,
+			BASE,
+		);
+		expect(unsafeVideo.video).toBeNull();
+		expect(unsafeVideo.videoType).toBeNull();
+	});
+
+	it("is null when the page declares no type", () => {
+		const result = parseHTML(
+			`<head><meta property="og:video" content="https://cdn.example.com/clip.mp4"></head>`,
+			BASE,
+		);
+		expect(result.videoType).toBeNull();
+	});
+});
+
 describe("safe metadata URL resolution", () => {
 	it("resolves relative metadata against the document base URL", () => {
 		const html = `<html><head>

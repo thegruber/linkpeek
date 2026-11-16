@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented here.
 
+## 3.1.0 - 2026-11-16
+
+### Added
+- `videoType` result field: the `og:video:type` MIME type (for example `video/mp4`) when the page has a usable video, or the content type of a direct video URL. Embeds need it to render a `<video>` element with a `<source type>`. It is `null` when there is no video.
+
 ## 3.0.0 - 2026-11-16
 
 ### Breaking: migrating from 2.x
