@@ -21,12 +21,14 @@ export interface PreviewOptions {
 	/** Allow fetching private/internal IPs (default: false) */
 	allowPrivateIPs?: boolean;
 	/**
-	 * Opt-in DNS check. Called with the hostname of the first request and of
-	 * every redirect hop (IP literals are skipped); the request is blocked with
-	 * `PRIVATE_NETWORK_BLOCKED` if any returned address is private. Errors and
-	 * empty answers throw `FETCH_FAILED`. Platform fetch still resolves the name
-	 * again, so this narrows DNS rebinding rather than pinning the address.
-	 * Ignored when `allowPrivateIPs` is true.
+	 * Opt-in DNS check (default: none, so no DNS check runs). Called with the
+	 * hostname of the first request and of every redirect hop (IP literals are
+	 * skipped); the request is blocked with `PRIVATE_NETWORK_BLOCKED` if any
+	 * returned address is private. If the lookup throws or returns no
+	 * addresses, `preview()` rejects with a `LinkpeekError` whose code is
+	 * `FETCH_FAILED`; a thrown resolver error is kept as its `cause`. Platform
+	 * fetch still resolves the name again, so this narrows DNS rebinding rather
+	 * than pinning the address. Ignored when `allowPrivateIPs` is true.
 	 *
 	 * @example Node.js
 	 * import { lookup } from "node:dns/promises";

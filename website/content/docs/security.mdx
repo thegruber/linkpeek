@@ -37,13 +37,26 @@ Do not attach user cookies, authorization headers, cloud tokens, or internal ser
 
 ```ts
 import { lookup } from "node:dns/promises";
-import { preview } from "linkpeek";
+import { LinkpeekError, preview } from "linkpeek";
 
-await preview(url, {
-  resolveHost: async (hostname) =>
-    (await lookup(hostname, { all: true })).map((entry) => entry.address),
-});
+try {
+  await preview(url, {
+    resolveHost: async (hostname) =>
+      (await lookup(hostname, { all: true })).map((entry) => entry.address),
+  });
+} catch (error) {
+  if (error instanceof LinkpeekError && error.code === "PRIVATE_NETWORK_BLOCKED") {
+    // The name points at a private address: refuse the URL.
+  } else if (error instanceof LinkpeekError && error.code === "FETCH_FAILED") {
+    // DNS lookup failed or returned nothing (error.cause holds the resolver error),
+    // or the site could not be reached. Show a hostname-only card and retry later.
+  } else {
+    throw error;
+  }
+}
 ```
+
+Both are `LinkpeekError`s with a stable `code`: a resolver error is wrapped, not rethrown raw. A lookup that outlasts the deadline reports `TIMEOUT`, and your own `signal`'s abort reason propagates unchanged.
 
 This catches public names that point at internal addresses. It does not close rebinding completely: platform fetch resolves the name again before connecting, and a hostile DNS server can answer differently the second time.
 

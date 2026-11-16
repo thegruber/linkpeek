@@ -35,7 +35,7 @@ if (result.statusCode < 400) {
 | `maxRedirects` | `number` | `10` | Maximum redirects per call, HTTP and meta refresh combined. Must be a non-negative integer; invalid values throw `INVALID_OPTIONS` |
 | `headers` | `Record<string, string>` | `{}` | Extra non-sensitive request headers. Common credential-bearing headers are rejected; custom headers are not forwarded on cross-origin redirects |
 | `allowPrivateIPs` | `boolean` | `false` | Allow private/internal IP targets |
-| `resolveHost` | `(hostname) => Promise<string[]>` | none | Opt-in DNS check on the first request and every redirect hop; private answers throw `PRIVATE_NETWORK_BLOCKED`. See [DNS checks](/security/#dns) |
+| `resolveHost` | `(hostname) => Promise<string[]>` | none | Opt-in DNS check on the first request and every redirect hop; private answers throw `PRIVATE_NETWORK_BLOCKED`, lookup errors and empty answers throw `FETCH_FAILED` (a `LinkpeekError`, resolver error in `cause`). Example in [DNS checks](/security/#dns) |
 | `signal` | `AbortSignal` | none | Cancel the request from the caller side |
 | `fetch` | `typeof fetch` | `globalThis.fetch` | Custom fetch implementation. It must honor manual redirects and the supplied abort signal; a `response.url` it reports is validated too |
 | `followMetaRefresh` | `boolean` | `false` | Follow one `<head>` `<meta http-equiv="refresh">` redirect with a delay of 10s or less |
