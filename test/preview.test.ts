@@ -247,6 +247,25 @@ describe("preview()", () => {
 		expect(result.mediaType).toBe("image");
 	});
 
+	it("reports the content type of a direct video URL", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(
+				async () =>
+					new Response(null, {
+						status: 200,
+						headers: { "content-type": "Video/MP4; codecs=avc1" },
+					}),
+			),
+		);
+
+		const result = await preview("https://example.com/clip.mp4");
+
+		expect(result.video).toBe("https://example.com/clip.mp4");
+		expect(result.videoType).toBe("video/mp4");
+		expect(result.mediaType).toBe("video");
+	});
+
 	it("follows meta-refresh interstitials even when they have a title", async () => {
 		const interstitial = `<html><head>
 			<title>Just a moment...</title>

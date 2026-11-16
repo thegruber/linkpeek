@@ -558,6 +558,7 @@ export function parseHTML(
 		publishedDate,
 		keywords: keywords?.length ? keywords : null,
 		video,
+		videoType: video ? getText("og:video:type") : null,
 		audio,
 		twitterCard: getText("twitter:card"),
 		twitterSite: getText("twitter:site"),

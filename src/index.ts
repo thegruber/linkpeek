@@ -114,7 +114,10 @@ function mediaResult({
 	const mediaTypeHeader = contentType.toLowerCase().split(";", 1)[0].trim();
 	result.mediaType = mediaTypeHeader.split("/")[0] || "website";
 	if (mediaTypeHeader.startsWith("image/")) result.image = finalUrl;
-	if (mediaTypeHeader.startsWith("video/")) result.video = finalUrl;
+	if (mediaTypeHeader.startsWith("video/")) {
+		result.video = finalUrl;
+		result.videoType = mediaTypeHeader;
+	}
 	if (mediaTypeHeader.startsWith("audio/")) result.audio = finalUrl;
 	return result;
 }
@@ -143,6 +146,7 @@ function emptyResult(
 		publishedDate: null,
 		keywords: null,
 		video: null,
+		videoType: null,
 		audio: null,
 		twitterCard: null,
 		twitterSite: null,

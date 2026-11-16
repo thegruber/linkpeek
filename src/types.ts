@@ -100,6 +100,8 @@ export interface PreviewResult {
 	keywords: string[] | null;
 	/** og:video URL, filtered to http(s) */
 	video: string | null;
+	/** og:video:type MIME type (e.g. "video/mp4"); null when there is no video */
+	videoType: string | null;
 	/** og:audio URL, filtered to http(s) */
 	audio: string | null;
 	/** twitter:card type */

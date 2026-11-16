@@ -290,7 +290,7 @@ try {
 
 ### Non-HTML responses
 
-Direct media URLs return a usable result instead of failing: an image URL fills `image`, a video URL fills `video`, an audio URL fills `audio`, and `mediaType` reflects the content-type group (`"image"`, `"video"`, ...). Other non-HTML content types resolve with null metadata and the response `statusCode`.
+Direct media URLs return a usable result instead of failing: an image URL fills `image`, a video URL fills `video` and `videoType`, an audio URL fills `audio`, and `mediaType` reflects the content-type group (`"image"`, `"video"`, ...). Other non-HTML content types resolve with null metadata and the response `statusCode`.
 
 ## API
 
@@ -337,6 +337,7 @@ Fetches a URL and extracts link preview metadata. Returns `Promise<PreviewResult
 | `publishedDate` | `string \| null` | Article, JSON-LD, or Dublin Core date |
 | `keywords` | `string[] \| null` | `meta[name=keywords]` |
 | `video` | `string \| null` | Safe `og:video` URL |
+| `videoType` | `string \| null` | `og:video:type` MIME type, or the content type of a direct video URL; `null` without a video |
 | `audio` | `string \| null` | Safe `og:audio` URL |
 | `twitterCard` | `string \| null` | Twitter card type |
 | `twitterSite` | `string \| null` | Twitter site handle |
