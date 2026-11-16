@@ -45,7 +45,7 @@ The endpoint accepts one URL and returns the stable `PreviewResult` shape used b
 
 The response header helps browsers and shared proxies, but a server-side cache avoids the outbound fetch even when clients miss. Normalize equivalent URLs into one key, coalesce concurrent misses, choose a product-appropriate TTL, and cache only when `statusCode` is between 200 and 299.
 
-**Keep errors local.** A failed metadata request should produce a hostname-only fallback card rather than block the parent page or message.
+Keep errors local, too: a failed preview should become a hostname-only fallback card, not block the page or message around it.
 
 ## Protect a public preview route [#production]
 

@@ -15,16 +15,16 @@ url-metadata was measured through its own fetch, with `requestFilteringAgentOpti
 
 ## Choose url-metadata when [#choose-url-metadata]
 
-- You need its **broad output**: all meta tags, Google Scholar citations, hreflang, redirect chain, response headers and timing, narrowed with its `fields` option when you want less.
-- You need **proxy mode** to route blocked pages through an unblocking service, including headless rendering and screenshots from those vendors.
-- You want **resolved-address checks on Node.js** built in: its README says Node.js requests to private and reserved addresses are blocked by default through `request-filtering-agent`. linkpeek checks DNS answers on every hop only when you pass `resolveHost`, and does not pin the connection.
+- You need its broad output: all meta tags, Google Scholar citations, hreflang, redirect chain, response headers and timing, narrowed with its `fields` option when you want less.
+- You need proxy mode to route blocked pages through an unblocking service, including headless rendering and screenshots from those vendors.
+- You want resolved-address checks on Node.js built in: its README says Node.js requests to private and reserved addresses are blocked by default through `request-filtering-agent`. linkpeek checks DNS answers on every hop only when you pass `resolveHost`, and does not pin the connection.
 
 ## Choose linkpeek when [#choose-linkpeek]
 
-- You run on **Cloudflare Workers, Vercel Edge, Deno or Bun**. url-metadata marks its address filtering, size limit and compression options as Node.js only; linkpeek applies its byte limit, redirect checks and IP-literal blocking the same way everywhere.
-- You want a **byte limit by default**. url-metadata's `size` option defaults to 0, which disables it. linkpeek stops after `</head>` and retains at most 30,000 decoded bytes by default, which is where the large-page gap above comes from.
-- You want **one value per field** instead of raw tags to pick from: `title` already falls back from Open Graph to Twitter Card, Dublin Core, `<title>` and JSON-LD, and image, favicon and canonical URLs come back absolute and only as `http:` or `https:`.
-- **Install size** matters for cold starts or container images: one runtime dependency.
+- You run on Cloudflare Workers, Vercel Edge, Deno or Bun. url-metadata marks its address filtering, size limit and compression options as Node.js only; linkpeek applies its byte limit, redirect checks and IP-literal blocking the same way everywhere.
+- You want a byte limit by default. url-metadata's `size` option defaults to 0, which disables it. linkpeek stops after `</head>` and retains at most 30,000 decoded bytes by default, which is where the large-page gap above comes from.
+- You want one value per field instead of raw tags to pick from: `title` already falls back from Open Graph to Twitter Card, Dublin Core, `<title>` and JSON-LD, and image, favicon and canonical URLs come back absolute and only as `http:` or `https:`.
+- Install size matters for cold starts or container images. linkpeek has one runtime dependency.
 
 ## Migrate urlMetadata() to preview() [#migrate]
 

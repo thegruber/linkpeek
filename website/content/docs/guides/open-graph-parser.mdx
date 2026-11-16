@@ -27,7 +27,7 @@ The parser uses a streaming SAX tokenizer rather than constructing a browser DOM
 
 ## Resolve relative URLs [#relative]
 
-The second argument resolves relative image, favicon, canonical, video, audio, and oEmbed URLs. Extracted URLs are returned only when they resolve to `http:` or `https:`. Use the final response URL—not an untrusted caller-supplied substitute—as the base when parsing fetched HTML.
+The second argument resolves relative image, favicon, canonical, video, audio, and oEmbed URLs. Extracted URLs are returned only when they resolve to `http:` or `https:`. When you parse fetched HTML, use the final response URL as the base, not a URL the caller supplied.
 
 ## Parse metadata in the body [#body]
 
@@ -37,7 +37,7 @@ const result = parseHTML(html, baseUrl, {
 });
 ```
 
-The default head-first mode stops tokenizing after the document head. Enable body content when a page places JSON-LD or its first useful image in the body and the additional work is worth it.
+The default head-first mode stops tokenizing after the document head. Turn on `includeBodyContent` when a page puts its JSON-LD or its first useful image in the body and the extra work is worth it.
 
 ## Fetch HTML with preview() [#fetch]
 

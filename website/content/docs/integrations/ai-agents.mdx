@@ -43,7 +43,7 @@ For an MCP integration, your server must register a tool with an input schema an
 
 ## Treat metadata as untrusted input [#boundary]
 
-**Prompt injection:** titles, descriptions, JSON-LD, and other page metadata are controlled by the remote site. Do not place them in a system or developer prompt, and do not let text inside them change tool permissions or trigger another action.
+Page metadata is a prompt injection risk: the remote site controls the titles, descriptions, JSON-LD and everything else. Do not place them in a system or developer prompt, and do not let text inside them change tool permissions or trigger another action.
 
 - Label tool output as untrusted external content.
 

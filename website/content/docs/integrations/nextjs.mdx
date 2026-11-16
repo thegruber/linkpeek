@@ -5,7 +5,7 @@ description: "Build a server-side link preview endpoint with linkpeek and the Ne
 heading: "Link previews in Next.js"
 ---
 
-Keep arbitrary outbound fetches in a Route Handler, validate caller input, and make failures local to the preview card.
+Browsers can't read other sites' HTML, so the preview runs in a Route Handler. It checks the input, calls `preview()`, and when something fails only the card falls back, not the page.
 
 ## Create the route handler [#route]
 
@@ -40,9 +40,9 @@ export async function GET(request: NextRequest) {
 
 ## Cache successful responses [#cache]
 
-The response cache prevents repeated network fetches from dominating render latency. Cache only successful previews, choose a TTL that fits your product, and consider request coalescing when many users share the same URL at once.
+Without a cache, every render waits on the target site. Cache only successful previews, pick a TTL that suits your app, and consider coalescing requests when many users load the same URL at once.
 
-**Do not forward** cookies, authorization headers, internal tokens, or caller-provided credentials to the target URL.
+Don't forward cookies, authorization headers, internal tokens or caller-provided credentials to the target URL.
 
 ## Render metadata as untrusted data [#render]
 

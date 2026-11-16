@@ -5,7 +5,7 @@ description: "Reproducible link preview benchmarks: linkpeek against five packag
 heading: "Link preview benchmarks"
 ---
 
-linkpeek and five other link preview packages, measured on <BenchmarkDate /> with the same pages, the same local server and the same correctness check. Every number comes from an open harness you can run yourself, and measures library overhead without network latency ([why a live preview takes longer](#live)). The [library comparison](/guides/link-preview-library-comparison/) covers what each package is best at, including where another one fits better.
+I measured linkpeek and five other link preview packages on <BenchmarkDate />, with the same pages, the same local server and the same correctness check. The harness is open, so you can run it yourself. The pages are served locally, which means the numbers show library time without network latency ([why a live preview takes longer](#live)). Where another package is the better fit, the [library comparison](/guides/link-preview-library-comparison/) says so.
 
 <BenchmarkHighlights />
 
@@ -23,7 +23,7 @@ On small pages the packages are within about two milliseconds of each other, and
 
 ## Install footprint [#size]
 
-linkpeek has one runtime dependency, `htmlparser2`. Smaller installs matter most for serverless cold starts, container images and edge bundles.
+linkpeek has one runtime dependency, `htmlparser2`. A small install matters most for serverless cold starts, container images and edge bundles.
 
 <BenchmarkChart kind="install" />
 
@@ -36,13 +36,13 @@ The local stream probe serves a controlled 500 kB response in 1 kB chunks and re
 | **Fast** (default) | **2 kB** | 30 kB | Stops after `</head>` |
 | Quality | ~202 kB | 200 kB | Continues for body fallbacks |
 
-“Source bytes” includes one queued 1 kB stream chunk; the retained byte ceiling remains exact. These are requested chunks, not exact network wire bytes.
+“Source bytes” includes one 1 kB chunk that was already queued in the stream; the retained-byte ceiling itself is exact. The figures count requested chunks, not bytes on the wire.
 
 ## Benchmarks and a live preview [#live]
 
 These runs use a local server, so they measure the library, not the internet. A live preview also waits for the target site: DNS, the connection, TLS and the server's own response time. That wait is usually far longer than the library's work, and no parser can shorten it.
 
-The homepage demo shows the two apart. "Site" is the time until the target's response headers arrive, summed over redirects. "Reading head" is linkpeek streaming the rest of the `<head>` and parsing it. Online, the head-first design still saves time on large pages: linkpeek stops downloading after `</head>` instead of transferring the whole document.
+The homepage demo shows the two apart. "Site" is the time until the target's response headers arrive, summed over redirects. "Reading head" is linkpeek streaming the rest of the `<head>` and parsing it. On a real network, reading only the head still saves time on large pages, because linkpeek stops downloading after `</head>` instead of transferring the whole document.
 
 ## Method [#method]
 
@@ -62,7 +62,7 @@ npm ci
 npm run bench -- --json
 ```
 
-The competitive lockfile pins every compared version, and every timed preview must extract the expected title. Live benchmarks are network smoke tests, not competitive evidence.
+The competitive lockfile pins every compared version, and every timed preview must extract the expected title. The live benchmarks are network smoke tests, and I don't use them to compare packages.
 
 <Related
 	items={[
