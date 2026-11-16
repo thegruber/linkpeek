@@ -7,7 +7,7 @@ import {
 	useSpring,
 } from "motion/react";
 import type React from "react";
-import { type RefObject, useEffect, useRef } from "react";
+import { type RefObject, useEffect, useId, useRef } from "react";
 
 interface Point {
 	x: number;
@@ -90,6 +90,8 @@ export function useGaze(
 	};
 }
 
+const EYES = "M1.5 24a10.5 10.5 0 0 1 21 0zM25.5 24a10.5 10.5 0 0 1 21 0z";
+
 /**
  * The brand's eyes peeking over whatever edge they sit on. Place them so
  * their flat bottom touches the edge.
@@ -111,6 +113,7 @@ export function PeekingEyes({
 	scanning?: boolean;
 }) {
 	const ref = useRef<SVGSVGElement>(null);
+	const clip = useId();
 	const hold = useRef(false);
 	const reduce = useReducedMotion();
 	const { x, y, look } = useGaze(ref, {
@@ -145,16 +148,22 @@ export function PeekingEyes({
 			className={className}
 			style={style}
 		>
-			<path
-				d="M1.5 24a10.5 10.5 0 0 1 21 0zM25.5 24a10.5 10.5 0 0 1 21 0z"
-				fill={sclera}
-				stroke={outline}
-				strokeWidth={outline ? 2 : 0}
-			/>
-			<motion.g style={{ x, y }}>
-				<circle cx="15" cy="17.5" r="4" fill={pupil} />
-				<circle cx="39" cy="17.5" r="4" fill={pupil} />
-			</motion.g>
+			<defs>
+				<clipPath id={clip}>
+					<path d={EYES} />
+				</clipPath>
+			</defs>
+			<path d={EYES} fill={sclera} />
+			{/* Pupils stay inside the eyes however far they look. */}
+			<g clipPath={`url(#${clip})`}>
+				<motion.g style={{ x, y }}>
+					<circle cx="15" cy="17.5" r="4" fill={pupil} />
+					<circle cx="39" cy="17.5" r="4" fill={pupil} />
+				</motion.g>
+			</g>
+			{outline ? (
+				<path d={EYES} fill="none" stroke={outline} strokeWidth={2} />
+			) : null}
 		</svg>
 	);
 }
