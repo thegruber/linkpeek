@@ -34,13 +34,13 @@ export default function NotFound() {
 								href="/quick-start/"
 								className="press flex min-h-12 items-center bg-ink px-4 font-mono text-[0.72rem] text-white uppercase tracking-[0.06em] transition-[background-color,color,transform] hover:bg-mark hover:text-ink"
 							>
-								Quick start
+								<span>Quick start</span>
 							</Link>
 							<Link
 								href="/"
 								className="press flex min-h-12 items-center border border-ink border-l-0 px-4 font-mono text-[0.72rem] uppercase tracking-[0.06em] transition-[background-color,transform] hover:bg-block"
 							>
-								Home
+								<span>Home</span>
 							</Link>
 						</div>
 					</div>
