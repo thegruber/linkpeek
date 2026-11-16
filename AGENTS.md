@@ -73,3 +73,6 @@
    pushes, and creates the GitHub release.
 3. The GitHub release triggers `publish.yml`, which re-runs CI and publishes to npm through
    trusted publishing with provenance. Do not add long-lived npm tokens.
+4. The same release triggers `jsr.yml`, which publishes `@thegruber/linkpeek` to JSR from
+   `src/` through GitHub OIDC (no token). release-it keeps `jsr.json`'s version in sync;
+   the workflow refuses to publish when it differs from `package.json`.

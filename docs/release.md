@@ -18,3 +18,7 @@ This runs the full quality gate (`npm run quality`), bumps `package.json`, commi
 
 Publishing never uses long-lived npm tokens. If the publish job fails, fix the cause and re-run
 the workflow from the release; do not publish from a local machine.
+
+The release also triggers `.github/workflows/jsr.yml`, which publishes the TypeScript source to
+[JSR](https://jsr.io/@thegruber/linkpeek) through GitHub OIDC. release-it writes the new version
+into `jsr.json`; the workflow stops if it differs from `package.json`.

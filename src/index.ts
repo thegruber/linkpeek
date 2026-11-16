@@ -9,7 +9,26 @@ import { extractMetaRefreshUrl, parseHTML } from "./parse.js";
 import type { PreviewOptions, PreviewResult } from "./types.js";
 
 /** Pre-built option presets. Presets are plain objects — spread and override any field. */
-export const presets = {
+export const presets: {
+	/**
+	 * Maximum speed — default behavior.
+	 * 30KB limit, no body scan, no meta-refresh.
+	 */
+	readonly fast: {
+		followMetaRefresh: false;
+		includeBodyContent: false;
+		maxBytes: number;
+	};
+	/**
+	 * Best quality — opt-in.
+	 * 200KB limit, body JSON-LD + image fallback, meta-refresh support.
+	 */
+	readonly quality: {
+		followMetaRefresh: true;
+		includeBodyContent: true;
+		maxBytes: number;
+	};
+} = {
 	/**
 	 * Maximum speed — default behavior.
 	 * 30KB limit, no body scan, no meta-refresh.
