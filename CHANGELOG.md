@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented here.
 
-## 3.0.0 - Unreleased
+## 3.0.0 - 2026-11-16
 
 ### Breaking: migrating from 2.x
 
