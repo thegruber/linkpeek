@@ -2,6 +2,15 @@
 
 All notable changes to this project are documented here.
 
+## 3.1.1 - 2026-11-16
+
+### Docs and website
+- Rewrote the README and the docs site in a plainer voice. The API reference and benchmark numbers are unchanged.
+- The `resolveHost` type docs now state the default (no check) and that a failed or empty lookup rejects with a `LinkpeekError` `FETCH_FAILED` carrying the resolver error as `cause`.
+- Deno users can install from JSR: `deno add jsr:@thegruber/linkpeek`.
+
+No code changes.
+
 ## 3.1.0 - 2026-11-16
 
 ### Added
