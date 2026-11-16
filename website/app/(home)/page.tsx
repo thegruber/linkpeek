@@ -65,12 +65,16 @@ const runtimes = [
 	["Next.js", "/integrations/nextjs/"],
 	["Cloudflare Workers", "/integrations/cloudflare-workers/"],
 	["Bun and Deno", "/quick-start/#install"],
+	["React card", "/integrations/react/"],
 	["AI agents", "/integrations/ai-agents/"],
 ];
 
 const comparisons = [
 	["linkpeek vs link-preview-js", "/guides/link-preview-js-alternative/"],
 	["linkpeek vs open-graph-scraper", "/guides/open-graph-scraper-alternative/"],
+	["linkpeek vs unfurl.js", "/guides/unfurl-js-alternative/"],
+	["Open Graph parser", "/guides/open-graph-parser/"],
+	["Get the image from a URL", "/guides/get-og-image-from-url/"],
 	[
 		"All preview libraries compared",
 		"/guides/link-preview-library-comparison/",
@@ -410,6 +414,22 @@ function ArrowIcon() {
 function softwareSchema() {
 	return {
 		"@context": "https://schema.org",
+		"@graph": [
+			{
+				"@type": "WebSite",
+				"@id": `${siteUrl}#website`,
+				url: siteUrl,
+				name: appName,
+				description: home.description,
+				publisher: { "@type": "Person", name: author },
+			},
+			softwareNode(),
+		],
+	};
+}
+
+function softwareNode() {
+	return {
 		"@type": "SoftwareSourceCode",
 		"@id": `${siteUrl}#software`,
 		name: appName,

@@ -113,6 +113,12 @@ for (const file of pages) {
 	}
 }
 
+const robots = existsSync(join(out, "robots.txt"))
+	? readFileSync(join(out, "robots.txt"), "utf8")
+	: "";
+if (!robots.includes(`Sitemap: ${site}sitemap.xml`))
+	fail("robots.txt", "missing or does not point to the sitemap");
+
 const sitemap = readFileSync(join(out, "sitemap.xml"), "utf8");
 for (const loc of sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)) {
 	if (!existsSync(target(loc[1]) ?? ""))

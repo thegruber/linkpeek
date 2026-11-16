@@ -1,0 +1,58 @@
+---
+title: "Get the image from a URL"
+metaTitle: "Get the Open Graph image, title and favicon from a URL"
+description: "Get the og:image, title, description and favicon of any URL in Node.js or TypeScript with one preview() call, including fallbacks and relative URLs."
+heading: "Get the image, title and favicon from a URL"
+---
+
+`preview()` fetches a URL and returns the fields a preview card needs. The image, title and favicon come back as plain strings or `null`, with relative URLs already resolved.
+
+## Get the Open Graph image [#image]
+
+```ts
+import { preview } from "linkpeek";
+
+const result = await preview("https://github.com");
+
+result.image; // og:image, as an absolute https URL, or null
+result.imageAlt; // og:image:alt or twitter:image:alt
+result.imageWidth; // og:image:width, when numeric
+result.title;
+result.description;
+result.favicon;
+```
+
+linkpeek takes the first usable `og:image` (or its `secure_url`). Without one it falls back to `twitter:image`, then a JSON-LD `image` or `thumbnailUrl`, then `<link rel="image_src">` and `itemprop="image"`.
+
+## Images in the page body [#body]
+
+The default mode reads only the `<head>`, which is where Open Graph tags belong. Some pages put their only image or JSON-LD in the body. `presets.quality` reads up to 200 kB including the body, and uses the first body image as the last fallback.
+
+```ts
+import { preview, presets } from "linkpeek";
+
+const result = await preview(url, presets.quality);
+```
+
+## Favicon and title fallbacks [#fallbacks]
+
+- `favicon` is the declared `<link rel="icon">`. Without one, it is the site's `/favicon.ico`, which is a guess: check that it loads before showing it.
+- `title` prefers `og:title`, then `twitter:title`, Dublin Core, the `<title>` element, then the JSON-LD headline.
+- `siteName` falls back to the hostname, so a card always has a label.
+
+## Relative and unsafe URLs [#urls]
+
+Image, favicon, canonical, video and audio URLs are resolved against the final response URL after redirects. Only `http:` and `https:` URLs are returned. A `javascript:` or `data:` image comes back as `null`, so the value is safe to put in an `<img src>`.
+
+## Only have the HTML? [#html]
+
+`parseHTML(html, baseUrl)` returns the same fields from HTML you already have, without a network request. See the [Open Graph parser](/guides/open-graph-parser/).
+
+<Related
+	items={[
+		["API reference: result fields", "/api/"],
+		["Next.js route", "/integrations/nextjs/"],
+		["React preview card", "/integrations/react/"],
+		["Missing metadata", "/guides/troubleshooting/#missing"],
+	]}
+/>

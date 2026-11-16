@@ -35,7 +35,7 @@ result.canonicalUrl; // absolute final/canonical URL
 
 <p align="center"><a href="https://linkpeek.js.org/"><img src="https://raw.githubusercontent.com/thegruber/linkpeek/main/assets/brand/readme-hero.png" alt="Calling preview(url) in TypeScript returns a typed result and a link preview card; measured 4.0 times faster than the next package on a 500 kB page, a 2.4 times smaller install, one runtime dependency, and at most 30 kB kept by default (benchmarks measured 15 November 2026)." width="800"></a></p>
 
-Guides: [Next.js](https://linkpeek.js.org/integrations/nextjs/) · [Cloudflare Workers](https://linkpeek.js.org/integrations/cloudflare-workers/) · [Express](https://linkpeek.js.org/integrations/node-express/) · [AI agents](https://linkpeek.js.org/integrations/ai-agents/) · [All libraries compared](https://linkpeek.js.org/guides/link-preview-library-comparison/)
+Guides: [Next.js](https://linkpeek.js.org/integrations/nextjs/) · [Cloudflare Workers](https://linkpeek.js.org/integrations/cloudflare-workers/) · [Express](https://linkpeek.js.org/integrations/node-express/) · [AI agents](https://linkpeek.js.org/integrations/ai-agents/) · [Get the og:image from a URL](https://linkpeek.js.org/guides/get-og-image-from-url/) · [All libraries compared](https://linkpeek.js.org/guides/link-preview-library-comparison/)
 
 Using a coding agent? Paste the [agent task](https://linkpeek.js.org/prompt.md) into Claude Code, Cursor, Codex or Copilot and it adds the endpoint and card for you.
 
@@ -100,7 +100,7 @@ Quick comparison:
 | `metascraper` | Rule-based article metadata extraction | More powerful framework; more setup and dependencies |
 | `unfurl.js` | Rich nested metadata with fetched oEmbed support | Richer output; not focused on small edge-runtime preview cards |
 
-Side-by-side numbers and migration code: [linkpeek vs link-preview-js](https://linkpeek.js.org/guides/link-preview-js-alternative/) · [linkpeek vs open-graph-scraper](https://linkpeek.js.org/guides/open-graph-scraper-alternative/)
+Side-by-side numbers and migration code: [vs link-preview-js](https://linkpeek.js.org/guides/link-preview-js-alternative/) · [vs open-graph-scraper](https://linkpeek.js.org/guides/open-graph-scraper-alternative/) · [vs unfurl.js](https://linkpeek.js.org/guides/unfurl-js-alternative/) · [vs url-metadata](https://linkpeek.js.org/guides/url-metadata-alternative/) · [vs metascraper](https://linkpeek.js.org/guides/metascraper-alternative/)
 
 ## Presets
 

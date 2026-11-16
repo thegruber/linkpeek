@@ -1,7 +1,7 @@
 {
 	"$schema": "https://context7.com/schema/context7.json",
 	"projectTitle": "linkpeek",
-	"description": "TypeScript link preview library and URL metadata extractor for Open Graph, Twitter Cards, and JSON-LD with SSRF-safe defaults on Node.js, Bun, Deno, and edge runtimes.",
+	"description": "Fast, safe link preview library and URL unfurler for TypeScript. Extracts Open Graph, Twitter Card and JSON-LD metadata on Node.js, Bun, Deno and the edge.",
 	"excludeFolders": [
 		"docs/posts",
 		"test",

@@ -47,6 +47,8 @@
 		"release": "release-it"
 	},
 	"keywords": [
+		"og-image",
+		"favicon",
 		"link-preview",
 		"url-preview",
 		"preview-card",

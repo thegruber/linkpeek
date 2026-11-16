@@ -8,6 +8,7 @@
 		"...integrations",
 		"---[BookText]Guides---",
 		"guides/open-graph-parser",
+		"guides/get-og-image-from-url",
 		"guides/troubleshooting",
 		"---[Scale]Compare---",
 		"benchmarks",
