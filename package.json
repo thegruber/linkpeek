@@ -1,6 +1,6 @@
 {
 	"name": "linkpeek",
-	"version": "2.1.7",
+	"version": "3.0.0",
 	"description": "Fast, safe link preview and Open Graph scraper. Unfurl URL metadata in TypeScript, Node.js, Bun, Deno and edge.",
 	"type": "module",
 	"exports": {
