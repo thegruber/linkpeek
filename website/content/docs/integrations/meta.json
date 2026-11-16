@@ -4,6 +4,7 @@
 		"react",
 		"cloudflare-workers",
 		"node-express",
+		"editorjs",
 		"ai-agents"
 	]
 }
