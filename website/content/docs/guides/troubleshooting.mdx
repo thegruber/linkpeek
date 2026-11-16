@@ -18,7 +18,7 @@ const result = await preview(url, presets.quality);
 const title = result.title ?? result.siteName;
 ```
 
-Quality mode still does not execute JavaScript. If the initial HTML contains no metadata, a browser-rendering service or a provider API may be necessary. For HTML you already own, use [`parseHTML()`](/guides/open-graph-parser/) to isolate parsing from fetching.
+Quality mode still doesn't run JavaScript. If the HTML the server sends has no metadata at all, you need a browser-rendering service or the provider's API. If you already have the HTML, [`parseHTML()`](/guides/open-graph-parser/) lets you test parsing on its own, without fetching.
 
 ## HTTP errors and bot blocks [#http]
 
@@ -59,11 +59,11 @@ try {
 
 ## Browser or server? [#browser]
 
-Run URL fetching with `preview()` on a server or edge worker. Browser cross-origin restrictions prevent arbitrary page retrieval. The synchronous `parseHTML()` function can parse an HTML string without fetching; the [parser example](/guides/open-graph-parser/#try) uses it locally.
+Call `preview()` on a server or an edge worker. Browsers won't let a page fetch another site's HTML (CORS). The synchronous `parseHTML()` parses an HTML string without fetching, which is how the [parser example](/guides/open-graph-parser/#try) runs in your browser.
 
 ## Report a metadata mismatch [#report]
 
-Include the package version, options, expected fields and a minimal HTML sample. Remove credentials and private content. Reproducible fixtures help distinguish parser issues from a target changing its response.
+Include the package version, options, expected fields and a minimal HTML sample. Remove credentials and private content. A fixture that reproduces the problem tells a parser bug apart from a site that changed its response.
 
 <Related
 	items={[

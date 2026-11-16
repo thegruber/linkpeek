@@ -5,7 +5,7 @@ description: "Compare linkpeek with unfurl.js, which is archived upstream: speed
 heading: "linkpeek vs unfurl.js"
 ---
 
-unfurl.js is a Node.js metadata scraper that returns nested Open Graph, Twitter Card and oEmbed data. Its [GitHub repository is archived](https://github.com/jacktuck/unfurl) and its last npm release, 6.4.0, dates from February 2024. linkpeek covers the same preview-card job with a flat typed result, runs on any runtime with `fetch` and is maintained.
+unfurl.js is a Node.js metadata scraper that returns nested Open Graph, Twitter Card and oEmbed data. Its [GitHub repository is archived](https://github.com/jacktuck/unfurl) and its last npm release, 6.4.0, dates from February 2024. linkpeek does the same preview-card job with a flat typed result, runs on any runtime with `fetch`, and is still maintained.
 
 ## Measured side by side [#numbers]
 
@@ -15,17 +15,17 @@ unfurl.js was faster than linkpeek on every small page in this run, by a fractio
 
 ## Choose unfurl.js when [#choose-unfurl-js]
 
-- You want **oEmbed payloads fetched for you**. unfurl.js requests the discovered oEmbed endpoint by default and returns the parsed result. linkpeek returns the endpoint as `oEmbedUrl` and does not fetch it.
-- You want the **full nested structure**: every Open Graph image and video, Twitter Card players and app links, article times and tags.
-- You preview **small pages on Node.js** and the last fraction of a millisecond matters.
+- You want oEmbed payloads fetched for you. unfurl.js requests the discovered oEmbed endpoint by default and returns the parsed result. linkpeek returns the endpoint as `oEmbedUrl` and does not fetch it.
+- You want the full nested structure: every Open Graph image and video, Twitter Card players and app links, article times and tags.
+- You preview small pages on Node.js and the last fraction of a millisecond matters.
 - Your code already works and you accept a dependency that will not receive upstream fixes.
 
 ## Choose linkpeek when [#choose-linkpeek]
 
-- You want a **maintained dependency**. unfurl.js is archived; the still-open [PR #117](https://github.com/jacktuck/unfurl/pull/117) documents that URLs pass to `node-fetch` without destination validation. linkpeek blocks private and special-use IP literals and checks every redirect before following it. On Node.js, pass `resolveHost` to check each hop's DNS answers; `fetch` resolves the name again, so keep egress rules too, as the [security model](/security/#dns) explains.
-- You run on **Cloudflare Workers, Vercel Edge, Deno or Bun**. unfurl.js is built on `node-fetch` and documents Node.js only; linkpeek uses platform `fetch`, Web Streams and `TextDecoder`.
-- Your users paste links to **large pages**, where reading only the head pays off.
-- You want **one value per field**: linkpeek falls back from Open Graph to Twitter Card, Dublin Core, the document title and JSON-LD on its own, and types every field as a value or `null`.
+- You want a maintained dependency. unfurl.js is archived; the still-open [PR #117](https://github.com/jacktuck/unfurl/pull/117) documents that URLs pass to `node-fetch` without destination validation. linkpeek blocks private and special-use IP literals and checks every redirect before following it. On Node.js, pass `resolveHost` to check each hop's DNS answers; `fetch` resolves the name again, so keep egress rules too, as the [security model](/security/#dns) explains.
+- You run on Cloudflare Workers, Vercel Edge, Deno or Bun. unfurl.js is built on `node-fetch` and documents Node.js only; linkpeek uses platform `fetch`, Web Streams and `TextDecoder`.
+- Your users paste links to large pages, where reading only the head pays off.
+- You want one value per field: linkpeek falls back from Open Graph to Twitter Card, Dublin Core, the document title and JSON-LD on its own, and types every field as a value or `null`.
 
 ## Migrate unfurl() to preview() [#migrate]
 

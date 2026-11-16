@@ -190,10 +190,10 @@ export function LinkPreview({ url }: { url: string }) {
 
 ### Accessibility [#a11y]
 
-- The whole card is **one link**, so keyboard and screen reader users meet one stop whose name is the title, description and host.
-- The image has an **empty `alt`**: it repeats what the text already says, and a long alt text would bloat the link's name.
-- The loading state is a **`role="status"` region** with visible text, so assistive technology can report it without moving focus. It has no animation to reduce.
-- A failed preview is still a **working link** to the original URL rather than an error message.
+- The whole card is one link, so keyboard and screen reader users meet one stop whose name is the title, description and host.
+- The image has an empty `alt`: it repeats what the text already says, and a long alt text would bloat the link's name.
+- The loading state is a `role="status"` region with visible text, so assistive technology can report it without moving focus. It has no animation to reduce.
+- A failed preview is still a working link to the original URL rather than an error message.
 
 ## Or render it on the server [#server-component]
 
@@ -229,7 +229,7 @@ Each render fetches the target again unless you cache the result, so cache it wi
 
 ## Keep it safe [#security]
 
-- Run `preview()` only on the server, and **never forward** the visitor's cookies or authorization headers to the target.
+- Run `preview()` only on the server, and never forward the visitor's cookies or authorization headers to the target.
 - Treat every field as untrusted text. React escapes it; do not pass it to `dangerouslySetInnerHTML`.
 - Image URLs point at other origins. Allow them in your image policy or serve them through your own image proxy.
 - Rate-limit a public endpoint and add egress rules: linkpeek blocks private IP literals and checks redirects, but the platform `fetch` resolves DNS, so pass `resolveHost` on Node.js. The [security model](/security/) has the full checklist.

@@ -54,9 +54,9 @@ export const metadata: Metadata = {
 };
 
 const safety = [
-	"Every redirect is validated before the next request.",
-	"Private, loopback and cloud-metadata IPs in URLs are refused by default.",
-	"At most 30 kB is kept, so a huge response cannot exhaust memory.",
+	"Every redirect is checked before linkpeek follows it.",
+	"URLs that point at private, loopback or cloud-metadata IPs, like 169.254.169.254, are refused by default.",
+	"It keeps at most 30 kB, so a huge response can't exhaust memory.",
 	"Credential headers are refused, and custom headers are dropped on cross-origin redirects.",
 ];
 
@@ -118,8 +118,9 @@ export default async function HomePage() {
 				/>
 				<div className="flex flex-col justify-between gap-8 bg-ink px-5 py-7 text-white sm:px-8 lg:col-span-2 xl:col-span-1 xl:border-ink xl:border-r">
 					<p className="text-[1.35rem] leading-[1.2] tracking-[-0.02em]">
-						Reads only the <code>&lt;head&gt;</code>. Blocks private IPs. One
-						dependency. Node.js, Bun, Deno and the edge.
+						Reads the <code>&lt;head&gt;</code> and drops the rest. Refuses
+						private IPs. One dependency, and it runs on Node.js, Bun, Deno and
+						the edge.
 					</p>
 					<Link
 						href="/quick-start/"
@@ -154,8 +155,8 @@ export default async function HomePage() {
 						Reads the head. Skips the rest.
 					</h2>
 					<p className="text-sm text-white/75 leading-relaxed">
-						Preview metadata lives in the <code>&lt;head&gt;</code>. linkpeek
-						parses the response as a stream and cancels it at{" "}
+						Most pages keep their preview tags in the <code>&lt;head&gt;</code>.
+						linkpeek parses the response as it streams in and cancels it at{" "}
 						<code>&lt;/head&gt;</code>, so most of a large page is never
 						downloaded or parsed.
 					</p>
@@ -223,9 +224,9 @@ export default async function HomePage() {
 						Let your agent add it.
 					</h2>
 					<p className="max-w-[34ch] text-fd-muted-foreground text-sm leading-relaxed">
-						One task for Claude Code, Cursor, Codex or Copilot: install, a
-						server endpoint, a card component, caching and the safety rules.
-						Agents can also read{" "}
+						Paste one task into Claude Code, Cursor, Codex or Copilot and it
+						installs linkpeek, adds a server endpoint and a card component, and
+						sets up caching and the safety rules. Agents can also read{" "}
 						<a href="prompt.md" className="u-line">
 							prompt.md
 						</a>{" "}
