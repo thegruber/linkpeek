@@ -203,6 +203,8 @@ Fetches the URL and returns `Promise<PreviewResult>`.
 | `twitterCard` | `string \| null` | Twitter card type |
 | `twitterSite` | `string \| null` | Twitter site handle |
 | `twitterCreator` | `string \| null` | Twitter creator handle |
+| `twitterPlayer` | `string \| null` | `twitter:player` embed URL (an iframe page), http(s) only |
+| `twitterPlayerStream` | `string \| null` | `twitter:player:stream` raw media URL, http(s) only |
 | `themeColor` | `string \| null` | Theme color |
 | `oEmbedUrl` | `string \| null` | Discovered oEmbed endpoint URL. Not fetched |
 | `truncated` | `boolean` | `maxBytes` cut the response before the end of `<head>` (or the document, with `includeBodyContent`). `parseHTML()` returns `false` |

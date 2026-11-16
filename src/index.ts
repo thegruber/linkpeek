@@ -151,6 +151,8 @@ function emptyResult(
 		twitterCard: null,
 		twitterSite: null,
 		twitterCreator: null,
+		twitterPlayer: null,
+		twitterPlayerStream: null,
 		themeColor: null,
 		oEmbedUrl: null,
 		truncated: false,

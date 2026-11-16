@@ -72,6 +72,8 @@ Extracted resource URLs are resolved against the document base and limited to HT
 | `twitterCard` | `string \| null` | Twitter card type |
 | `twitterSite` | `string \| null` | Twitter site handle |
 | `twitterCreator` | `string \| null` | Twitter creator handle |
+| `twitterPlayer` | `string \| null` | `twitter:player` embed URL (an iframe page), http(s) only |
+| `twitterPlayerStream` | `string \| null` | `twitter:player:stream` raw media URL, http(s) only |
 | `themeColor` | `string \| null` | Theme color |
 | `oEmbedUrl` | `string \| null` | Discovered oEmbed endpoint URL. Not fetched |
 | `truncated` | `boolean` | `maxBytes` cut the response before the end of `<head>` (or of the document with `includeBodyContent`); raise `maxBytes` to read later tags. `parseHTML()` returns `false` |

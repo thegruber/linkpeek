@@ -112,6 +112,10 @@ export interface PreviewResult {
 	twitterSite: string | null;
 	/** twitter:creator handle */
 	twitterCreator: string | null;
+	/** twitter:player embed URL (an iframe page), filtered to http(s) */
+	twitterPlayer: string | null;
+	/** twitter:player:stream raw media URL, filtered to http(s) */
+	twitterPlayerStream: string | null;
 	/** theme-color meta value */
 	themeColor: string | null;
 	/** Discovered oEmbed endpoint URL. Not fetched. */
