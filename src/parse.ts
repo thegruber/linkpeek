@@ -153,14 +153,17 @@ function requireBaseUrl(baseUrl: string): string {
 	return parsed.href;
 }
 
-const UNCLEAN_WHITESPACE = /^\s|\s$|\s\s|[^\S ]/;
+// Whitespace to collapse: everything \s matches except the ideographic space
+// (U+3000), which separates words in Japanese and Chinese titles.
+const COLLAPSIBLE = /[^\S\u3000]+/g;
+const UNCLEAN_WHITESPACE = /^\s|\s$|[^\S\u3000]{2}|[^\S \u3000]/;
 
 /** Collapse runs of whitespace and trim; empty strings become null. */
 function cleanText(value: string | null | undefined): string | null {
 	if (!value) return null;
 	// Most values are already clean; skip the replace when they are.
 	if (!UNCLEAN_WHITESPACE.test(value)) return value;
-	return value.replace(/\s+/g, " ").trim() || null;
+	return value.replace(COLLAPSIBLE, " ").trim() || null;
 }
 
 function hasText(value: string | undefined): value is string {
@@ -563,6 +566,11 @@ export function parseHTML(
 		twitterCard: getText("twitter:card"),
 		twitterSite: getText("twitter:site"),
 		twitterCreator: getText("twitter:creator"),
+		twitterPlayer: resolveHttpUrl(get("twitter:player"), effectiveBaseUrl),
+		twitterPlayerStream: resolveHttpUrl(
+			get("twitter:player:stream"),
+			effectiveBaseUrl,
+		),
 		themeColor: getText("theme-color"),
 		oEmbedUrl: resolveHttpUrl(oEmbedUrl, effectiveBaseUrl),
 		truncated: false,

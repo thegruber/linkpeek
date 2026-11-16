@@ -535,6 +535,48 @@ describe("adversarial metadata", () => {
 	});
 });
 
+describe("ideographic space", () => {
+	it("keeps U+3000 inside Japanese titles", () => {
+		const result = parseHTML(
+			"<head><title>ルミルミ\u3000ノストル</title></head>",
+			BASE,
+		);
+		expect(result.title).toBe("ルミルミ\u3000ノストル");
+	});
+
+	it("still collapses ordinary whitespace around it", () => {
+		const result = parseHTML(
+			"<head><title>  A \n\t B\u3000C  </title></head>",
+			BASE,
+		);
+		expect(result.title).toBe("A B\u3000C");
+	});
+});
+
+describe("twitter player", () => {
+	it("returns the player and stream URLs, resolved and http(s) only", () => {
+		const result = parseHTML(
+			`<head>
+				<meta name="twitter:card" content="player">
+				<meta name="twitter:player" content="/embed/123">
+				<meta property="twitter:player:stream" content="https://cdn.example.com/123.mp4">
+			</head>`,
+			BASE,
+		);
+		expect(result.twitterPlayer).toBe(new URL("/embed/123", BASE).href);
+		expect(result.twitterPlayerStream).toBe("https://cdn.example.com/123.mp4");
+	});
+
+	it("drops unsafe player URLs and is null when absent", () => {
+		const unsafe = parseHTML(
+			`<head><meta name="twitter:player" content="javascript:alert(1)"></head>`,
+			BASE,
+		);
+		expect(unsafe.twitterPlayer).toBeNull();
+		expect(unsafe.twitterPlayerStream).toBeNull();
+	});
+});
+
 describe("video type", () => {
 	it("returns og:video:type with the video", () => {
 		const html = `<html><head>

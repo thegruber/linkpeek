@@ -2,6 +2,14 @@
 
 All notable changes to this project are documented here.
 
+## 3.2.0 - 2026-11-16
+
+### Added
+- `twitterPlayer` and `twitterPlayerStream` result fields: the `twitter:player` embed URL and its `twitter:player:stream` media URL, resolved and `http(s)` only. Sites such as Suno, YouTube and Spotify use them for playable cards.
+
+### Fixed
+- Text fields no longer turn the ideographic space (U+3000) into an ASCII space, so Japanese and Chinese titles keep their spacing. Other whitespace is still collapsed.
+
 ## 3.1.1 - 2026-11-16
 
 ### Docs and website
