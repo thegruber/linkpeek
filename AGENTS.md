@@ -67,7 +67,7 @@
 - Do not commit `pnpm-lock.yaml`, `bun.lockb`, or generated tarballs.
 
 ## Release Workflow
-1. Add a `CHANGELOG.md` entry for the new version (the publish workflow verifies it exists).
+1. Give the new version a dated `CHANGELOG.md` heading, `## <version> - YYYY-MM-DD` (release-it and the publish workflow refuse to run without it; the section becomes the release notes).
 2. Run `npm run release -- <patch|minor|major> --ci` with a `GITHUB_TOKEN` that can create
    releases. release-it runs the full quality gate, bumps the version, tags `v<version>`,
    pushes, and creates the GitHub release.

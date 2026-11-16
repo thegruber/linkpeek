@@ -19,8 +19,6 @@
 		"CODE_OF_CONDUCT.md",
 		"AGENTS.md",
 		"CLAUDE.md",
-		"audit-2026-10-23.md",
-		"discoverability-2026-10-29.md",
 		"release.md"
 	],
 	"rules": [

@@ -1,7 +1,8 @@
 # Release Checklist
 
-1. Add a `CHANGELOG.md` entry for the new version. The publish workflow refuses to run
-   without one.
+1. Give the new version a dated `CHANGELOG.md` heading, `## <version> - YYYY-MM-DD`
+   (rename `Unreleased` on the release day). release-it and the publish workflow refuse to
+   run without it, and the section becomes the GitHub release notes.
 2. From a clean `main`, run release-it with a `GITHUB_TOKEN` that can create releases:
 
 ```bash
