@@ -11,6 +11,7 @@ Runnable examples showing how to use linkpeek in different environments.
 | [react-preview-card](./react-preview-card) | Browser | `<LinkPreview>` React component |
 | [supabase-edge-function](./supabase-edge-function) | Deno | Supabase Edge Function |
 | [bun-server](./bun-server) | Bun | Minimal Bun.serve() server |
+| [editorjs-link](./editorjs-link) | Node / Edge | Backend endpoint for the Editor.js link tool |
 
 Each example is standalone. Copy the files into your project and install linkpeek:
 

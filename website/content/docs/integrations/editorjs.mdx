@@ -1,0 +1,69 @@
+---
+title: "Editor.js"
+metaTitle: "Editor.js link tool backend with linkpeek"
+description: "A backend endpoint for the Editor.js link tool (@editorjs/link): fetch the pasted URL's title, description and image safely with linkpeek."
+heading: "Editor.js link tool backend"
+---
+
+The [Editor.js link tool](https://github.com/editor-js/link) shows a card for a pasted link, but it leaves the fetching to you: it calls `GET <endpoint>?url=...` and expects `{ success, link, meta }` back. That endpoint fetches whatever URL someone pastes, so it needs the same care as any preview endpoint. linkpeek refuses private and internal addresses, checks every redirect, and gives up on slow pages.
+
+## The endpoint [#endpoint]
+
+```ts
+import { preview } from "linkpeek";
+
+export async function fetchLinkData(url: string) {
+  try {
+    const result = await preview(url, { timeout: 5_000 });
+    if (result.statusCode >= 400) return { success: 0 };
+    return {
+      success: 1,
+      link: result.canonicalUrl,
+      meta: {
+        title: result.title ?? result.siteName,
+        description: result.description ?? "",
+        image: { url: result.image ?? "" },
+      },
+    };
+  } catch {
+    return { success: 0 }; // invalid URL, private address, timeout, network error
+  }
+}
+```
+
+Serve it however you like. In Express:
+
+```ts
+app.get("/fetchUrl", async (req, res) => {
+  const url = typeof req.query.url === "string" ? req.query.url : "";
+  res.json(url ? await fetchLinkData(url) : { success: 0 });
+});
+```
+
+On Cloudflare Workers, Bun or Deno, the [complete example](https://github.com/thegruber/linkpeek/tree/main/examples/editorjs-link) exports a standard `fetch` handler with a day of caching for successful results.
+
+## The editor [#editor]
+
+```js
+import LinkTool from "@editorjs/link";
+
+new EditorJS({
+  tools: {
+    linkTool: {
+      class: LinkTool,
+      config: { endpoint: "/fetchUrl" },
+    },
+  },
+});
+```
+
+The tool reads `meta.title`, `meta.description` and `meta.image.url`. Anything else you add to `meta` is saved with the block, so you can include `site_name` or `favicon` if your renderer uses them.
+
+<Related
+	items={[
+		["Node.js + Express", "/integrations/node-express/"],
+		["Cloudflare Workers", "/integrations/cloudflare-workers/"],
+		["Security model", "/security/"],
+		["Complete example on GitHub", "https://github.com/thegruber/linkpeek/tree/main/examples/editorjs-link"],
+	]}
+/>
