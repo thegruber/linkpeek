@@ -279,7 +279,7 @@ try {
       case "SENSITIVE_HEADER":         // credential-bearing custom header
       case "TOO_MANY_REDIRECTS":
       case "TIMEOUT":                  // whole-call deadline elapsed
-      case "FETCH_FAILED":             // DNS/TCP/TLS failure; see err.cause
+      case "FETCH_FAILED":             // network, DNS or resolveHost lookup failure; see err.cause
       case "INVALID_OPTIONS":
         break;
     }
@@ -309,7 +309,7 @@ Fetches a URL and extracts link preview metadata. Returns `Promise<PreviewResult
 | `maxRedirects` | `number` | `10` | Maximum redirects per call, HTTP and meta refresh combined. Must be a non-negative integer; invalid values throw `INVALID_OPTIONS` |
 | `headers` | `Record<string, string>` | `{}` | Extra non-sensitive request headers. Common credential-bearing headers are rejected; custom headers are not forwarded on cross-origin redirects |
 | `allowPrivateIPs` | `boolean` | `false` | Allow private/internal IP targets |
-| `resolveHost` | `(hostname) => Promise<string[]>` | none | Opt-in DNS check on the first request and every redirect hop; any private answer throws `PRIVATE_NETWORK_BLOCKED` |
+| `resolveHost` | `(hostname) => Promise<string[]>` | none | Opt-in DNS check on the first request and every redirect hop; any private answer throws `PRIVATE_NETWORK_BLOCKED`, a lookup error or empty answer throws `FETCH_FAILED` (a `LinkpeekError`, resolver error in `cause`) |
 | `signal` | `AbortSignal` | none | Cancel the request from the caller side |
 | `fetch` | `typeof fetch` | `globalThis.fetch` | Custom fetch implementation. It must honor manual redirects and the supplied abort signal; a `response.url` it reports is validated too |
 | `followMetaRefresh` | `boolean` | `false` | Follow one `<head>` `<meta http-equiv="refresh">` redirect with a delay of 10s or less |
