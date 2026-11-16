@@ -3,6 +3,8 @@
 import { isIP } from "node:net";
 
 export const ALLOWED_ORIGINS = new Set([
+	"https://linkpeek.js.org",
+	// The previous address; GitHub Pages redirects it to linkpeek.js.org.
 	"https://thegruber.github.io",
 	// The noindex preview of the docs site on Vercel.
 	"https://linkpeek-site.vercel.app",

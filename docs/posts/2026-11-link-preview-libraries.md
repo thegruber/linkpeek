@@ -114,4 +114,4 @@ if (card.statusCode < 400) {
 }
 ```
 
-Charts, method and raw JSON runs are on the [benchmark page](https://thegruber.github.io/linkpeek/benchmarks/). If you run the harness on other hardware and get a different ordering, I would like to see it: open an issue or a discussion in the repository.
+Charts, method and raw JSON runs are on the [benchmark page](https://linkpeek.js.org/benchmarks/). If you run the harness on other hardware and get a different ordering, I would like to see it: open an issue or a discussion in the repository.

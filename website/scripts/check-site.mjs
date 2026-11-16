@@ -7,10 +7,10 @@ import { DomUtils, parseDocument } from "htmlparser2";
 
 const out = resolve(import.meta.dirname, "..", "out");
 const origin = (
-	process.env.LINKPEEK_DOCS_ORIGIN ?? "https://thegruber.github.io"
+	process.env.LINKPEEK_DOCS_ORIGIN ?? "https://linkpeek.js.org"
 ).replace(/\/$/, "");
 const base =
-	`/${(process.env.LINKPEEK_DOCS_BASE ?? "/linkpeek/").replace(/^\/+|\/+$/g, "")}/`.replace(
+	`/${(process.env.LINKPEEK_DOCS_BASE ?? "/").replace(/^\/+|\/+$/g, "")}/`.replace(
 		"//",
 		"/",
 	);

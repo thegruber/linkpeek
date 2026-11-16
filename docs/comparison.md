@@ -31,7 +31,7 @@ Do not position linkpeek as:
 
 ## Latest measurements (2026-11-15)
 
-Linux x64 (2 vCPU Intel Xeon 2.20 GHz), Node.js 24.22.2, npm 11.19.1. The website's [benchmark page](https://thegruber.github.io/linkpeek/benchmarks/) renders these numbers from [`website/data/benchmarks.json`](../website/data/benchmarks.json); the three raw harness runs are in [`benchmarks/competitive/results/2026-11-15`](../benchmarks/competitive/results/2026-11-15). linkpeek was measured from the unreleased 3.0.0 source (merge commit `bd1c9df`); the runs report `dirty: true` only because an untracked, generated `website/AGENTS.md` was present. The previous release run is kept in [`results/2026-11-14`](../benchmarks/competitive/results/2026-11-14): 1.36, 1.23, 0.71 and 2.80 ms for linkpeek 2.1.7.
+Linux x64 (2 vCPU Intel Xeon 2.20 GHz), Node.js 24.22.2, npm 11.19.1. The website's [benchmark page](https://linkpeek.js.org/benchmarks/) renders these numbers from [`website/data/benchmarks.json`](../website/data/benchmarks.json); the three raw harness runs are in [`benchmarks/competitive/results/2026-11-15`](../benchmarks/competitive/results/2026-11-15). linkpeek was measured from the unreleased 3.0.0 source (merge commit `bd1c9df`); the runs report `dirty: true` only because an untracked, generated `website/AGENTS.md` was present. The previous release run is kept in [`results/2026-11-14`](../benchmarks/competitive/results/2026-11-14): 1.36, 1.23, 0.71 and 2.80 ms for linkpeek 2.1.7.
 
 Same-corpus speed, median of three run medians in ms per end-to-end preview:
 

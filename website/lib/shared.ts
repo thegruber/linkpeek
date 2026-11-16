@@ -1,15 +1,13 @@
-// Site-wide constants. The site is served from GitHub Pages under a project
-// path, so every absolute URL is built from the origin plus the base path.
+// Site-wide constants. The site is served from GitHub Pages at linkpeek.js.org;
+// every absolute URL is built from the origin plus the base path.
 export const appName = "linkpeek";
 export const siteOrigin = (
-	process.env.LINKPEEK_DOCS_ORIGIN ?? "https://thegruber.github.io"
+	process.env.LINKPEEK_DOCS_ORIGIN ?? "https://linkpeek.js.org"
 ).replace(/\/$/, "");
 // NEXT_PUBLIC_BASE_PATH is set in next.config and inlined into client code,
 // so server and browser agree on the base path; plain env vars are not.
 export const basePath = normalizeBase(
-	process.env.NEXT_PUBLIC_BASE_PATH ??
-		process.env.LINKPEEK_DOCS_BASE ??
-		"/linkpeek/",
+	process.env.NEXT_PUBLIC_BASE_PATH ?? process.env.LINKPEEK_DOCS_BASE ?? "/",
 );
 export const siteUrl = `${siteOrigin}${basePath}`;
 export const repository = "https://github.com/thegruber/linkpeek";

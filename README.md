@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://thegruber.github.io/linkpeek/"><img src="https://raw.githubusercontent.com/thegruber/linkpeek/main/assets/brand/mark-256.png" width="88" height="88" alt=""></a>
+  <a href="https://linkpeek.js.org/"><img src="https://raw.githubusercontent.com/thegruber/linkpeek/main/assets/brand/mark-256.png" width="88" height="88" alt=""></a>
 </p>
 
 <h1 align="center">linkpeek</h1>
@@ -11,7 +11,7 @@
   <a href="https://packagephobia.com/result?p=linkpeek"><img src="https://packagephobia.com/badge?p=linkpeek" alt="install size"></a>
 </p>
 
-<p align="center"><a href="https://thegruber.github.io/linkpeek/">Website</a> · <a href="https://thegruber.github.io/linkpeek/quick-start/">Quick start</a> · <a href="https://thegruber.github.io/linkpeek/api/">API</a> · <a href="https://thegruber.github.io/linkpeek/benchmarks/">Benchmarks</a> · <a href="https://thegruber.github.io/linkpeek/security/">Security</a> · <a href="https://github.com/thegruber/linkpeek/tree/main/examples">Examples</a> · <a href="https://github.com/thegruber/linkpeek/blob/main/CHANGELOG.md">Changelog</a></p>
+<p align="center"><a href="https://linkpeek.js.org/">Website</a> · <a href="https://linkpeek.js.org/quick-start/">Quick start</a> · <a href="https://linkpeek.js.org/api/">API</a> · <a href="https://linkpeek.js.org/benchmarks/">Benchmarks</a> · <a href="https://linkpeek.js.org/security/">Security</a> · <a href="https://github.com/thegruber/linkpeek/tree/main/examples">Examples</a> · <a href="https://github.com/thegruber/linkpeek/blob/main/CHANGELOG.md">Changelog</a></p>
 
 **A fast, safe-by-default link preview library for TypeScript, Node.js, Bun, Deno, and edge runtimes. One runtime dependency.**
 
@@ -33,11 +33,11 @@ result.siteName;     // string
 result.canonicalUrl; // absolute final/canonical URL
 ```
 
-<p align="center"><a href="https://thegruber.github.io/linkpeek/"><img src="https://raw.githubusercontent.com/thegruber/linkpeek/main/assets/brand/readme-hero.png" alt="Calling preview(url) in TypeScript returns a typed result and a link preview card; measured 4.0 times faster than the next package on a 500 kB page, a 2.4 times smaller install, one runtime dependency, and at most 30 kB kept by default (benchmarks measured 15 November 2026)." width="800"></a></p>
+<p align="center"><a href="https://linkpeek.js.org/"><img src="https://raw.githubusercontent.com/thegruber/linkpeek/main/assets/brand/readme-hero.png" alt="Calling preview(url) in TypeScript returns a typed result and a link preview card; measured 4.0 times faster than the next package on a 500 kB page, a 2.4 times smaller install, one runtime dependency, and at most 30 kB kept by default (benchmarks measured 15 November 2026)." width="800"></a></p>
 
-Guides: [Next.js](https://thegruber.github.io/linkpeek/integrations/nextjs/) · [Cloudflare Workers](https://thegruber.github.io/linkpeek/integrations/cloudflare-workers/) · [Express](https://thegruber.github.io/linkpeek/integrations/node-express/) · [AI agents](https://thegruber.github.io/linkpeek/integrations/ai-agents/) · [All libraries compared](https://thegruber.github.io/linkpeek/guides/link-preview-library-comparison/)
+Guides: [Next.js](https://linkpeek.js.org/integrations/nextjs/) · [Cloudflare Workers](https://linkpeek.js.org/integrations/cloudflare-workers/) · [Express](https://linkpeek.js.org/integrations/node-express/) · [AI agents](https://linkpeek.js.org/integrations/ai-agents/) · [All libraries compared](https://linkpeek.js.org/guides/link-preview-library-comparison/)
 
-Using a coding agent? Paste the [agent task](https://thegruber.github.io/linkpeek/prompt.md) into Claude Code, Cursor, Codex or Copilot and it adds the endpoint and card for you.
+Using a coding agent? Paste the [agent task](https://linkpeek.js.org/prompt.md) into Claude Code, Cursor, Codex or Copilot and it adds the endpoint and card for you.
 
 ## Runtime support
 
@@ -58,7 +58,7 @@ linkpeek focuses on server-side preview cards: fetch a URL, read only enough HTM
 - **1 runtime dependency**: `htmlparser2`
 - **30 KB fast default** with a strict byte limit and early stream cancellation after the head
 - **Head-first SAX parsing** with no DOM construction, HTTP client or native module
-- **Safe network defaults**: literal private/internal IP targets and credential-bearing requests are blocked, and every redirect is checked; DNS answers can be checked on every hop with the opt-in `resolveHost`, while the runtime's fetch still resolves the name ([limits](https://thegruber.github.io/linkpeek/security/))
+- **Safe network defaults**: literal private/internal IP targets and credential-bearing requests are blocked, and every redirect is checked; DNS answers can be checked on every hop with the opt-in `resolveHost`, while the runtime's fetch still resolves the name ([limits](https://linkpeek.js.org/security/))
 - **Dual ESM/CJS package output** with TypeScript declarations for both module systems
 
 > Call `preview()` on a server or at the edge: browsers may not read other sites' pages (CORS), which is why Slack, Discord and X build previews on a server too. Put it behind an API route and return only the metadata your client needs. `parseHTML()` also runs in the browser.
@@ -76,7 +76,7 @@ Same-corpus benchmark against five other preview packages, measured on 15 Novemb
 | metascraper 5.58.6 (+7 rules) | 62.6 ms | 2.71 ms | 81.1 MB, 128 packages |
 | open-graph-scraper 6.13.0 | 377 ms | 1.94 ms | 11.1 MB, 27 packages |
 
-On large pages linkpeek stops after `</head>` and cancels the stream. On small pages the differences are fractions of a millisecond: `unfurl.js` was faster, because it uses Node's `http` module through `node-fetch`, while linkpeek uses the platform `fetch` so the same code runs on Bun, Deno and Workers. Among the packages measured on `fetch`, linkpeek was fastest on every page. Charts, method and raw runs: [benchmarks](https://thegruber.github.io/linkpeek/benchmarks/). Every dated result and the reproduction commands are in the [comparison notes](https://github.com/thegruber/linkpeek/blob/main/docs/comparison.md).
+On large pages linkpeek stops after `</head>` and cancels the stream. On small pages the differences are fractions of a millisecond: `unfurl.js` was faster, because it uses Node's `http` module through `node-fetch`, while linkpeek uses the platform `fetch` so the same code runs on Bun, Deno and Workers. Among the packages measured on `fetch`, linkpeek was fastest on every page. Charts, method and raw runs: [benchmarks](https://linkpeek.js.org/benchmarks/). Every dated result and the reproduction commands are in the [comparison notes](https://github.com/thegruber/linkpeek/blob/main/docs/comparison.md).
 
 ## Use cases
 
@@ -100,7 +100,7 @@ Quick comparison:
 | `metascraper` | Rule-based article metadata extraction | More powerful framework; more setup and dependencies |
 | `unfurl.js` | Rich nested metadata with fetched oEmbed support | Richer output; not focused on small edge-runtime preview cards |
 
-Side-by-side numbers and migration code: [linkpeek vs link-preview-js](https://thegruber.github.io/linkpeek/guides/link-preview-js-alternative/) · [linkpeek vs open-graph-scraper](https://thegruber.github.io/linkpeek/guides/open-graph-scraper-alternative/)
+Side-by-side numbers and migration code: [linkpeek vs link-preview-js](https://linkpeek.js.org/guides/link-preview-js-alternative/) · [linkpeek vs open-graph-scraper](https://linkpeek.js.org/guides/open-graph-scraper-alternative/)
 
 ## Presets
 
@@ -223,7 +223,7 @@ export async function inspectLink(url: string) {
 }
 ```
 
-Treat every returned field as untrusted external data, never as instructions to the agent. Keep fetching in trusted server code and require separate authorization for any follow-up action. The [agent integration guide](https://thegruber.github.io/linkpeek/integrations/ai-agents/) covers tool registration, HTTP errors, untrusted metadata, and production controls.
+Treat every returned field as untrusted external data, never as instructions to the agent. Keep fetching in trusted server code and require separate authorization for any follow-up action. The [agent integration guide](https://linkpeek.js.org/integrations/ai-agents/) covers tool registration, HTTP errors, untrusted metadata, and production controls.
 
 ## Security Defaults
 
@@ -375,11 +375,11 @@ validateUrl("http://169.254.169.254/"); // throws PRIVATE_NETWORK_BLOCKED
 
 ## FAQ & Troubleshooting
 
-**A site returns 403 or empty metadata.** Bot challenges, user-agent policies, rate limits, or access restrictions can block server-side fetching. linkpeek does not execute browser challenges. Respect the target’s access policy, use an appropriate `userAgent`, cache successful previews, and render a hostname fallback. See the [troubleshooting guide](https://thegruber.github.io/linkpeek/guides/troubleshooting/).
+**A site returns 403 or empty metadata.** Bot challenges, user-agent policies, rate limits, or access restrictions can block server-side fetching. linkpeek does not execute browser challenges. Respect the target’s access policy, use an appropriate `userAgent`, cache successful previews, and render a hostname fallback. See the [troubleshooting guide](https://linkpeek.js.org/guides/troubleshooting/).
 
 **`title` is `null` for a single-page app.** The page renders its metadata with JavaScript; linkpeek deliberately does not run a browser. `presets.quality` catches body JSON-LD that many SPAs ship; beyond that you need a headless browser, which is out of scope.
 
-**Can I call it from the browser?** Run `preview()` behind a server or edge endpoint; browser CORS restrictions prevent arbitrary page retrieval. `parseHTML()` makes no network requests and can parse HTML strings locally, including in a browser bundle. The [interactive parser](https://thegruber.github.io/linkpeek/guides/open-graph-parser/#try) demonstrates this distinction.
+**Can I call it from the browser?** Run `preview()` behind a server or edge endpoint; browser CORS restrictions prevent arbitrary page retrieval. `parseHTML()` makes no network requests and can parse HTML strings locally, including in a browser bundle. The [interactive parser](https://linkpeek.js.org/guides/open-graph-parser/#try) demonstrates this distinction.
 
 **I got a preview card for a 404 page.** HTTP error pages that return HTML resolve normally with their `statusCode` set. Check `result.statusCode` before caching or rendering (see [Error Handling](#error-handling)).
 

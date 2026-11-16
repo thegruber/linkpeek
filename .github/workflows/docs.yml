@@ -30,8 +30,14 @@ jobs:
           cache-dependency-path: website/package-lock.json
       - run: npm install --global npm@11.21.1
       - run: npm ci --prefix website
-      - run: npm run build --prefix website
+      # Build for the address Pages serves: linkpeek.js.org once the custom
+      # domain is set, thegruber.github.io/linkpeek/ before that.
       - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+        id: pages
+      - run: npm run build --prefix website
+        env:
+          LINKPEEK_DOCS_ORIGIN: ${{ steps.pages.outputs.origin }}
+          LINKPEEK_DOCS_BASE: ${{ steps.pages.outputs.base_path }}
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: website/out

@@ -23,7 +23,7 @@
 - `src/index.ts`: public API (`preview`, `parseHTML`, `presets`, `validateUrl`, `isPrivateHost`, `LinkpeekError`)
 
 ## Documentation site
-- `website/` is a separate private Next.js + Fumadocs package with its own lockfile, exported statically to GitHub Pages under `/linkpeek/`. It never adds dependencies to the published package.
+- `website/` is a separate private Next.js + Fumadocs package with its own lockfile, exported statically to GitHub Pages at `https://linkpeek.js.org/` (a free JS.ORG subdomain, listed in js-org/js.org `cnames_active.js`; the custom domain is set in the repository's Pages settings). The old `thegruber.github.io/linkpeek/` URLs redirect there. It never adds dependencies to the published package.
 - Pages are MDX in `website/content/docs`; sidebar order lives in the `meta.json` files. Keep existing routes and their trailing slashes: they are indexed URLs.
 - Benchmark numbers on the site come only from `website/data/benchmarks.json`; charts and Markdown exports render from it.
 - `npm run build --prefix website` also runs `scripts/check-site.mjs` (one H1, canonical, social tags, JSON-LD, Markdown twins, links, sitemap). Keep it passing.

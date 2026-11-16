@@ -82,7 +82,7 @@
 		"type": "git",
 		"url": "git+https://github.com/thegruber/linkpeek.git"
 	},
-	"homepage": "https://thegruber.github.io/linkpeek/",
+	"homepage": "https://linkpeek.js.org/",
 	"bugs": {
 		"url": "https://github.com/thegruber/linkpeek/issues"
 	},

@@ -5,10 +5,7 @@ const packageVersion = JSON.parse(
 	readFileSync(new URL("../package.json", import.meta.url), "utf8"),
 ).version;
 
-const base = (process.env.LINKPEEK_DOCS_BASE ?? "/linkpeek/").replace(
-	/^\/+|\/+$/g,
-	"",
-);
+const base = (process.env.LINKPEEK_DOCS_BASE ?? "/").replace(/^\/+|\/+$/g, "");
 
 /** @type {import('next').NextConfig} */
 const config = {
