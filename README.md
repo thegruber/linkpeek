@@ -45,7 +45,7 @@ Using a coding agent? Paste the [agent task](https://linkpeek.js.org/prompt.md) 
 | --- | --- |
 | Node.js | 22.12+ (ESM and CommonJS) |
 | Bun | Current stable |
-| Deno | `import { preview } from "npm:linkpeek"` |
+| Deno | `deno add jsr:@thegruber/linkpeek` ([JSR](https://jsr.io/@thegruber/linkpeek)), or `import { preview } from "npm:linkpeek"` |
 | Edge runtimes | Fetch-compatible runtimes such as Cloudflare Workers and Vercel Edge |
 
 CI tests Node 22, Node 24, Node 26, Bun, and Deno.
