@@ -18,6 +18,8 @@ const mono = Geist_Mono({
 
 export const metadata: Metadata = {
 	metadataBase: new URL(siteUrl),
+	// Google Search Console ownership for the https://linkpeek.js.org/ property.
+	verification: { google: "D2ageLtUwNc5SZGtDscdfpXlhs-eElcJdYHeaR5F9io" },
 	title: {
 		default: `${home.title} · ${appName}`,
 		template: `%s · ${appName}`,
