@@ -7,6 +7,6 @@
 		"node": "24.x"
 	},
 	"dependencies": {
-		"linkpeek": "^2.1.7"
+		"linkpeek": "^3.0.0"
 	}
 }
