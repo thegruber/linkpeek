@@ -1,0 +1,71 @@
+---
+title: "vs url-metadata"
+metaTitle: "url-metadata alternative for TypeScript"
+description: "Compare linkpeek with url-metadata: large-page speed, install size, byte limits, edge runtimes, SSRF defaults, and migrating urlMetadata()."
+heading: "linkpeek vs url-metadata"
+---
+
+url-metadata fetches a URL and returns a broad, flat object: every meta tag by name, Open Graph and Twitter keys, JSON-LD, favicons, hreflang, the redirect chain, response headers and timing. linkpeek returns the handful of fields a preview card needs, with the fallbacks already applied, and runs the same way on every runtime with `fetch`.
+
+## Measured side by side [#numbers]
+
+<VersusTable other="url-metadata" />
+
+url-metadata was measured through its own fetch, with `requestFilteringAgentOptions: { allowPrivateIPAddress: true }` so it could reach the local benchmark server. See the [benchmarks](/benchmarks/) for the method and every package.
+
+## Choose url-metadata when [#choose-url-metadata]
+
+- You need its **broad output**: all meta tags, Google Scholar citations, hreflang, redirect chain, response headers and timing, narrowed with its `fields` option when you want less.
+- You need **proxy mode** to route blocked pages through an unblocking service, including headless rendering and screenshots from those vendors.
+- You want **resolved-address checks on Node.js** built in: its README says Node.js requests to private and reserved addresses are blocked by default through `request-filtering-agent`. linkpeek checks DNS answers on every hop only when you pass `resolveHost`, and does not pin the connection.
+
+## Choose linkpeek when [#choose-linkpeek]
+
+- You run on **Cloudflare Workers, Vercel Edge, Deno or Bun**. url-metadata marks its address filtering, size limit and compression options as Node.js only; linkpeek applies its byte limit, redirect checks and IP-literal blocking the same way everywhere.
+- You want a **byte limit by default**. url-metadata's `size` option defaults to 0, which disables it. linkpeek stops after `</head>` and retains at most 30,000 decoded bytes by default, which is where the large-page gap above comes from.
+- You want **one value per field** instead of raw tags to pick from: `title` already falls back from Open Graph to Twitter Card, Dublin Core, `<title>` and JSON-LD, and image, favicon and canonical URLs come back absolute and only as `http:` or `https:`.
+- **Install size** matters for cold starts or container images: one runtime dependency.
+
+## Migrate urlMetadata() to preview() [#migrate]
+
+```bash
+npm uninstall url-metadata
+npm install linkpeek
+```
+
+```ts
+// url-metadata
+import urlMetadata from "url-metadata";
+const meta = await urlMetadata(url);
+const card = {
+  title: meta["og:title"] || meta.title,
+  description: meta["og:description"] || meta.description,
+  image: meta["og:image"] || meta.image,
+  siteName: meta["og:site_name"],
+};
+
+// linkpeek
+import { preview } from "linkpeek";
+const result = await preview(url);
+const card = {
+  title: result.title,
+  description: result.description,
+  image: result.image,
+  siteName: result.siteName, // falls back to the hostname
+};
+```
+
+The options map closely: `timeout` and `maxRedirects` keep their names, `size` becomes `maxBytes` and `requestHeaders` becomes `headers` plus `userAgent`. linkpeek refuses cookie, authorization and API-key headers with a `SENSITIVE_HEADER` error rather than sending them to the target. If you parsed a `Response` you fetched yourself, pass its text to `parseHTML(html, url)` instead.
+
+HTTP error pages resolve with their metadata and a `statusCode`, so check it before caching. Blocked targets, timeouts and network failures throw a `LinkpeekError` with a `code`; the [API reference](/api/) lists them. For a public preview endpoint, pair linkpeek with outbound network rules, as the [security model](/security/) explains.
+
+New to linkpeek? The [quick start](/quick-start/) covers install, presets and where it runs.
+
+<Related
+	items={[
+		["Benchmarks", "/benchmarks/"],
+		["Security model", "/security/"],
+		["All libraries", "/guides/link-preview-library-comparison/"],
+		["vs metascraper", "/guides/metascraper-alternative/"],
+	]}
+/>

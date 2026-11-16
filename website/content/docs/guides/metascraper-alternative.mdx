@@ -1,0 +1,78 @@
+---
+title: "vs metascraper"
+metaTitle: "metascraper alternative for TypeScript"
+description: "Compare linkpeek with metascraper: a focused preview library against a rule framework. Speed, install size, fetching, and how to migrate."
+heading: "linkpeek vs metascraper"
+---
+
+metascraper is a rule framework maintained by Microlink. You hand it HTML and a URL, and each rule package you install (title, image, author, date, logo, and provider packages such as YouTube, Amazon or Spotify) contributes values with its own fallbacks. It does not fetch. linkpeek is a focused preview library: it fetches with network safeguards, reads the page head and returns one fixed, typed result.
+
+## Measured side by side [#numbers]
+
+<VersusTable other="metascraper" />
+
+metascraper does not fetch, so it was measured as native `fetch` plus metascraper with seven rule packages: author, date, description, image, publisher, title and url. The install size counts the same seven packages. Its large-page times varied widely between runs. See the [benchmarks](/benchmarks/) for the method and every package.
+
+## Choose metascraper when [#choose-metascraper]
+
+- You need **provider-specific rules**, such as `metascraper-youtube`, `metascraper-amazon` or `metascraper-spotify`, each tuned to how that site marks up its pages.
+- You want to **write your own rules** or change which source wins for a field. linkpeek's fallback order is fixed.
+- You **fetch HTML your own way**, for example through a headless browser for pages that render their tags with JavaScript, and only need extraction on top.
+
+## Choose linkpeek when [#choose-linkpeek]
+
+- You want **fetching included**. With metascraper, redirect validation, address policy, timeouts, byte limits and credentials belong to your own fetch. linkpeek validates the URL and every redirect, blocks private IP literals, caps the bytes it reads and times out by default.
+- You run on **Cloudflare Workers, Vercel Edge, Deno or Bun**. metascraper's maintainers describe browser and edge use as [not what it is oriented for](https://github.com/microlinkhq/metascraper/issues/746); linkpeek uses only platform `fetch`, Web Streams and `TextDecoder`.
+- **Install size** matters: linkpeek has one runtime dependency and no rule packages to choose.
+- You need **preview-card fields**, not a framework: title, description, image, site name, favicon and canonical URL, typed as a value or `null`.
+
+## Migrate metascraper to linkpeek [#migrate]
+
+```bash
+npm install linkpeek
+```
+
+```ts
+// metascraper
+import createMetascraper from "metascraper";
+import description from "metascraper-description";
+import image from "metascraper-image";
+import publisher from "metascraper-publisher";
+import title from "metascraper-title";
+
+const metascraper = createMetascraper([description(), image(), publisher(), title()]);
+const html = await (await fetch(url)).text();
+const meta = await metascraper({ html, url });
+// meta.title, meta.description, meta.image, meta.publisher
+
+// linkpeek: fetch included
+import { preview } from "linkpeek";
+const result = await preview(url);
+// result.title, result.description, result.image, result.siteName
+```
+
+If you keep your own fetch, swap only the extraction step: `parseHTML(html, url)` is synchronous and returns the same result shape as `preview()`, with `statusCode` set to 0. Your fetch then still owns redirect checks, timeouts and byte limits.
+
+| metascraper field | linkpeek field |
+| --- | --- |
+| `title` | `title` |
+| `description` | `description` |
+| `image` | `image` |
+| `url` | `canonicalUrl` |
+| `publisher` | `siteName` |
+| `author` | `author` |
+| `date` | `publishedDate` |
+| `lang` | `lang` |
+
+linkpeek has no equivalent of `metascraper-logo`; `favicon` is the declared icon or the origin's `/favicon.ico`. HTTP error pages resolve with their `statusCode`; check it before caching. The [API reference](/api/) lists every field and error code, and the [security model](/security/) explains the opt-in `resolveHost` check and the DNS limit to cover with egress rules.
+
+New to linkpeek? The [quick start](/quick-start/) covers install, presets and where it runs.
+
+<Related
+	items={[
+		["Benchmarks", "/benchmarks/"],
+		["Security model", "/security/"],
+		["All libraries", "/guides/link-preview-library-comparison/"],
+		["vs unfurl.js", "/guides/unfurl-js-alternative/"],
+	]}
+/>

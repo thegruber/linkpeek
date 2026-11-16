@@ -1,0 +1,9 @@
+{
+	"pages": [
+		"nextjs",
+		"react",
+		"cloudflare-workers",
+		"node-express",
+		"ai-agents"
+	]
+}

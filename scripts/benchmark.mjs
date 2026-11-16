@@ -33,12 +33,33 @@ const largePage = `<!doctype html><html><head>
 		Math.ceil(500_000 / benchmarkParagraph.length),
 	)}</body></html>`;
 
+// Real-world head shapes: framework pages inline >30 kB of CSS/JS before the
+// og tags, and ad pixels put <noscript><img> inside <head>.
+const inlineHeadPage = `<!doctype html><html><head><meta charset="utf-8">
+	<title>Inline head benchmark</title>
+	<style>${".c{color:#232323;margin:0 auto;padding:4px}".repeat(900)}</style>
+	<script>${"window.__d=(window.__d||[]).concat([1,2,3]);".repeat(200)}</script>
+	<meta property="og:title" content="Inline head benchmark">
+	<meta property="og:image" content="https://cdn.example.com/inline.jpg">
+	</head><body><p>body</p></body></html>`;
+const pixelPage = `<!doctype html><html><head><meta charset="utf-8">
+	<title>Pixel benchmark</title>
+	<script>!function(f,b,e,v){/* pixel loader */}(window,document,"script");</script>
+	<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1&ev=PageView&noscript=1"/></noscript>
+	<svg xmlns="http://www.w3.org/2000/svg" style="display:none"><symbol id="i"><path d="M0 0h24v24H0z"/></symbol></svg>
+	<meta property="og:title" content="Pixel benchmark">
+	<meta property="og:description" content="Metadata after a head pixel and sprite">
+	<meta property="og:image" content="https://cdn.example.com/pixel.jpg">
+	</head><body><p>body</p></body></html>`;
+
 const fixtures = [
 	...fixturePaths.map((fixture) => ({
 		fixture,
 		html: readFileSync(resolve(root, fixture), "utf8"),
 	})),
 	{ fixture: "synthetic/head-first-500kb.html", html: largePage },
+	{ fixture: "synthetic/inline-head-40kb.html", html: inlineHeadPage },
+	{ fixture: "synthetic/head-pixel.html", html: pixelPage },
 ];
 
 const liveUrls = [
@@ -182,6 +203,7 @@ async function runStreamProbe() {
 			sourceBytes: emittedBytes,
 			canceled,
 			title: previewResult.title,
+			truncated: previewResult.truncated,
 		});
 	}
 

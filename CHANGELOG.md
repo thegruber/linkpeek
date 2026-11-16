@@ -2,6 +2,49 @@
 
 All notable changes to this project are documented here.
 
+## 3.0.0 - Unreleased
+
+### Breaking: migrating from 2.x
+
+Most apps upgrade without code changes. Check these if you rely on them:
+
+- **Network failures throw `LinkpeekError` with code `FETCH_FAILED`** (the original error is `cause`). Code that checked `error instanceof TypeError` should check `error.code === "FETCH_FAILED"`. Caller aborts are still rethrown unchanged.
+- **New `LinkpeekErrorCode` member `FETCH_FAILED`.** Exhaustive `switch` statements over error codes need a case for it.
+- **`<title>` now beats JSON-LD for `title`,** and JSON-LD fields come from the page's main entity. Some titles change, usually for the better: a site-wide `Organization` name no longer becomes the title, and an `Organization`-only page no longer fills `title`/`description` from it.
+- **`parseHTML(html, baseUrl)` throws `INVALID_URL`** when `baseUrl` is not an absolute `http(s)` URL, instead of returning made-up `example.com` values.
+- **Single-label and internal hosts are private:** `http://intranet/`, `*.internal`, `*.local`, `*.localdomain`, `*.intranet`, `*.private`, `*.corp`, `*.home`, `*.lan`, `*.home.arpa` and `localhost.` variants are blocked unless `allowPrivateIPs: true`.
+- **`maxRedirects` and `timeout` cover the whole `preview()` call,** including a meta-refresh hop. `maxRedirects: 0` therefore also stops meta refresh.
+- **`PreviewResult` has a new required field, `truncated`.** Code that constructs result objects (mocks, fixtures) must add it.
+- **A relative `response.url` from a custom `fetch`** is resolved against the request URL and validated like any redirect target.
+
+### Fixed
+
+- Keep reading `<head>` after a `<noscript>` tracking pixel (Meta Pixel) or an inline `<svg>` sprite. Fast mode used to treat them as the start of `<body>` and drop later Open Graph tags.
+- Prefer `<title>` over JSON-LD for `title`, and take JSON-LD fields from the page's main entity only, so a site-wide `Organization` name no longer becomes the title and fields from unrelated entities no longer mix. JSON-LD `@id` references are followed.
+- `parseHTML()` throws `LinkpeekError` `INVALID_URL` for a base URL that is not absolute `http(s)`, instead of inventing an `example.com` site name, favicon and canonical URL.
+- `isPrivateHost()` normalises hosts like `fetch()` does, catching `2130706433`, `0x7f000001`, `127.1` and `0177.0.0.1`, and blocks internal names: `*.internal` (including `metadata.google.internal`), `*.home.arpa`, `localhost.` variants and single-label hosts.
+- Validate the final `response.url` reported by a custom `fetch` that followed redirects itself.
+- An unknown `Content-Type` charset label (`charset=bogus`) falls through to the `<meta charset>` prescan.
+- `timeout` and `maxRedirects` cover the whole `preview()` call, including the meta-refresh hop.
+- Trim and collapse whitespace in text fields; blank values (a whitespace-only `og:title`) count as missing.
+- Sniff HTML when `Content-Type` is missing, keep the first `rel=canonical` and `image_src` like every other field, and accept meta refresh written as `0; https://…`.
+- Fall back to the JSON-LD `WebPage` description when the main entity has none (Yoast and WordPress graphs), and prefer typed `@graph` entities over an untyped wrapper.
+- Check a custom `fetch`'s `response.url` once: a URL that only differs by normalisation or fragment is not resolved a second time.
+- Wait for a UTF-8 BOM split across stream chunks before sniffing, and do not report `truncated` when a body ends exactly at `maxBytes`.
+
+### Added
+
+- `resolveHost` option: an opt-in DNS check on the first request and every redirect hop, with no new dependency.
+- `FETCH_FAILED` error code: network and DNS failures throw `LinkpeekError` with the original error as `cause`. Previously they propagated as raw `TypeError`s.
+- `truncated` result field: `true` when `maxBytes` cut the response before the end of `<head>`.
+- JSON-LD `WebSite` name as a `siteName` fallback, scalable (`sizes="any"`/SVG) favicons ranked above small raster icons, and `apple-touch-icon-precomposed`.
+- Benchmark fixtures for a head with more than 30 kB of inline CSS/JS and for a head pixel snippet.
+
+### Docs and website
+
+- New documentation site (Next.js + Fumadocs) with a live preview demo, benchmarks, five library comparisons, framework guides (Next.js, React, Cloudflare Workers, Express, AI agents), `llms.txt`, Markdown versions of every page and a ready-made task for coding agents at `/prompt.md`.
+- New brand: two eyes peeking over the orange `<head>` band.
+
 ## 2.1.7 - 2026-10-29
 
 ### Fixed

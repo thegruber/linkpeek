@@ -1,4 +1,17 @@
-# linkpeek
+<p align="center">
+  <a href="https://linkpeek.js.org/"><img src="https://raw.githubusercontent.com/thegruber/linkpeek/main/assets/brand/mark-256.png" width="88" height="88" alt=""></a>
+</p>
+
+<h1 align="center">linkpeek</h1>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/linkpeek"><img src="https://img.shields.io/npm/v/linkpeek" alt="npm version"></a>
+  <a href="https://www.npmjs.com/package/linkpeek"><img src="https://img.shields.io/npm/dw/linkpeek" alt="npm downloads"></a>
+  <a href="https://github.com/thegruber/linkpeek/actions/workflows/ci.yml"><img src="https://github.com/thegruber/linkpeek/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://packagephobia.com/result?p=linkpeek"><img src="https://packagephobia.com/badge?p=linkpeek" alt="install size"></a>
+</p>
+
+<p align="center"><a href="https://linkpeek.js.org/">Website</a> · <a href="https://linkpeek.js.org/quick-start/">Quick start</a> · <a href="https://linkpeek.js.org/api/">API</a> · <a href="https://linkpeek.js.org/benchmarks/">Benchmarks</a> · <a href="https://linkpeek.js.org/security/">Security</a> · <a href="https://github.com/thegruber/linkpeek/tree/main/examples">Examples</a> · <a href="https://github.com/thegruber/linkpeek/blob/main/CHANGELOG.md">Changelog</a></p>
 
 **A fast, safe-by-default link preview library for TypeScript, Node.js, Bun, Deno, and edge runtimes. One runtime dependency.**
 
@@ -20,14 +33,11 @@ result.siteName;     // string
 result.canonicalUrl; // absolute final/canonical URL
 ```
 
-[![npm](https://img.shields.io/npm/v/linkpeek)](https://www.npmjs.com/package/linkpeek)
-[![weekly downloads](https://img.shields.io/npm/dw/linkpeek)](https://www.npmjs.com/package/linkpeek)
-[![CI](https://github.com/thegruber/linkpeek/actions/workflows/ci.yml/badge.svg)](https://github.com/thegruber/linkpeek/actions/workflows/ci.yml)
-[![bundle size](https://img.shields.io/bundlephobia/minzip/linkpeek)](https://bundlephobia.com/package/linkpeek)
-[![types](https://img.shields.io/npm/types/linkpeek)](https://www.npmjs.com/package/linkpeek)
-[![license](https://img.shields.io/npm/l/linkpeek)](https://github.com/thegruber/linkpeek/blob/main/LICENSE)
+<p align="center"><a href="https://linkpeek.js.org/"><img src="https://raw.githubusercontent.com/thegruber/linkpeek/main/assets/brand/readme-hero.png" alt="Calling preview(url) in TypeScript returns a typed result and a link preview card; measured 4.0 times faster than the next package on a 500 kB page, a 2.4 times smaller install, one runtime dependency, and at most 30 kB kept by default (benchmarks measured 15 November 2026)." width="800"></a></p>
 
-[Documentation](https://thegruber.github.io/linkpeek/) · [API reference](https://thegruber.github.io/linkpeek/api/) · [Try the parser](https://thegruber.github.io/linkpeek/guides/open-graph-parser/#try-title) · [Troubleshooting](https://thegruber.github.io/linkpeek/guides/troubleshooting/) · [Security](https://thegruber.github.io/linkpeek/security/) · [Examples](https://github.com/thegruber/linkpeek/tree/main/examples) · [Benchmarks](https://thegruber.github.io/linkpeek/benchmarks/) · [Changelog](https://github.com/thegruber/linkpeek/blob/main/CHANGELOG.md)
+Guides: [Next.js](https://linkpeek.js.org/integrations/nextjs/) · [Cloudflare Workers](https://linkpeek.js.org/integrations/cloudflare-workers/) · [Express](https://linkpeek.js.org/integrations/node-express/) · [AI agents](https://linkpeek.js.org/integrations/ai-agents/) · [Get the og:image from a URL](https://linkpeek.js.org/guides/get-og-image-from-url/) · [All libraries compared](https://linkpeek.js.org/guides/link-preview-library-comparison/)
+
+Using a coding agent? Paste the [agent task](https://linkpeek.js.org/prompt.md) into Claude Code, Cursor, Codex or Copilot and it adds the endpoint and card for you.
 
 ## Runtime support
 
@@ -44,13 +54,29 @@ CI tests Node 22, Node 24, Node 26, Bun, and Deno.
 
 linkpeek focuses on server-side preview cards: fetch a URL, read only enough HTML for useful metadata, and return a stable result shape without a DOM-heavy scraper stack.
 
+- **4.0× faster than the next package** on a 500 kB page, with a 2.4× smaller install ([benchmarks](#benchmarks))
 - **1 runtime dependency**: `htmlparser2`
 - **30 KB fast default** with a strict byte limit and early stream cancellation after the head
-- **Head-first SAX parsing** with no DOM construction
-- **Safe network defaults**: private/internal IP targets and credential-bearing requests blocked by default
+- **Head-first SAX parsing** with no DOM construction, HTTP client or native module
+- **Safe network defaults**: literal private/internal IP targets and credential-bearing requests are blocked, and every redirect is checked; DNS answers can be checked on every hop with the opt-in `resolveHost`, while the runtime's fetch still resolves the name ([limits](https://linkpeek.js.org/security/))
 - **Dual ESM/CJS package output** with TypeScript declarations for both module systems
 
-> linkpeek is intended for server-side use. Put it behind an API route and return only the metadata your client needs.
+> Call `preview()` on a server or at the edge: browsers may not read other sites' pages (CORS), which is why Slack, Discord and X build previews on a server too. Put it behind an API route and return only the metadata your client needs. `parseHTML()` also runs in the browser.
+
+## Benchmarks
+
+Same-corpus benchmark against five other preview packages, measured on 15 November 2026 from the current source (Linux x64, Node.js 24.22, median of three runs, local server, so library overhead only):
+
+| Package | 500 kB page | Small pages (0.6–2.3 kB) | Clean install |
+| --- | ---: | ---: | ---: |
+| **linkpeek** | **2.76 ms** | 1.25 ms | **1.3 MB, 7 packages** |
+| unfurl.js 6.4.0 | 11.0 ms | 0.80 ms | 3.2 MB, 16 packages |
+| link-preview-js 6.0.0 | 48.6 ms | 1.72 ms | 7.9 MB, 18 packages |
+| url-metadata 6.3.1 | 49.5 ms | 2.89 ms | 10.4 MB, 30 packages |
+| metascraper 5.58.6 (+7 rules) | 62.6 ms | 2.71 ms | 81.1 MB, 128 packages |
+| open-graph-scraper 6.13.0 | 377 ms | 1.94 ms | 11.1 MB, 27 packages |
+
+On large pages linkpeek stops after `</head>` and cancels the stream. On small pages the differences are fractions of a millisecond: `unfurl.js` was faster, because it uses Node's `http` module through `node-fetch`, while linkpeek uses the platform `fetch` so the same code runs on Bun, Deno and Workers. Among the packages measured on `fetch`, linkpeek was fastest on every page. Charts, method and raw runs: [benchmarks](https://linkpeek.js.org/benchmarks/). Every dated result and the reproduction commands are in the [comparison notes](https://github.com/thegruber/linkpeek/blob/main/docs/comparison.md).
 
 ## Use cases
 
@@ -69,10 +95,12 @@ Quick comparison:
 
 | Package | Good fit | Tradeoff vs linkpeek |
 | --- | --- | --- |
-| `link-preview-js` | Extracting previews from a URL or first URL in text | Broader text-input API; less focused on edge-runtime and safe-by-default fetching |
+| `link-preview-js` | Extracting previews from a URL or first URL in text | Broader text-input API; Node.js fetch path with DNS pinning, larger install |
 | `open-graph-scraper` | Node Open Graph/Twitter Card scraping with broader options | Node-oriented and larger dependency surface |
 | `metascraper` | Rule-based article metadata extraction | More powerful framework; more setup and dependencies |
 | `unfurl.js` | Rich nested metadata with fetched oEmbed support | Richer output; not focused on small edge-runtime preview cards |
+
+Side-by-side numbers and migration code: [vs link-preview-js](https://linkpeek.js.org/guides/link-preview-js-alternative/) · [vs open-graph-scraper](https://linkpeek.js.org/guides/open-graph-scraper-alternative/) · [vs unfurl.js](https://linkpeek.js.org/guides/unfurl-js-alternative/) · [vs url-metadata](https://linkpeek.js.org/guides/url-metadata-alternative/) · [vs metascraper](https://linkpeek.js.org/guides/metascraper-alternative/)
 
 ## Presets
 
@@ -195,24 +223,29 @@ export async function inspectLink(url: string) {
 }
 ```
 
-Treat every returned field as untrusted external data, never as instructions to the agent. Keep fetching in trusted server code and require separate authorization for any follow-up action. The [agent integration guide](https://thegruber.github.io/linkpeek/integrations/ai-agents/) covers tool registration, HTTP errors, untrusted metadata, and production controls.
-
-## Measured footprint and performance
-
-linkpeek's runtime tree contains no HTTP client, DOM implementation, or native module. The local harness reports parser modes, retained bytes, requested source chunks, tarball size, and raw/gzip entry size. A separate same-corpus harness compares pinned package versions on one local server.
-
-See the dated [comparison and measurement notes](https://github.com/thegruber/linkpeek/blob/main/docs/comparison.md) for the single authoritative results table, exact environment, sourced security/runtime notes, caveats, and reproduction commands. Stream cancellation means the consumer no longer wants more data; it is not a guarantee about exact network wire bytes.
+Treat every returned field as untrusted external data, never as instructions to the agent. Keep fetching in trusted server code and require separate authorization for any follow-up action. The [agent integration guide](https://linkpeek.js.org/integrations/ai-agents/) covers tool registration, HTTP errors, untrusted metadata, and production controls.
 
 ## Security Defaults
 
-`preview()` rejects credential-bearing input URLs and validates the initial URL and every HTTP redirect before fetching the next target. By default it blocks localhost plus literal private, link-local, cloud-metadata, multicast, documentation, and other non-global special-use IP ranges, including IPv6 forms that embed blocked IPv4 targets.
+`preview()` rejects credential-bearing input URLs and validates the initial URL and every HTTP redirect before fetching the next target. By default it blocks localhost plus literal private, link-local, cloud-metadata, multicast, documentation, and other non-global special-use IP ranges in any IPv4 spelling (`127.1`, `0x7f000001`, `2130706433`), including IPv6 forms that embed blocked IPv4 targets, and internal names such as `*.internal`, `*.local`, `*.localdomain`, `*.home.arpa` and single-label hosts like `metadata`.
 
 ## Production checklist
 
 - Do not forward user cookies, authorization headers, or internal service tokens to arbitrary preview URLs. `headers` rejects common credential-bearing header names.
 - Keep `allowPrivateIPs` set to `false` unless the caller is trusted and the network path is intentionally internal.
 - Treat returned metadata as untrusted text and URLs. linkpeek filters extracted media/canonical/oEmbed URLs to `http:` and `https:`.
-- Runtime `fetch` implementations still own DNS resolution. DNS rebinding protection can vary by platform.
+- Runtime `fetch` implementations still own DNS resolution. On Node.js, pass `resolveHost` so every hop's DNS answers are checked for private addresses:
+
+  ```typescript
+  import { lookup } from "node:dns/promises";
+
+  await preview(url, {
+    resolveHost: async (host) =>
+      (await lookup(host, { all: true })).map((entry) => entry.address),
+  });
+  ```
+
+  fetch still resolves the name again, so this narrows DNS rebinding rather than pinning the address.
 - If you provide a custom `fetch`, it must honor `RequestInit.redirect: "manual"` and the supplied abort `signal`; otherwise redirects can occur outside linkpeek's validation loop.
 - For hostile public input, also enforce outbound network policy so the preview worker cannot reach internal services.
 - Cache successful previews by normalized URL so repeated page views do not refetch the same target.
@@ -230,7 +263,7 @@ if (result.statusCode >= 400) {
 }
 ```
 
-`preview()` throws a typed `LinkpeekError` for invalid input, blocked targets, and timeouts. Branch on `code` instead of matching message strings:
+`preview()` throws a typed `LinkpeekError` for invalid input, blocked targets, timeouts and network failures. Branch on `code` instead of matching message strings:
 
 ```typescript
 import { LinkpeekError, preview } from "linkpeek";
@@ -240,18 +273,18 @@ try {
 } catch (err) {
   if (err instanceof LinkpeekError) {
     switch (err.code) {
-      case "INVALID_URL":              // not a parseable URL
+      case "INVALID_URL":              // unparseable URL or embedded credentials
       case "UNSUPPORTED_PROTOCOL":     // not http/https
-      case "PRIVATE_NETWORK_BLOCKED":  // SSRF protection triggered
+      case "PRIVATE_NETWORK_BLOCKED":  // private/internal host, IP, or resolveHost answer
       case "SENSITIVE_HEADER":         // credential-bearing custom header
       case "TOO_MANY_REDIRECTS":
-      case "TIMEOUT":
+      case "TIMEOUT":                  // whole-call deadline elapsed
+      case "FETCH_FAILED":             // DNS/TCP/TLS failure; see err.cause
       case "INVALID_OPTIONS":
         break;
     }
   }
-  // Aborts via your own `signal` are rethrown as-is (AbortError),
-  // and network failures propagate from fetch unchanged.
+  // Aborts via your own `signal` are rethrown as-is (AbortError).
 }
 ```
 
@@ -269,15 +302,16 @@ Fetches a URL and extracts link preview metadata. Returns `Promise<PreviewResult
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
-| `timeout` | `number` | `8000` | Request timeout in milliseconds, from 0 to 2,147,483,647. Throws `LinkpeekError` code `TIMEOUT` when elapsed; invalid values throw `INVALID_OPTIONS` |
-| `maxBytes` | `number` | `30_000` | Maximum decoded response-body bytes to retain |
+| `timeout` | `number` | `8000` | Deadline in milliseconds for the whole call (redirects, body read and any meta-refresh hop), from 0 to 2,147,483,647. Throws `LinkpeekError` code `TIMEOUT` when elapsed; invalid values throw `INVALID_OPTIONS` |
+| `maxBytes` | `number` | `30_000` | Maximum decoded response-body bytes to retain. `result.truncated` reports when the limit cut the head (or the document, with `includeBodyContent`) |
 | `userAgent` | `string` | `"Twitterbot/1.0"` | User-Agent sent with requests |
 | `followRedirects` | `boolean` | `true` | Follow HTTP redirects after validating each target |
-| `maxRedirects` | `number` | `10` | Maximum HTTP redirects to follow. Must be a non-negative integer; invalid values throw `INVALID_OPTIONS` |
+| `maxRedirects` | `number` | `10` | Maximum redirects per call, HTTP and meta refresh combined. Must be a non-negative integer; invalid values throw `INVALID_OPTIONS` |
 | `headers` | `Record<string, string>` | `{}` | Extra non-sensitive request headers. Common credential-bearing headers are rejected; custom headers are not forwarded on cross-origin redirects |
 | `allowPrivateIPs` | `boolean` | `false` | Allow private/internal IP targets |
+| `resolveHost` | `(hostname) => Promise<string[]>` | none | Opt-in DNS check on the first request and every redirect hop; any private answer throws `PRIVATE_NETWORK_BLOCKED` |
 | `signal` | `AbortSignal` | none | Cancel the request from the caller side |
-| `fetch` | `typeof fetch` | `globalThis.fetch` | Custom fetch implementation. It must honor manual redirects and the supplied abort signal |
+| `fetch` | `typeof fetch` | `globalThis.fetch` | Custom fetch implementation. It must honor manual redirects and the supplied abort signal; a `response.url` it reports is validated too |
 | `followMetaRefresh` | `boolean` | `false` | Follow one `<head>` `<meta http-equiv="refresh">` redirect with a delay of 10s or less |
 | `includeBodyContent` | `boolean` | `false` | Continue scanning `<body>` for JSON-LD and image fallbacks |
 
@@ -287,13 +321,13 @@ Fetches a URL and extracts link preview metadata. Returns `Promise<PreviewResult
 | --- | --- | --- |
 | `url` | `string` | Final fetched URL; `parseHTML()` returns the canonical URL |
 | `statusCode` | `number` | HTTP status code. `parseHTML()` returns `0` |
-| `title` | `string \| null` | `og:title` -> `twitter:title` -> JSON-LD -> Dublin Core -> `<title>` |
+| `title` | `string \| null` | `og:title` -> `twitter:title` -> Dublin Core -> `<title>` -> JSON-LD headline/name of the page's main entity |
 | `description` | `string \| null` | `og:description` -> `twitter:description` -> `meta[name=description]` -> JSON-LD -> Dublin Core |
 | `image` | `string \| null` | Preview image URL |
 | `imageAlt` | `string \| null` | Image alt text |
 | `imageWidth` | `number \| null` | `og:image:width` |
 | `imageHeight` | `number \| null` | `og:image:height` |
-| `siteName` | `string` | `og:site_name` -> JSON-LD publisher -> hostname |
+| `siteName` | `string` | `og:site_name` -> JSON-LD publisher -> JSON-LD `WebSite` name -> hostname |
 | `favicon` | `string \| null` | Declared favicon, or the origin’s `/favicon.ico` as a fallback guess |
 | `mediaType` | `string` | `og:type`, defaults to `"website"` |
 | `canonicalUrl` | `string` | Canonical URL, `og:url`, or fetched URL |
@@ -309,10 +343,13 @@ Fetches a URL and extracts link preview metadata. Returns `Promise<PreviewResult
 | `twitterCreator` | `string \| null` | Twitter creator handle |
 | `themeColor` | `string \| null` | Theme color |
 | `oEmbedUrl` | `string \| null` | Discovered oEmbed endpoint URL. Not fetched |
+| `truncated` | `boolean` | `maxBytes` cut the response before the end of `<head>` (or the document, with `includeBodyContent`). `parseHTML()` returns `false` |
+
+Text fields are trimmed with whitespace collapsed, and blank values count as missing. JSON-LD fields come from a single entity (the page's article, product or similar), never from a site-wide `Organization` or `WebSite` block.
 
 ### `parseHTML(html, baseUrl, options?)`
 
-Parses an HTML string directly. Use this when you already have the HTML.
+Parses an HTML string directly. Use this when you already have the HTML. `baseUrl` must be an absolute `http:` or `https:` URL; anything else throws `LinkpeekError` with code `INVALID_URL`.
 Pass `{ includeBodyContent: true }` to continue into `<body>` for JSON-LD and image fallbacks; by default parsing stops tokenizing when the head ends. Relative metadata and meta-refresh URLs honor the document's first safe `<base href>`.
 
 ```typescript
@@ -328,7 +365,7 @@ console.log(result.title); // "Hello"
 
 ### `validateUrl(url, allowPrivateIPs?)` and `isPrivateHost(hostname)`
 
-The SSRF-hardening helpers are exported for pre-validating URLs before queueing preview jobs. `validateUrl` rejects embedded credentials and throws a `LinkpeekError` (`INVALID_URL`, `UNSUPPORTED_PROTOCOL`, or `PRIVATE_NETWORK_BLOCKED`); `isPrivateHost` returns a boolean for hostnames and literal IP addresses covered by linkpeek's blocklist.
+The SSRF-hardening helpers are exported for pre-validating URLs before queueing preview jobs. `validateUrl` rejects embedded credentials and throws a `LinkpeekError` (`INVALID_URL`, `UNSUPPORTED_PROTOCOL`, or `PRIVATE_NETWORK_BLOCKED`); `isPrivateHost` returns a boolean for hostnames and literal IP addresses covered by linkpeek's blocklist, normalising the host the way `fetch()` does first (so `2130706433` and `127.1` count as loopback).
 
 ```typescript
 import { validateUrl } from "linkpeek";
@@ -338,11 +375,11 @@ validateUrl("http://169.254.169.254/"); // throws PRIVATE_NETWORK_BLOCKED
 
 ## FAQ & Troubleshooting
 
-**A site returns 403 or empty metadata.** Bot challenges, user-agent policies, rate limits, or access restrictions can block server-side fetching. linkpeek does not execute browser challenges. Respect the target’s access policy, use an appropriate `userAgent`, cache successful previews, and render a hostname fallback. See the [troubleshooting guide](https://thegruber.github.io/linkpeek/guides/troubleshooting/).
+**A site returns 403 or empty metadata.** Bot challenges, user-agent policies, rate limits, or access restrictions can block server-side fetching. linkpeek does not execute browser challenges. Respect the target’s access policy, use an appropriate `userAgent`, cache successful previews, and render a hostname fallback. See the [troubleshooting guide](https://linkpeek.js.org/guides/troubleshooting/).
 
 **`title` is `null` for a single-page app.** The page renders its metadata with JavaScript; linkpeek deliberately does not run a browser. `presets.quality` catches body JSON-LD that many SPAs ship; beyond that you need a headless browser, which is out of scope.
 
-**Can I call it from the browser?** Run `preview()` behind a server or edge endpoint; browser CORS restrictions prevent arbitrary page retrieval. `parseHTML()` makes no network requests and can parse HTML strings locally, including in a browser bundle. The [interactive parser](https://thegruber.github.io/linkpeek/guides/open-graph-parser/#try-title) demonstrates this distinction.
+**Can I call it from the browser?** Run `preview()` behind a server or edge endpoint; browser CORS restrictions prevent arbitrary page retrieval. `parseHTML()` makes no network requests and can parse HTML strings locally, including in a browser bundle. The [interactive parser](https://linkpeek.js.org/guides/open-graph-parser/#try) demonstrates this distinction.
 
 **I got a preview card for a 404 page.** HTTP error pages that return HTML resolve normally with their `statusCode` set. Check `result.statusCode` before caching or rendering (see [Error Handling](#error-handling)).
 
@@ -355,29 +392,9 @@ validateUrl("http://169.254.169.254/"); // throws PRIVATE_NETWORK_BLOCKED
 
 If linkpeek saves you time, [star the repository](https://github.com/thegruber/linkpeek) so other developers can find it too.
 
-## Development
+## Examples and contributing
 
-```bash
-npm ci
-npm run lint
-npm run typecheck
-npm run test
-npm run build
-npm audit
-npm run package:check
-npm run benchmark
-npm run downloads
-```
-
-`npm run downloads` reads the official npm download API, compares the latest 7- and 28-day windows with their preceding periods, and shows the last week's per-version mix. Registry downloads are tarball requests—not unique users or confirmed installations—so evaluate them alongside current-version share, distinct dependent repositories, and GitHub's unique traffic.
-
-Live network tests are opt-in:
-
-```bash
-LINKPEEK_LIVE_TESTS=1 npm run test
-```
-
-Framework examples are in [examples](https://github.com/thegruber/linkpeek/tree/main/examples): Next.js, Express, Cloudflare Workers, React, Supabase Edge Functions, and Bun.
+Framework examples are in [examples](https://github.com/thegruber/linkpeek/tree/main/examples): Next.js, Express, Cloudflare Workers, React, Supabase Edge Functions, and Bun. To work on linkpeek itself, see the [contribution guide](https://github.com/thegruber/linkpeek/blob/main/CONTRIBUTING.md).
 
 ## License
 

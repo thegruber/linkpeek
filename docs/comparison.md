@@ -23,11 +23,50 @@ Do not position linkpeek as:
 
 | Package | Good fit | Tradeoff vs linkpeek |
 | --- | --- | --- |
-| `link-preview-js` | Extracting a preview from a URL or from the first URL in text | Broader text-input API; less focused on edge-runtime and safe-by-default URL fetching |
+| `link-preview-js` | Extracting a preview from a URL or from the first URL in text | Broader text-input API; Node.js fetch path with DNS pinning, larger install |
 | `open-graph-scraper` | Node Open Graph/Twitter Card scraping with broader scraper options | Node-oriented and broader than a small preview-card utility |
 | `metascraper` | Rule-based metadata extraction with provider-specific packages | More powerful framework; usually more setup and dependency surface |
 | `unfurl.js` | Rich Node metadata with fetched oEmbed support | Richer nested output; not focused on small edge-runtime preview extraction |
 | `url-metadata` | Broad page metadata extraction | Broader output shape than preview cards |
+
+## Latest measurements (2026-11-15)
+
+Linux x64 (2 vCPU Intel Xeon 2.20 GHz), Node.js 24.22.2, npm 11.19.1. The website's [benchmark page](https://linkpeek.js.org/benchmarks/) renders these numbers from [`website/data/benchmarks.json`](../website/data/benchmarks.json); the three raw harness runs are in [`benchmarks/competitive/results/2026-11-15`](../benchmarks/competitive/results/2026-11-15). linkpeek was measured from the unreleased 3.0.0 source (merge commit `bd1c9df`); the runs report `dirty: true` only because an untracked, generated `website/AGENTS.md` was present. The previous release run is kept in [`results/2026-11-14`](../benchmarks/competitive/results/2026-11-14): 1.36, 1.23, 0.71 and 2.80 ms for linkpeek 2.1.7.
+
+Same-corpus speed, median of three run medians in ms per end-to-end preview:
+
+| Package | og-standard (611 B) | all-fields (2.3 kB) | recipe-blog (724 B) | large (500 kB) |
+| --- | ---: | ---: | ---: | ---: |
+| linkpeek 3.0.0 | 1.44 | 1.58 | 0.73 | 2.76 |
+| unfurl.js 6.4.0 | 1.02 | 0.84 | 0.54 | 10.99 |
+| link-preview-js 6.0.0 (fetch+parse)* | 1.95 | 1.99 | 1.22 | 48.57 |
+| open-graph-scraper 6.13.0 (fetch+parse)** | 1.93 | 2.16 | 1.72 | 376.79 |
+| url-metadata 6.3.1 | 3.10 | 3.22 | 2.36 | 49.48 |
+| metascraper 5.58.6 (+7 rules) | 3.49 | 1.94 | 2.71 | 62.60 |
+
+\* link-preview-js rejects private IP-literal hosts and is measured via native fetch plus `getPreviewFromContent()`.
+\*\* open-graph-scraper 6.13.0 rejects non-public addresses with no opt-out and is measured via native fetch plus `ogs({ html })`. Earlier tables measured its own fetch path, so its large-page number is not comparable across dates.
+
+These runs were steady: every package's three large-page medians stayed within about 20%. On this 2-vCPU machine small-page medians can still move between runs (linkpeek's all-fields runs were 1.60, 1.58 and 1.34 ms; an earlier run of `src/` at `bacb95a` gave 1.28 ms, and an interleaved same-process A/B of the two builds measured them within 2% of each other), so differences of a few tenths of a millisecond are within noise.
+
+Clean install footprint (`npm install --ignore-scripts`, same command as below):
+
+| Package | Version | Installed packages | `node_modules` |
+| --- | --- | ---: | ---: |
+| linkpeek | 2.1.7 | 7 | 1,360 KiB |
+| unfurl.js | 6.4.0 | 16 | 3,236 KiB |
+| link-preview-js | 6.0.0 | 18 | 8,108 KiB |
+| url-metadata | 6.3.1 | 30 | 10,692 KiB |
+| open-graph-scraper | 6.13.0 | 27 | 11,316 KiB |
+| metascraper + 7 rules | 5.58.6 (rules 5.58.4–5.58.5) | 128 | 83,088 KiB |
+
+Honest reading: unfurl.js is faster than linkpeek on every small fixture on this machine; the gap is a fraction of a millisecond. unfurl.js (like url-metadata) requests pages with `node-fetch` over Node's `http` module, which costs less per request than the platform `fetch` linkpeek uses to run unchanged on Bun, Deno and Workers. Among the packages measured on `fetch`, linkpeek is fastest on every fixture. On the large head-first fixture linkpeek is about 4.0× faster than unfurl.js and 17× or more faster than the other packages because it stops after the head. Absolute timings are higher than the August Apple-silicon run; do not mix the two tables.
+
+### Security changes since August (verified 2026-11-14)
+
+- `open-graph-scraper` 6.13.0 (2026-10-29) limits requests to HTTP(S) destinations whose **resolved** IP addresses are public, checks redirect destinations before requesting them, and ignores custom Undici dispatchers ([README](https://github.com/jshemas/openGraphScraper#readme)).
+- `link-preview-js` 6.0.0 (2026-11-10) resolves every hostname, including each redirect hop, with `dns.lookup`, rejects private results, and pins the connection to the checked addresses through an Undici dispatcher to defeat DNS rebinding. `resolveDNSHost: false` disables resolution ([README](https://github.com/OP-Engineering/link-preview-js#readme)).
+- linkpeek 3.0.0 validates hostnames and literal IPs on the initial URL and every redirect. By default it does not resolve DNS; the opt-in `resolveHost` option checks each hop's DNS answers for private addresses but does not pin the connection, because platform `fetch` resolves the name again. So linkpeek's defaults are **weaker for hostnames that resolve to private addresses** than both releases above, and even with `resolveHost` it is weaker than link-preview-js 6's pinning on Node.js. Do not describe linkpeek as safer than either.
 
 ## Measured install footprint (2026-08-26)
 
@@ -114,7 +153,7 @@ column as "fastest" or infer live-network latency from this local benchmark.
 
 The table above is a historical measurement of the listed versions, not a claim
 about the current checkout. The current benchmark lockfile includes security
-updates (including url-metadata 6.3.0). Every warmup and timed result must match
+updates (including url-metadata 6.3.1). Every warmup and timed result must match
 the fixture's expected title; failed extraction is reported separately from latency.
 
 ```bash
@@ -137,7 +176,7 @@ Verify each claim against the source before citing it in marketing material. Thi
 - `open-graph-scraper`: the full package is Node-oriented; maintainers point edge/parse-only consumers to `open-graph-scraper-lite` in issues [#203](https://github.com/jshemas/openGraphScraper/issues/203) and [#252](https://github.com/jshemas/openGraphScraper/issues/252).
 - `url-metadata`: uses `node-fetch` and Node HTTP plumbing. Issue [#103](https://github.com/laurengarcia/url-metadata/issues/103) was fixed in 5.2.2; [#92](https://github.com/laurengarcia/url-metadata/issues/92) documents a narrower Node-stream compatibility problem and does not prove failure in every edge runtime.
 - `metascraper`: actively maintained (Microlink); browser/edge described as "not oriented for that" ([#746](https://github.com/microlinkhq/metascraper/issues/746)).
-- linkpeek's own documented limit: platform `fetch` owns final DNS resolution, so DNS-rebinding protection varies by runtime (see SECURITY.md). State this limit in any security-focused comparison; the same class of caveat applies to every package above.
+- linkpeek's own documented limit: platform `fetch` owns final DNS resolution, so DNS-rebinding protection varies by runtime (see SECURITY.md); the opt-in `resolveHost` checks answers on every hop but does not pin. State this limit in any security-focused comparison. link-preview-js 6 pins addresses on Node.js; the other packages have similar or larger gaps.
 
 ## Claim Policy
 

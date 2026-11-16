@@ -24,8 +24,10 @@ If private advisory tooling is unavailable, open a public issue with minimal det
 By default, `preview()` blocks:
 
 - URLs containing embedded usernames or passwords
-- localhost and `.localhost` hosts
-- `.local` hosts
+- localhost, `localhost.` and `.localhost` hosts
+- single-label hosts such as `http://intranet/` or `metadata`
+- internal names under `.local`, `.localdomain`, `.internal` (including `metadata.google.internal`), `.intranet`, `.private`, `.corp`, `.home`, `.lan` and `.home.arpa`
+- every IPv4 spelling the URL parser accepts, such as `127.1`, `0x7f000001` and `2130706433`
 - private, link-local, cloud-metadata, multicast, documentation, benchmarking, reserved, and other non-global special-use IPv4 ranges
 - IPv6 loopback, unique-local, link-local, multicast, documentation, benchmarking, discard, dummy, deprecated, and other non-global special-use ranges
 - IPv6 forms that embed a blocked IPv4 address
@@ -45,7 +47,7 @@ Custom request `headers` reject common credential-bearing names, including cooki
 
 ## Known Limits
 
-Runtime `fetch` implementations own DNS resolution and connection establishment. The built-in hostname checks do not pin a hostname to a validated DNS answer, so protection against DNS rebinding, DNS changes between checks and connections, or platform-specific proxy behavior varies by runtime. If your threat model includes hostile DNS or internal network segmentation requirements, run `linkpeek` in a network sandbox that cannot reach internal services.
+Runtime `fetch` implementations own DNS resolution and connection establishment. The built-in hostname checks do not pin a hostname to a validated DNS answer, so protection against DNS rebinding, DNS changes between checks and connections, or platform-specific proxy behavior varies by runtime. On Node.js, pass `resolveHost` (for example a `node:dns/promises` lookup) to check the DNS answers for the first request and every redirect hop; it narrows rebinding but does not close it, because `fetch` resolves the name again. If your threat model includes hostile DNS or internal network segmentation requirements, run `linkpeek` in a network sandbox that cannot reach internal services.
 
 The special-use address blocklist follows current IANA registries, but network-level policy remains the stronger control and should not be replaced by an application-level blocklist alone.
 

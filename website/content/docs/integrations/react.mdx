@@ -1,0 +1,247 @@
+---
+title: "React"
+metaTitle: "React link preview card"
+description: "Build an accessible React link preview card: a server endpoint calls linkpeek, and the card renders title, description, image and host with fallbacks."
+heading: "React link preview card"
+---
+
+A preview card needs the target page's title, description and image. Your React code cannot read those from the browser, so the work splits in two: a small server endpoint calls `preview()`, and the card fetches that endpoint and renders the result.
+
+## Why the card calls your endpoint [#cors]
+
+Browsers do not let a page read the HTML of another site unless that site allows it with CORS headers, and almost none do. A `fetch("https://example.com")` from your React app fails before it sees a single meta tag. Slack, Discord and X build their previews on a server for the same reason.
+
+So the browser sends the URL to your own endpoint, the endpoint runs `preview()` on the server, and it returns only the fields the card needs as JSON. This also keeps outbound requests to untrusted URLs in code you control.
+
+## 1. The endpoint [#endpoint]
+
+```bash
+npm install linkpeek
+```
+
+Any server works; this is a Next.js Route Handler. The [Express guide](/integrations/node-express/) and [Cloudflare Workers guide](/integrations/cloudflare-workers/) show the same endpoint elsewhere.
+
+```ts
+// app/api/preview/route.ts
+import { preview } from "linkpeek";
+import { type NextRequest, NextResponse } from "next/server";
+
+export async function GET(request: NextRequest) {
+	const url = request.nextUrl.searchParams.get("url");
+	if (!url) {
+		return NextResponse.json({ error: "Missing url" }, { status: 400 });
+	}
+
+	try {
+		const result = await preview(url);
+		if (result.statusCode < 200 || result.statusCode >= 300) {
+			return NextResponse.json({ error: "Preview unavailable" }, { status: 502 });
+		}
+		// Return only what the card renders.
+		const card = {
+			url: result.url,
+			title: result.title,
+			description: result.description,
+			image: result.image,
+		};
+		return NextResponse.json(card, {
+			headers: { "Cache-Control": "public, s-maxage=3600" },
+		});
+	} catch {
+		// Invalid or blocked URL, timeout, network failure.
+		return NextResponse.json({ error: "Preview unavailable" }, { status: 422 });
+	}
+}
+```
+
+## 2. The card [#card]
+
+The card is a plain component that takes the endpoint's JSON. Every field except `url` can be `null`, so it falls back to the hostname for a missing title and leaves out a missing description or image.
+
+```tsx
+// components/preview-card.tsx
+export interface PreviewCardData {
+	url: string;
+	title: string | null;
+	description: string | null;
+	image: string | null;
+}
+
+export function PreviewCard({ card }: { card: PreviewCardData }) {
+	const host = new URL(card.url).hostname;
+	return (
+		<a className="preview-card" href={card.url}>
+			{card.image && (
+				<img
+					className="preview-card-image"
+					src={card.image}
+					alt=""
+					loading="lazy"
+					onError={(event) => {
+						event.currentTarget.hidden = true;
+					}}
+				/>
+			)}
+			<span className="preview-card-title">{card.title ?? host}</span>
+			{card.description && (
+				<span className="preview-card-description">{card.description}</span>
+			)}
+			<span className="preview-card-host">{host}</span>
+		</a>
+	);
+}
+
+// Only render links for http(s) input, never javascript: or data: URLs.
+export function httpUrl(value: string): URL | null {
+	try {
+		const parsed = new URL(value);
+		return parsed.protocol === "http:" || parsed.protocol === "https:"
+			? parsed
+			: null;
+	} catch {
+		return null;
+	}
+}
+```
+
+The client component asks your endpoint, shows a loading state, and degrades to a plain link when the preview fails. It renders nothing for input that is not an `http:` or `https:` URL:
+
+```tsx
+// components/link-preview.tsx
+"use client";
+import { useEffect, useState } from "react";
+import { httpUrl, PreviewCard, type PreviewCardData } from "./preview-card";
+
+type State =
+	| { status: "loading" }
+	| { status: "ready"; card: PreviewCardData }
+	| { status: "failed" };
+
+export function LinkPreview({ url }: { url: string }) {
+	const [state, setState] = useState<State>({ status: "loading" });
+
+	useEffect(() => {
+		const controller = new AbortController();
+		setState({ status: "loading" });
+		fetch(`/api/preview?url=${encodeURIComponent(url)}`, {
+			signal: controller.signal,
+		})
+			.then((response) => (response.ok ? response.json() : Promise.reject()))
+			.then((card: PreviewCardData) => setState({ status: "ready", card }))
+			.catch(() => {
+				if (!controller.signal.aborted) setState({ status: "failed" });
+			});
+		return () => controller.abort();
+	}, [url]);
+
+	const target = httpUrl(url);
+	if (!target) return null;
+
+	if (state.status === "ready") return <PreviewCard card={state.card} />;
+	if (state.status === "failed") {
+		return <a href={target.href}>{target.hostname}</a>;
+	}
+	return (
+		<div className="preview-card" role="status">
+			<span className="preview-card-title">Loading preview…</span>
+			<span className="preview-card-host">{target.hostname}</span>
+		</div>
+	);
+}
+```
+
+```css
+.preview-card {
+	display: grid;
+	gap: 0.25rem;
+	max-width: 32rem;
+	padding: 1rem;
+	border: 1px solid currentColor;
+	color: inherit;
+	text-decoration: none;
+}
+.preview-card:focus-visible {
+	outline: 2px solid;
+	outline-offset: 2px;
+}
+.preview-card-image {
+	width: 100%;
+	aspect-ratio: 1.91 / 1;
+	object-fit: cover;
+}
+.preview-card-title {
+	font-weight: 600;
+}
+.preview-card-description {
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	overflow: hidden;
+}
+.preview-card-host {
+	font-size: 0.875rem;
+	opacity: 0.75;
+}
+```
+
+```tsx
+<LinkPreview url="https://github.com/thegruber/linkpeek" />
+```
+
+### Accessibility [#a11y]
+
+- The whole card is **one link**, so keyboard and screen reader users meet one stop whose name is the title, description and host.
+- The image has an **empty `alt`**: it repeats what the text already says, and a long alt text would bloat the link's name.
+- The loading state is a **`role="status"` region** with visible text, so assistive technology can report it without moving focus. It has no animation to reduce.
+- A failed preview is still a **working link** to the original URL rather than an error message.
+
+## Or render it on the server [#server-component]
+
+With React Server Components, as in the Next.js App Router, a server component can call `preview()` directly. There is no endpoint to write and no client JavaScript; `<Suspense>` provides the loading state.
+
+```tsx
+// components/link-preview-server.tsx
+import { preview } from "linkpeek";
+import { httpUrl, PreviewCard } from "./preview-card";
+
+export async function LinkPreviewServer({ url }: { url: string }) {
+	const target = httpUrl(url);
+	if (!target) return null;
+	try {
+		const result = await preview(target.href);
+		if (result.statusCode >= 200 && result.statusCode < 300) {
+			return <PreviewCard card={result} />;
+		}
+	} catch {
+		// Invalid or blocked URL, timeout, network failure: fall through.
+	}
+	return <a href={target.href}>{target.hostname}</a>;
+}
+```
+
+```tsx
+<Suspense fallback={<p role="status">Loading preview…</p>}>
+	<LinkPreviewServer url={post.link} />
+</Suspense>
+```
+
+Each render fetches the target again unless you cache the result, so cache it with your framework's data cache or your own store.
+
+## Keep it safe [#security]
+
+- Run `preview()` only on the server, and **never forward** the visitor's cookies or authorization headers to the target.
+- Treat every field as untrusted text. React escapes it; do not pass it to `dangerouslySetInnerHTML`.
+- Image URLs point at other origins. Allow them in your image policy or serve them through your own image proxy.
+- Rate-limit a public endpoint and add egress rules: linkpeek blocks private IP literals and checks redirects, but the platform `fetch` resolves DNS, so pass `resolveHost` on Node.js. The [security model](/security/) has the full checklist.
+
+The [quick start](/quick-start/) covers presets and options, and the [benchmarks](/benchmarks/) show what a preview costs on small and large pages.
+
+<Related
+	items={[
+		["Quick start", "/quick-start/"],
+		["Next.js", "/integrations/nextjs/"],
+		["Security model", "/security/"],
+		["Benchmarks", "/benchmarks/"],
+		["Card example on GitHub", "https://github.com/thegruber/linkpeek/tree/main/examples/react-preview-card"],
+	]}
+/>

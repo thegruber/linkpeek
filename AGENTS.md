@@ -12,6 +12,7 @@
 - Benchmark: `npm run benchmark`
 - Live benchmark: `npm run benchmark:live`
 - Full local gate: `npm run quality`
+- Docs site: `npm ci --prefix website`, then `npm run docs:dev` or `npm run docs:build`
 
 ## Architecture
 - `src/types.ts`: public TypeScript interfaces
@@ -20,6 +21,20 @@
 - `src/parse.ts`: SAX parser using `htmlparser2` (entities are decoded exactly once, by htmlparser2; never re-decode its output)
 - `src/fetch.ts`: streaming fetch, byte limit, redirect validation, SSRF host checks, charset detection
 - `src/index.ts`: public API (`preview`, `parseHTML`, `presets`, `validateUrl`, `isPrivateHost`, `LinkpeekError`)
+
+## Documentation site
+- `website/` is a separate private Next.js + Fumadocs package with its own lockfile, exported statically to GitHub Pages at `https://linkpeek.js.org/` (a free JS.ORG subdomain, listed in js-org/js.org `cnames_active.js`; the custom domain is set in the repository's Pages settings). The old `thegruber.github.io/linkpeek/` URLs redirect there. It never adds dependencies to the published package.
+- Pages are MDX in `website/content/docs`; sidebar order lives in the `meta.json` files. Keep existing routes and their trailing slashes: they are indexed URLs.
+- Benchmark numbers on the site come only from `website/data/benchmarks.json`; charts and Markdown exports render from it.
+- `npm run build --prefix website` also runs `scripts/check-site.mjs` (one H1, canonical, social tags, JSON-LD, Markdown twins, links, sitemap). Keep it passing.
+
+## Brand
+- The mark is two white eyes peeking over a signal-orange `#ff5b1f` band (the `<head>`) on a charcoal `#232323` square; the wordmark is plain "linkpeek" in Geist Medium, with no partial underline (it split the name and read like a hover state). Orange is ours: blue is the category default and green belongs to the similarly named getlinkpeek.com. Geometry lives in `website/lib/mark.json` and drives the logo, favicon and the giant dithered art. Brand files are in `assets/brand/`.
+- Light only, like a printed spec sheet (inspired by aspensearch.com, not copied): white paper, charcoal ink `#232323`, 1px charcoal rules cutting the page into rectangles, light grey `#d9d9d9` for big shapes, pale orange `#ffe6dc` blocks and signal orange `#ff5b1f` as the only colour (it marks what linkpeek reads). Ordered-dither canvas art is the only texture. Geist for text, Geist Mono for small uppercase labels, code and data. Square corners.
+
+## Demo preview endpoint
+- `demo-api/` is the Vercel project `gubastudio/linkpeek-playground` (`https://linkpeek-playground.vercel.app/api/preview`), used by the homepage's "try any URL" demo. It deploys from Git with root directory `demo-api` (production from `main`); builds are skipped when the last commit does not touch `demo-api/`.
+- Keep its defenses together: docs-origin allowlist, per-hop DNS check in `lib/guard.ts` (tested in `test/demo-api.test.ts`), 5 s timeout, metadata-only JSON, day-long edge cache, and the Vercel firewall rate limits (20/min and 200/h per IP on `/api/preview`).
 
 ## Design Rules
 - Runtime dependency policy: keep `htmlparser2` as the only runtime dependency.
@@ -52,7 +67,7 @@
 - Do not commit `pnpm-lock.yaml`, `bun.lockb`, or generated tarballs.
 
 ## Release Workflow
-1. Add a `CHANGELOG.md` entry for the new version (the publish workflow verifies it exists).
+1. Give the new version a dated `CHANGELOG.md` heading, `## <version> - YYYY-MM-DD` (release-it and the publish workflow refuse to run without it; the section becomes the release notes).
 2. Run `npm run release -- <patch|minor|major> --ci` with a `GITHUB_TOKEN` that can create
    releases. release-it runs the full quality gate, bumps the version, tags `v<version>`,
    pushes, and creates the GitHub release.

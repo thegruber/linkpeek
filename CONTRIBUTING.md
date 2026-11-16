@@ -32,6 +32,16 @@ Individual steps are also available: `npm run lint`, `npm run typecheck`, `npm t
 LINKPEEK_LIVE_TESTS=1 npm run test
 ```
 
+## Useful commands
+
+```bash
+npm run benchmark   # parser modes, retained bytes, stream probe, package size
+npm run downloads   # npm download trend and per-version mix
+LINKPEEK_LIVE_TESTS=1 npm run test   # opt-in live network tests
+```
+
+`npm run downloads` reads the official npm download API, compares the latest 7- and 28-day windows with their preceding periods, and shows the last week's per-version mix. Registry downloads are tarball requests—not unique users or confirmed installations—so evaluate them alongside current-version share, distinct dependent repositories, and GitHub's unique traffic.
+
 ## Development guidelines
 
 - Keep runtime dependency count minimal.

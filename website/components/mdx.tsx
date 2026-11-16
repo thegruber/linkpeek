@@ -1,0 +1,35 @@
+import defaultMdxComponents from "fumadocs-ui/mdx";
+import type { MDXComponents } from "mdx/types";
+import { AgentPromptBlock } from "@/components/agent-prompt-block";
+import {
+	BenchmarkChart,
+	BenchmarkDate,
+	BenchmarkHighlights,
+	BenchmarkMethod,
+	VersusTable,
+} from "@/components/benchmarks";
+import { ParserDemo } from "@/components/parser-demo";
+import { Related } from "@/components/related";
+import { LiveResult } from "@/components/self-preview";
+
+export function getMDXComponents(components?: MDXComponents) {
+	return {
+		...defaultMdxComponents,
+		AgentPromptBlock,
+		BenchmarkChart,
+		BenchmarkDate,
+		BenchmarkHighlights,
+		BenchmarkMethod,
+		LiveResult,
+		ParserDemo,
+		Related,
+		VersusTable,
+		...components,
+	} satisfies MDXComponents;
+}
+
+export const useMDXComponents = getMDXComponents;
+
+declare global {
+	type MDXProvidedComponents = ReturnType<typeof getMDXComponents>;
+}

@@ -236,3 +236,52 @@ describe("isPrivateHost", () => {
 		expect(isPrivateHost("2001:4860:4860::8888")).toBe(false);
 	});
 });
+
+describe("isPrivateHost normalization", () => {
+	it.each([
+		"2130706433",
+		"0x7f000001",
+		"127.1",
+		"0177.0.0.1",
+		"0x7f.1",
+		"017700000001",
+		"0xa9.254.169.254",
+		"[::ffff:7f00:1]",
+		"[::1]",
+		"::1",
+	])("blocks the non-canonical loopback/private form %s", (host) => {
+		expect(isPrivateHost(host)).toBe(true);
+	});
+
+	it.each([
+		"metadata.google.internal",
+		"service.internal",
+		"router.home.arpa",
+		"localhost.",
+		"LOCALHOST..",
+		"app.localhost.",
+		"printer.local.",
+		"box.localdomain",
+		"metadata",
+		"intranet",
+	])("blocks the internal name %s", (host) => {
+		expect(isPrivateHost(host)).toBe(true);
+	});
+
+	it.each([
+		"example.com",
+		"example.com.",
+		"8.8.8.8",
+		"134744072",
+		"internal.example.com",
+	])("allows the public host %s", (host) => {
+		expect(isPrivateHost(host)).toBe(false);
+	});
+
+	it("blocks internal names in validateUrl", () => {
+		expect(() =>
+			validateUrl("http://metadata.google.internal/computeMetadata/v1/"),
+		).toThrow("private");
+		expect(() => validateUrl("http://metadata/")).toThrow("private");
+	});
+});

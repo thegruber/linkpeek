@@ -1,0 +1,12 @@
+{
+	"name": "linkpeek-playground",
+	"private": true,
+	"type": "module",
+	"description": "Rate-limited preview endpoint for the linkpeek docs site, deployed on Vercel.",
+	"engines": {
+		"node": "24.x"
+	},
+	"dependencies": {
+		"linkpeek": "^2.1.7"
+	}
+}

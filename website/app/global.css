@@ -1,0 +1,621 @@
+@import "tailwindcss";
+@import "fumadocs-ui/css/neutral.css";
+@import "fumadocs-ui/css/preset.css";
+
+@source "../components";
+@source "../content";
+
+/*
+ * linkpeek, light only, like a printed spec sheet: white paper, charcoal
+ * ink, 1px charcoal rules that cut the page into rectangles, light grey for
+ * large shapes, and one signal orange: pale for blocks, full for what linkpeek
+ * reads (the <head>, the band the eyes in the mark peek over). Ordered-dither
+ * art is the
+ * only texture. Square corners everywhere.
+ */
+@theme {
+	--font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+	--font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
+
+	--radius-xs: 0px;
+	--radius-sm: 0px;
+	--radius-md: 0px;
+	--radius-lg: 0px;
+	--radius-xl: 0px;
+	--radius-2xl: 0px;
+	--radius-3xl: 0px;
+
+	--color-fd-background: #ffffff;
+	--color-fd-foreground: #232323;
+	--color-fd-muted: #f2f2f1;
+	--color-fd-muted-foreground: #5f5f5f;
+	--color-fd-popover: #ffffff;
+	--color-fd-popover-foreground: #232323;
+	--color-fd-card: #f6f6f5;
+	--color-fd-card-foreground: #232323;
+	--color-fd-border: #dcdcdc;
+	--color-fd-primary: #232323;
+	--color-fd-primary-foreground: #ffffff;
+	--color-fd-secondary: #f2f2f1;
+	--color-fd-secondary-foreground: #232323;
+	--color-fd-accent: #ffe6dc;
+	--color-fd-accent-foreground: #232323;
+	--color-fd-ring: #232323;
+
+	--color-ink: #232323;
+	--color-paper: #ffffff;
+	--color-shape: #d9d9d9;
+	--color-block: #ffe6dc;
+	--color-mark: #ff5b1f;
+	--color-mark-ink: #232323;
+	--color-rule: #dcdcdc;
+	--color-bar: #d9d9d9;
+	--color-signal: #232323;
+	--color-signal-ink: #ffffff;
+	--color-signal-text: #232323;
+	--color-signal-wash: rgb(255 91 31 / 0.25);
+}
+
+html {
+	scrollbar-gutter: stable;
+}
+
+/* With a stable scrollbar gutter, the search dialog's scroll lock must not
+   add its own scrollbar compensation. */
+html > body[data-scroll-locked] {
+	/* biome-ignore lint/complexity/noImportantStyles: overrides the lock's inline style */
+	margin-right: 0px !important;
+	/* biome-ignore lint/complexity/noImportantStyles: overrides the lock's inline style */
+	--removed-body-scroll-bar-size: 0px !important;
+}
+
+body {
+	-webkit-font-smoothing: antialiased;
+	letter-spacing: -0.01em;
+	caret-color: var(--color-fd-foreground);
+}
+
+@layer base {
+	:focus-visible {
+		outline: 2px solid var(--color-fd-ring);
+		outline-offset: 2px;
+	}
+}
+/* On charcoal cells the ring switches to orange so it stays visible. */
+.bg-ink:focus-visible,
+.bg-ink :focus-visible {
+	outline-color: var(--color-mark);
+}
+
+* {
+	scrollbar-width: thin;
+	scrollbar-color: var(--color-bar) transparent;
+}
+
+/* Square corners everywhere, including the docs UI's pills and toggles. */
+.rounded-full:not(svg *) {
+	border-radius: 0;
+}
+
+/* Halftone: the only texture, used on brand surfaces. */
+.halftone {
+	background-image: radial-gradient(
+		circle at center,
+		currentColor 0 var(--dot, 1.6px),
+		transparent calc(var(--dot, 1.6px) + 0.5px)
+	);
+	background-size: var(--pitch, 8px) var(--pitch, 8px);
+}
+
+/* Data rows use figures of one width so values line up. */
+.figures {
+	font-variant-numeric: tabular-nums;
+}
+
+::selection {
+	background: var(--color-signal-wash);
+}
+
+/* The mark's eyes look up from the card at the reader when the logo is hovered. */
+@media (prefers-reduced-motion: no-preference) {
+	.peek-pupils {
+		transition: transform 200ms var(--ease-out);
+	}
+}
+@media (hover: hover) and (pointer: fine) {
+	.group\/logo:hover .peek-pupils {
+		transform: translate(2px, -3px);
+	}
+}
+.group\/logo:focus-visible .peek-pupils {
+	transform: translate(2px, -3px);
+}
+
+/* Benchmark bars grow once when their chart scrolls into view. */
+@media (prefers-reduced-motion: no-preference) {
+	.bars[data-visible="false"] .bar {
+		transform: scaleX(0);
+	}
+	.bars[data-visible="true"] .bar {
+		animation: bar-grow 300ms var(--ease-out) both;
+		animation-delay: calc(
+			min(var(--i, 0), 5) *
+			(60ms - min(var(--i, 0), 5) * 6ms)
+		);
+	}
+}
+/* Motion tokens (Emil Kowalski): strong ease-out for UI, ease-in-out for
+   on-screen movement. */
+:root {
+	--ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+	--ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+/* Every pressable thing answers the press. */
+.press {
+	transition-duration: 160ms;
+	transition-timing-function: var(--ease-out);
+}
+.press:active {
+	transform: scale(0.97);
+}
+
+@keyframes bar-grow {
+	from {
+		transform: scaleX(0);
+	}
+}
+.bar {
+	transform-origin: left center;
+}
+
+/* The hero's one moment: a highlighter stroke across "link preview". */
+/* No z-index here: the stroke stacks in the isolated h1, under all of its
+   text, so the "y" of the line above stays visible on top of it. */
+.highlight {
+	position: relative;
+	white-space: nowrap;
+}
+.highlight::before {
+	content: "";
+	position: absolute;
+	z-index: -1;
+	inset: 0.12em -0.08em 0.02em;
+	background: var(--color-mark);
+	transform-origin: left center;
+}
+@media (prefers-reduced-motion: no-preference) {
+	.highlight::before {
+		animation: highlight-in 600ms var(--ease-out) 120ms both;
+	}
+}
+@keyframes highlight-in {
+	from {
+		transform: scaleX(0);
+	}
+}
+
+/* Hero demo: an orange line fills until the next example. */
+.rotate-progress {
+	transform: scaleX(0);
+	transform-origin: left center;
+	animation: rotate-fill linear forwards;
+}
+.demo[data-paused] .rotate-progress {
+	animation-play-state: paused;
+}
+@keyframes rotate-fill {
+	to {
+		transform: scaleX(1);
+	}
+}
+/* Later examples swap in place; only the first card unfurls. */
+@media (prefers-reduced-motion: no-preference) {
+	.swap {
+		animation: swap 200ms var(--ease-out);
+	}
+}
+@keyframes swap {
+	from {
+		opacity: 0;
+		filter: blur(2px);
+	}
+}
+
+/* The hero URL unfurls into its card. */
+@keyframes unfurl {
+	from {
+		opacity: 0;
+		clip-path: inset(0 0 100% 0);
+	}
+	to {
+		opacity: 1;
+		clip-path: inset(0 0 0 0);
+	}
+}
+
+.unfurl {
+	animation: unfurl 300ms var(--ease-out) 120ms both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.unfurl {
+		animation: none;
+	}
+}
+
+/*
+ * Docs pages: the same spec-sheet grid as the homepage. Charcoal rules,
+ * small uppercase mono labels, orange only for the current place.
+ */
+#nd-sidebar {
+	border-color: var(--color-ink);
+	background: var(--color-paper);
+}
+#nd-sidebar-mobile {
+	box-shadow: none;
+	border-color: var(--color-ink);
+}
+#nd-toc {
+	border-inline-start: 1px solid var(--color-ink);
+	padding-inline-start: 1.5rem;
+}
+:is(#nd-sidebar, #nd-sidebar-mobile) a[data-active] {
+	min-height: 40px;
+	border-radius: 0;
+}
+:is(#nd-sidebar, #nd-sidebar-mobile) a[data-active="true"] {
+	background: var(--color-block);
+	color: var(--color-ink);
+	box-shadow: inset 2px 0 var(--color-mark);
+}
+#toc-title {
+	font: 500 0.7rem var(--font-mono);
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+}
+#toc-title svg {
+	display: none;
+}
+#nd-toc .stroke-fd-primary {
+	stroke: var(--color-mark);
+}
+#nd-toc .fill-fd-primary {
+	fill: var(--color-mark);
+}
+#nd-page .prose > :is(p, ul, ol, blockquote) {
+	max-width: 70ch;
+}
+.prose :where(h2):not(:where(.not-prose *)) {
+	border-top: 1px solid var(--color-ink);
+	padding-top: 1.5rem;
+}
+.prose :where(code):not(pre code):not(:where(.not-prose *)) {
+	background: var(--color-fd-muted);
+	border-color: transparent;
+	border-radius: 0;
+}
+.prose a:not([data-card]):not(:where(.not-prose *)) {
+	text-decoration-color: var(--color-mark);
+	text-decoration-thickness: 2px;
+	text-underline-offset: 4px;
+}
+.prose table:not(:where(.not-prose *)) {
+	border: 1px solid var(--color-ink);
+}
+.prose table:has(th:nth-child(3)):not(:where(.not-prose *)) {
+	min-width: 36rem;
+	border: 1px solid var(--color-ink);
+}
+.prose thead th:not(:where(.not-prose *)) {
+	font: 500 0.7rem var(--font-mono);
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+}
+figure.shiki {
+	border-color: var(--color-ink);
+	background: var(--color-paper);
+	border-radius: 0;
+	box-shadow: none;
+}
+@media (hover: none) {
+	.group\/heading button {
+		opacity: 1;
+	}
+}
+#nd-page .prose > :first-child {
+	border-top: 0;
+	padding-top: 0;
+}
+#nd-page h1 {
+	font-weight: 450;
+	letter-spacing: -0.04em;
+}
+.prose td {
+	vertical-align: top;
+}
+.prose td:first-child code {
+	white-space: nowrap;
+}
+figure.shiki > div:has(> button) {
+	background: var(--color-paper);
+	border: 1px solid var(--color-ink);
+	backdrop-filter: none;
+}
+div:has(> [role="tablist"]) {
+	border-color: var(--color-ink);
+	background: var(--color-paper);
+	border-radius: 0;
+}
+div:has(> [role="tablist"]) figure.shiki {
+	border-width: 1px;
+}
+/* Prev/next: two cells in the grid instead of two soft cards. */
+#nd-page > .\@container {
+	gap: 0;
+	border-top: 1px solid var(--color-ink);
+	border-left: 1px solid var(--color-ink);
+}
+#nd-page > .\@container > a {
+	border: 0;
+	border-right: 1px solid var(--color-ink);
+	border-bottom: 1px solid var(--color-ink);
+	border-radius: 0;
+	box-shadow: none;
+}
+[data-toc-popover-content],
+#nd-tocnav {
+	box-shadow: none;
+	border-bottom: 1px solid var(--color-ink);
+}
+.page-actions > button,
+.page-actions [aria-haspopup] {
+	min-height: 2.75rem;
+	border: 1px solid var(--color-ink);
+	border-radius: 0;
+	background: var(--color-paper);
+	font: 500 0.7rem var(--font-mono);
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+@media (hover: hover) and (pointer: fine) {
+	.page-actions > button:hover,
+	.page-actions [aria-haspopup]:hover {
+		background: var(--color-block);
+	}
+}
+#nd-sidebar a:empty {
+	display: none;
+}
+a[href="#nd-page"].sr-only:focus-visible {
+	position: fixed;
+	top: 0.5rem;
+	left: 0.5rem;
+	z-index: 60;
+	width: auto;
+	height: auto;
+	padding: 0.75rem 1rem;
+	clip: auto;
+	clip-path: none;
+	overflow: visible;
+	white-space: normal;
+	background: var(--color-ink);
+	color: #fff;
+}
+/* The header carries GitHub and npm on wide screens; the sidebar keeps them
+   only for the mobile drawer and narrower layouts. */
+@media (min-width: 80rem) {
+	#nd-sidebar a[href^="https://github.com/thegruber"],
+	#nd-sidebar a[href^="https://www.npmjs.com"] {
+		display: none;
+	}
+}
+
+/*
+ * Interaction system. One vocabulary for everything you can press:
+ * - .u-line: text links. An orange line (the band from the mark) sweeps in
+ *   under the text on hover and marks the current page.
+ * - .cell: grid cells and rows. A pale orange fill sweeps in from the left
+ *   and the arrow (.cell-arrow) steps forward.
+ * - .press: buttons scale to 0.97 while pressed.
+ * Hover is gated to fine pointers; reduced motion swaps movement for fades.
+ */
+.u-line {
+	position: relative;
+}
+.u-line::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: var(--line-y, -3px);
+	height: 2px;
+	background: var(--color-mark);
+	transform: scaleX(0);
+	transform-origin: right center;
+	transition: transform 240ms var(--ease-out);
+	pointer-events: none;
+}
+@media (hover: hover) and (pointer: fine) {
+	.u-line:hover::after {
+		transform: scaleX(1);
+		transform-origin: left center;
+	}
+}
+.u-line:focus-visible::after,
+.u-line[aria-current="page"]::after {
+	transform: scaleX(1);
+}
+
+.cell,
+#nd-page > .\@container > a {
+	position: relative;
+	isolation: isolate;
+}
+.cell::before,
+#nd-page > .\@container > a::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	background: var(--color-block);
+	transform: scaleX(0);
+	transform-origin: left center;
+	transition:
+		transform 260ms var(--ease-out),
+		background-color 120ms ease;
+	pointer-events: none;
+}
+@media (hover: hover) and (pointer: fine) {
+	.cell:hover::before,
+	#nd-page > .\@container > a:hover::before {
+		transform: scaleX(1);
+	}
+	:is(.cell, .group):hover .cell-arrow,
+	#nd-page > .\@container > a:hover svg {
+		transform: translateX(3px);
+	}
+}
+/* Pressing deepens the fill: the cell heard you, without scaling the grid. */
+.cell:active::before,
+#nd-page > .\@container > a:active::before {
+	transform: scaleX(1);
+	background: #ffd3c2;
+}
+.cell-arrow,
+#nd-page > .\@container > a svg {
+	transition: transform 200ms var(--ease-out);
+}
+/* The docs UI paints its own hover backgrounds; the sweep replaces them. */
+#nd-page > .\@container > a:hover {
+	background: transparent;
+}
+/* Sidebar rows are passed over dozens of times: an instant tint, no sweep. */
+@media (hover: hover) and (pointer: fine) {
+	:is(#nd-sidebar, #nd-sidebar-mobile) a[data-active="false"]:hover {
+		background: var(--color-block);
+		color: var(--color-ink);
+	}
+}
+:is(#nd-sidebar, #nd-sidebar-mobile) a[data-active="false"]:active {
+	background: #ffd3c2;
+}
+/* The first figure tile is already pale orange, so its fill goes one step deeper. */
+.cell.bg-block::before {
+	background: #ffd3c2;
+}
+:is(#nd-sidebar, #nd-sidebar-mobile) a[data-active] {
+	transition: color 150ms ease;
+}
+
+/* Prose links: the hero's highlighter, as a pale sweep behind the words. */
+.prose a:not([data-card]):not(:where(.not-prose *)) {
+	background:
+		linear-gradient(var(--color-block), var(--color-block)) no-repeat left / 0%
+		100%;
+	box-decoration-break: clone;
+	-webkit-box-decoration-break: clone;
+	transition: background-size 240ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+	.prose a:not([data-card]):not(:where(.not-prose *)):hover {
+		background-size: 100% 100%;
+	}
+}
+
+/* Docs buttons answer the press like the rest of the site. */
+.page-actions > button,
+.page-actions [aria-haspopup],
+figure.shiki button,
+[role="tab"],
+#nd-sidebar-mobile button,
+[data-search-full] {
+	transition:
+		transform 160ms var(--ease-out),
+		background-color 150ms ease,
+		color 150ms ease,
+		box-shadow 160ms ease;
+}
+.page-actions > button:active,
+.page-actions [aria-haspopup]:active,
+figure.shiki button:active,
+[role="tab"]:active,
+#nd-sidebar-mobile button:active {
+	transform: scale(0.97);
+}
+/* Package-manager tabs: the selected one carries the orange band. */
+[role="tab"][aria-selected="true"] {
+	box-shadow: inset 0 -2px var(--color-mark);
+}
+
+/* Preview tags: found ones pop in, one after another, for each new card. */
+@media (prefers-reduced-motion: no-preference) {
+	.tag-dot[data-ok] {
+		animation: tag-in 200ms var(--ease-out) both;
+		animation-delay: calc(var(--i, 0) * 35ms + 80ms);
+	}
+}
+@keyframes tag-in {
+	from {
+		opacity: 0;
+		transform: scale(0.9);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.u-line::after,
+	.cell::before,
+	#nd-page > .\@container > a::before {
+		transform: none;
+		opacity: 0;
+		transition: opacity 150ms ease;
+	}
+	.u-line[aria-current="page"]::after,
+	.u-line:focus-visible::after,
+	.cell:active::before,
+	#nd-page > .\@container > a:active::before {
+		opacity: 1;
+	}
+	.cell-arrow,
+	.prose a:not([data-card]) {
+		transition: none;
+	}
+}
+@media (prefers-reduced-motion: reduce) and (hover: hover) and (pointer: fine) {
+	.u-line:hover::after,
+	.cell:hover::before,
+	#nd-page > .\@container > a:hover::before {
+		opacity: 1;
+	}
+}
+
+/*
+ * Sidebar groups read like a spec sheet: each group opens with a rule, a
+ * small orange icon and an uppercase mono label; its pages sit indented
+ * under the label text, so the hierarchy is visible at a glance.
+ */
+:is(#nd-sidebar, #nd-sidebar-mobile) p.inline-flex {
+	display: flex;
+	margin: 1.25rem 0 0.35rem;
+	padding: 0.9rem 0.5rem 0;
+	border-top: 1px solid var(--color-ink);
+	font: 500 0.68rem / 1.2 var(--font-mono);
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--color-ink);
+}
+:is(#nd-sidebar, #nd-sidebar-mobile) p.inline-flex:first-child {
+	margin-top: 0;
+	padding-top: 0;
+	border-top: 0;
+}
+:is(#nd-sidebar, #nd-sidebar-mobile) p.inline-flex svg {
+	width: 0.9rem;
+	height: 0.9rem;
+	color: var(--color-mark);
+}
+:is(#nd-sidebar, #nd-sidebar-mobile) a[data-active] {
+	/* biome-ignore lint/complexity/noImportantStyles: overrides the docs UI's inline indent */
+	padding-inline-start: calc(0.5rem + 0.9rem + 0.5rem) !important;
+	min-height: 36px;
+}

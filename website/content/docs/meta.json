@@ -1,0 +1,22 @@
+{
+	"pages": [
+		"---[Rocket]Get started---",
+		"quick-start",
+		"api",
+		"security",
+		"---[Plug]Use it with---",
+		"...integrations",
+		"---[BookText]Guides---",
+		"guides/open-graph-parser",
+		"guides/get-og-image-from-url",
+		"guides/troubleshooting",
+		"---[Scale]Compare---",
+		"benchmarks",
+		"guides/link-preview-library-comparison",
+		"guides/link-preview-js-alternative",
+		"guides/open-graph-scraper-alternative",
+		"guides/unfurl-js-alternative",
+		"guides/url-metadata-alternative",
+		"guides/metascraper-alternative"
+	]
+}

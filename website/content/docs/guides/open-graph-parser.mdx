@@ -1,0 +1,69 @@
+---
+title: "Open Graph parser"
+metaTitle: "Open Graph parser and scraper for Node.js and TypeScript"
+description: "Parse or fetch Open Graph, Twitter Card, JSON-LD, favicon and canonical metadata in Node.js and TypeScript with parseHTML() and preview()."
+heading: "Parse Open Graph metadata"
+---
+
+`parseHTML()` extracts Open Graph, Twitter Card, JSON-LD, favicon, canonical, media, and oEmbed discovery fields from HTML you already have. It does not fetch a URL or execute page JavaScript.
+
+## Parse an HTML string [#parse]
+
+```ts
+import { parseHTML } from "linkpeek";
+
+const html = `<!doctype html>
+<meta property="og:title" content="Example article">
+<meta property="og:description" content="An example article description.">
+<meta property="og:image" content="/images/preview.jpg">`;
+
+const result = parseHTML(html, "https://example.com/posts/one");
+
+result.title; // "Example article"
+result.image; // "https://example.com/images/preview.jpg"
+```
+
+The parser uses a streaming SAX tokenizer rather than constructing a browser DOM. Title precedence is Open Graph, Twitter Card, Dublin Core, the document `<title>`, then JSON-LD from the page's main entity.
+
+## Resolve relative URLs [#relative]
+
+The second argument resolves relative image, favicon, canonical, video, audio, and oEmbed URLs. Extracted URLs are returned only when they resolve to `http:` or `https:`. Use the final response URL—not an untrusted caller-supplied substitute—as the base when parsing fetched HTML.
+
+## Parse metadata in the body [#body]
+
+```ts
+const result = parseHTML(html, baseUrl, {
+	includeBodyContent: true,
+});
+```
+
+The default head-first mode stops tokenizing after the document head. Enable body content when a page places JSON-LD or its first useful image in the body and the additional work is worth it.
+
+## Fetch HTML with preview() [#fetch]
+
+Use `parseHTML()` when your application already has the HTML. Use `preview()` when linkpeek should fetch the URL with timeouts, byte limits, redirect checks, content decoding, and private-address blocking.
+
+```ts
+import { preview } from "linkpeek";
+
+const result = await preview("https://github.com");
+console.log(result.title, result.image, result.twitterCard);
+```
+
+## Try the parser [#try]
+
+Edit the sample. `parseHTML()` runs locally in your browser with the published package.
+
+<ParserDemo />
+
+<Related
+	items={[
+		["Quick start", "/quick-start/"],
+		["parseHTML() reference", "/api/#parse"],
+		["Get the image from a URL", "/guides/get-og-image-from-url/"],
+		["Next.js route", "/integrations/nextjs/"],
+		["Cloudflare Workers", "/integrations/cloudflare-workers/"],
+		["All libraries compared", "/guides/link-preview-library-comparison/"],
+		["Missing metadata", "/guides/troubleshooting/#missing"],
+	]}
+/>
