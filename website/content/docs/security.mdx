@@ -5,7 +5,7 @@ description: "Understand linkpeek's redirect validation, private-address blockin
 heading: "Link preview security"
 ---
 
-A public link-preview endpoint turns user input into outbound network traffic. linkpeek narrows that risk, but the runtime and deployment network remain part of the security boundary.
+A public link preview endpoint fetches whatever URL a user sends it. Without checks, someone can point it at `http://169.254.169.254/` and read your cloud credentials. That attack is server-side request forgery (SSRF). linkpeek blocks the direct routes, but your runtime and network stay part of the security boundary.
 
 ## What is blocked by default [#model]
 
@@ -27,11 +27,11 @@ Platform fetch runs with `redirect: "manual"`. Each Location target is resolved 
 
 ## Cookies and credentials [#credentials]
 
-Do not attach user cookies, authorization headers, cloud tokens, or internal service credentials to arbitrary preview URLs. linkpeek rejects common secret-bearing headers, but deployments should also keep the preview worker isolated from internal credentials.
+Never attach user cookies, authorization headers, cloud tokens or internal service credentials to arbitrary preview URLs. linkpeek rejects the common secret-bearing headers, but the worker that runs previews shouldn't have access to internal credentials in the first place.
 
 ## DNS resolution and rebinding [#dns]
 
-**The runtime resolves hostnames.** linkpeek does not pin addresses, so DNS rebinding protection varies by runtime and network path.
+The runtime resolves hostnames, not linkpeek, and linkpeek does not pin addresses. How well DNS rebinding is covered depends on the runtime and the network path.
 
 `resolveHost` adds an opt-in DNS check without a dependency. linkpeek calls it with the hostname of the first request and of every redirect hop, skipping IP literals. If any returned address is private, the hop throws `PRIVATE_NETWORK_BLOCKED`; resolver errors and empty answers throw `FETCH_FAILED`. Edge runtimes without a DNS API can omit it.
 

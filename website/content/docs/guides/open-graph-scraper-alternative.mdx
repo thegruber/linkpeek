@@ -5,7 +5,7 @@ description: "Compare linkpeek with open-graph-scraper: speed on large pages, in
 heading: "linkpeek vs open-graph-scraper"
 ---
 
-open-graph-scraper is a broad Open Graph and Twitter Card scraper for Node.js with many options. linkpeek is a focused preview-card library: it reads the page head, returns one typed result and runs on any runtime with `fetch`.
+open-graph-scraper is a broad Open Graph and Twitter Card scraper for Node.js with many options. linkpeek does less on purpose: it reads the page head, returns one typed preview-card result and runs on any runtime with `fetch`.
 
 ## Measured side by side [#numbers]
 
@@ -15,16 +15,16 @@ open-graph-scraper 6.13 only fetches public addresses, so it cannot reach a loca
 
 ## Choose open-graph-scraper when [#choose-open-graph-scraper]
 
-- You need its **breadth of scraped fields and options** on Node.js.
-- You want **resolved-address checks on Node.js** built in: since 6.13 it only requests destinations whose resolved IP addresses are public. linkpeek checks DNS answers on every hop only when you pass `resolveHost`, and does not pin the connection.
+- You need its breadth of scraped fields and options on Node.js.
+- You want resolved-address checks on Node.js built in: since 6.13 it only requests destinations whose resolved IP addresses are public. linkpeek checks DNS answers on every hop only when you pass `resolveHost`, and does not pin the connection.
 - You already own the fetch and only need parsing: its maintainers point edge and parse-only users to `open-graph-scraper-lite`.
 
 ## Choose linkpeek when [#choose-linkpeek]
 
-- You run on **Cloudflare Workers, Vercel Edge, Deno or Bun** and want fetching, redirect checks and byte limits included.
-- Your users paste links to **large pages**. linkpeek stops reading after `</head>`, which is where the gap in the table above comes from.
-- **Install size** matters: 7 installed packages instead of 27.
-- You want **one flat, typed result** with `null` for missing fields instead of arrays of candidates.
+- You run on Cloudflare Workers, Vercel Edge, Deno or Bun and want fetching, redirect checks and byte limits included.
+- Your users paste links to large pages. linkpeek stops reading after `</head>`, which is where the gap in the table above comes from.
+- Install size matters: 7 installed packages instead of 27.
+- You want one flat, typed result with `null` for missing fields instead of arrays of candidates.
 
 ## Migrate ogs() to preview() [#migrate]
 

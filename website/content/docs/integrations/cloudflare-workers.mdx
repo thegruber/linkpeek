@@ -39,7 +39,7 @@ export default {
 
 ## Caching [#cache]
 
-These response headers support browser and downstream caching. This Worker does not use the Cloudflare Cache API: every request reaching the handler still fetches the target. Add a shared cache with a stable URL key if needed, store only 2xx previews, and rate-limit public callers.
+The `Cache-Control` header lets browsers and downstream caches reuse a result. This Worker doesn't use the Cloudflare Cache API, so every request that reaches the handler still fetches the target. If that matters, add a shared cache keyed on a stable URL, store only 2xx previews, and rate-limit public callers.
 
 ## Runtime limitations [#limits]
 

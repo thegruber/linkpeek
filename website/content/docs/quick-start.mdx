@@ -7,7 +7,7 @@ description: "Install linkpeek, fetch a URL with preview(), and render Open Grap
 
 ## Installation [#install]
 
-Use your package manager of choice. linkpeek runs on Node.js 22.12+, Bun, Deno and fetch-compatible edge runtimes, ships ESM and CommonJS with TypeScript declarations, and has one runtime dependency.
+Install it with any package manager. linkpeek runs on Node.js 22.12+, Bun, Deno and edge runtimes that have `fetch`, ships ESM and CommonJS with TypeScript declarations, and has one runtime dependency.
 
 ```package-install
 linkpeek
@@ -43,7 +43,7 @@ This is linkpeek parsing this page, live in your browser. `preview()` returns th
 
 <LiveResult />
 
-Missing metadata returns `null`. HTTP error pages can still return metadata, so check `statusCode` before caching a result. The [API reference](/api/) lists all options, result fields and error codes.
+A missing field is `null`. HTTP error pages can still carry metadata, so check `statusCode` before you cache a result. The [API reference](/api/) lists every option, result field and error code.
 
 ## Where it runs [#where]
 
@@ -53,15 +53,15 @@ Missing metadata returns `null`. HTTP error pages can still return metadata, so 
 | Edge (Cloudflare Workers, Vercel) | Yes | Yes |
 | Browser | No: browsers may not read other sites' pages | Yes |
 
-Browsers block a page from reading the HTML of another site (CORS). That is why Slack, Discord and X build their previews on a server. Your frontend works the same way: it sends the URL to your own endpoint, the endpoint calls `preview()`, and returns the fields as JSON. The demo on the homepage is built exactly like that. The [Next.js guide](/integrations/nextjs/) shows the endpoint.
+Browsers block a page from reading the HTML of another site (CORS). That is why Slack, Discord and X build their previews on a server. Your frontend works the same way: it sends the URL to your own endpoint, which calls `preview()` and returns the fields as JSON. The homepage demo works exactly like that, and the [Next.js guide](/integrations/nextjs/) shows the endpoint.
 
 ## Parsing existing HTML [#parse-html]
 
-Use `parseHTML(html, baseUrl)` when you already have the HTML. It runs synchronously without network requests. See the [Open Graph parser guide](/guides/open-graph-parser/) for examples and an optional [interactive parser](/guides/open-graph-parser/#try).
+Use `parseHTML(html, baseUrl)` when you already have the HTML. It's synchronous and makes no network requests. The [Open Graph parser guide](/guides/open-graph-parser/) has examples and an [interactive parser](/guides/open-graph-parser/#try) you can try.
 
 ## Presets [#presets]
 
-The default fast preset scans the document head and retains up to 30,000 decoded response-body bytes. The quality preset allows 200,000 bytes, scans body JSON-LD and image fallbacks, and can follow one validated meta-refresh.
+The default (fast) preset reads the document head and keeps at most 30,000 decoded response-body bytes. The quality preset allows 200,000 bytes, looks in the body for JSON-LD and image fallbacks, and can follow one validated meta refresh.
 
 ```ts
 import { preview, presets } from "linkpeek";
@@ -69,7 +69,7 @@ import { preview, presets } from "linkpeek";
 const result = await preview(url, presets.quality);
 ```
 
-These limits apply to retained bytes, not total network traffic.
+Both limits count the bytes linkpeek keeps, not the total network traffic.
 
 ## Performance [#performance]
 
@@ -87,9 +87,9 @@ Most metadata lives in the `<head>`. The default preset stops reading there and 
 
 ## Security and limitations [#boundaries]
 
-linkpeek validates redirect targets and blocks literal private and non-global addresses by default. The runtime’s `fetch` resolves hostnames; on Node.js pass `resolveHost` to check DNS answers on every hop, and give public endpoints outbound network controls. Never forward caller credentials to arbitrary URLs. Read the [security model](/security/) before exposing an endpoint.
+linkpeek checks every redirect target and blocks private and other non-global IP literals by default. Hostnames are resolved by the runtime's `fetch`, so on Node.js pass `resolveHost` to check the DNS answers on every hop, and put outbound network controls in front of a public endpoint. Never forward caller credentials to arbitrary URLs. Read the [security model](/security/) before you expose an endpoint.
 
-linkpeek does not execute page JavaScript, extract full articles or fetch oEmbed payloads. See [troubleshooting](/guides/troubleshooting/) for missing metadata and HTTP errors, or the [library comparison](/guides/link-preview-library-comparison/) for other use cases.
+linkpeek doesn't run page JavaScript, extract full articles or fetch oEmbed payloads. [Troubleshooting](/guides/troubleshooting/) covers missing metadata and HTTP errors, and the [library comparison](/guides/link-preview-library-comparison/) points to packages that do those other jobs.
 
 <Related
 	items={[

@@ -5,7 +5,7 @@ description: "Compare linkpeek with link-preview-js, open-graph-scraper, metascr
 heading: "Link preview libraries compared"
 ---
 
-linkpeek is a focused choice for server-side preview cards with typed output and safe network defaults. Broader scraping, text-to-URL detection, rich oEmbed fetching, and provider-specific rules are different jobs with different good tools.
+linkpeek does one job: it turns a URL into a typed preview card on the server, and refuses private addresses and unchecked redirects by default. If you need broader scraping, URL detection in free text, fetched oEmbed data or provider-specific rules, one of the other packages here will serve you better.
 
 Comparing two specific packages? The pages for [link-preview-js](/guides/link-preview-js-alternative/), [open-graph-scraper](/guides/open-graph-scraper-alternative/), [unfurl.js](/guides/unfurl-js-alternative/), [url-metadata](/guides/url-metadata-alternative/) and [metascraper](/guides/metascraper-alternative/) put the measured numbers side by side with linkpeek and show the migration code.
 
@@ -20,7 +20,7 @@ Comparing two specific packages? The pages for [link-preview-js](/guides/link-pr
 | `unfurl.js` | Rich nested metadata and fetched oEmbed data in Node.js | [Archived upstream](https://github.com/jacktuck/unfurl) as of November 2026; not focused on a small edge-runtime preview path |
 | `url-metadata` | Broad page metadata in Node.js | Broader output and dependency surface than a preview-card utility |
 
-This is a fit comparison, not a universal ranking. Verify the linked dated evidence before using it in an architectural decision.
+This is about fit, not a ranking. The evidence is dated, so check the linked notes before you base an architecture decision on it.
 
 ## Speed and install size [#speed]
 
@@ -30,7 +30,7 @@ Measured on <BenchmarkDate /> with the same pages and a local server, so the num
 
 ## Result fields [#shape]
 
-The packages expose similar concepts through different keys. In the benchmarked APIs, title access commonly looks like this:
+Every package gives you a title, but under a different key. In the versions benchmarked, reading it looks like this:
 
 | Package | Typical title access | Fetch ownership |
 | --- | --- | --- |
@@ -43,7 +43,7 @@ The packages expose similar concepts through different keys. In the benchmarked 
 
 ## URL fetching and security [#security]
 
-For a public preview endpoint, the important question is not merely whether metadata parses: it is which layer validates an untrusted destination and every redirect before the next request.
+For a public preview endpoint, parsing is the easy part. What matters is which layer checks an untrusted destination, and every redirect, before the next request goes out.
 
 | Package | Security consideration as of 15 November 2026 |
 | --- | --- |
@@ -54,7 +54,7 @@ For a public preview endpoint, the important question is not merely whether meta
 | `unfurl.js` | The repository is archived; still-open [PR #117](https://github.com/jacktuck/unfurl/pull/117) documents destination validation proposed after the last published release. |
 | `url-metadata` | The Node-oriented API exposes request-filtering agent options. Review its current defaults and options against your threat model rather than assuming every runtime has the same network controls. |
 
-These are dated architectural notes, not security ratings. Every server-side URL fetcher also benefits from rate limiting, cache controls, and platform egress policy.
+These are dated notes on how each package works, not security ratings. Whichever you pick, a server-side URL fetcher also benefits from rate limiting, cache controls and platform egress policy.
 
 ## Migration considerations [#migrate]
 
@@ -83,11 +83,11 @@ const card = {
 
 - The default preset scans the head with a 30 kB ceiling. Use `presets.quality` when body JSON-LD or body-image fallback is worth more work.
 
-- Keep preview fetching on the server; browser CORS and untrusted outbound requests make this a poor client-side boundary.
+- Keep preview fetching on the server. Browsers block cross-site reads (CORS), and outbound requests to untrusted URLs belong in code you control.
 
 ## Sources and measurements [#evidence]
 
-Same-corpus latency, package footprint, competitor versions, known runtime constraints, security sources, and reproduction commands live in the dated comparison notes; refresh that evidence before quoting it later.
+The dated comparison notes have the latency on the same corpus, install footprints, competitor versions, known runtime constraints, security sources and the commands to reproduce it all. Rerun them before you quote the numbers later.
 
 <Related
 	items={[
