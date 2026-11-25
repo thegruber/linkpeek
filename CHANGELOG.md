@@ -2,6 +2,14 @@
 
 All notable changes to this project are documented here.
 
+## 3.2.1 - 2026-11-25
+
+### Docs and packaging
+- Replaced the broken packagephobia install-size badge in the README with shields.io's unpacked-size badge.
+- Added missing JSDoc comments on `PreviewOptions`, `PreviewResult` and `validateUrl` for complete API docs on JSR.
+
+No runtime code changes.
+
 ## 3.2.0 - 2026-11-16
 
 ### Added
