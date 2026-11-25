@@ -1,3 +1,4 @@
+/** Options for `preview()` and `parseHTML()`. */
 export interface PreviewOptions {
 	/**
 	 * Timeout in milliseconds for the whole `preview()` call, from 0 to
@@ -65,6 +66,7 @@ export interface PreviewOptions {
 	includeBodyContent?: boolean;
 }
 
+/** Metadata extracted from a fetched URL or parsed HTML document. */
 export interface PreviewResult {
 	/** Final fetched URL after redirects. `parseHTML()` returns the canonical URL. */
 	url: string;

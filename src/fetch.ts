@@ -24,6 +24,14 @@ const SENSITIVE_REQUEST_HEADERS = new Set([
 	"x-xsrf-token",
 ]);
 
+/**
+ * Validate a URL before fetching it: requires `http:` or `https:`, rejects
+ * embedded credentials, and blocks private/internal hosts unless
+ * `allowPrivateIPs` is true.
+ *
+ * @throws {LinkpeekError} `INVALID_URL`, `UNSUPPORTED_PROTOCOL`, or
+ * `PRIVATE_NETWORK_BLOCKED`.
+ */
 export function validateUrl(url: string, allowPrivateIPs = false): void {
 	let parsed: URL;
 	try {
