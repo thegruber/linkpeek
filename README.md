@@ -8,7 +8,7 @@
   <a href="https://www.npmjs.com/package/linkpeek"><img src="https://img.shields.io/npm/v/linkpeek" alt="npm version"></a>
   <a href="https://www.npmjs.com/package/linkpeek"><img src="https://img.shields.io/npm/dw/linkpeek" alt="npm downloads"></a>
   <a href="https://github.com/thegruber/linkpeek/actions/workflows/ci.yml"><img src="https://github.com/thegruber/linkpeek/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://packagephobia.com/result?p=linkpeek"><img src="https://packagephobia.com/badge?p=linkpeek" alt="install size"></a>
+  <a href="https://packagephobia.com/result?p=linkpeek"><img src="https://img.shields.io/npm/unpacked-size/linkpeek" alt="unpacked size"></a>
 </p>
 
 
