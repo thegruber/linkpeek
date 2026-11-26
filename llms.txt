@@ -2,7 +2,7 @@
 
 > Fast, safe link preview library and URL unfurler for TypeScript. Extracts Open Graph, Twitter Card and JSON-LD metadata on Node.js, Bun, Deno and the edge.
 
-Install with `npm install linkpeek`. Requires Node.js 22.12+; CI also covers Bun and Deno.
+Install with `npm install linkpeek` (Node.js 22.12+ and Bun) or `deno add jsr:@thegruber/linkpeek` (Deno).
 
 The documentation build generates a [Markdown index](https://linkpeek.js.org/llms.txt) and [complete documentation text](https://linkpeek.js.org/llms-full.txt) from the published HTML sources. These are optional reading formats, not a search-ranking mechanism.
 
@@ -20,7 +20,7 @@ Agent use is an optional integration pattern for link labels and source cards. N
 - [Benchmarks](https://linkpeek.js.org/benchmarks/index.md): Reproducible timings, install size and bytes read against those five packages.
 - [Comparison notes](https://raw.githubusercontent.com/thegruber/linkpeek/main/docs/comparison.md): Short tradeoffs against broader scraper packages as Markdown.
 - [Security policy](https://raw.githubusercontent.com/thegruber/linkpeek/main/SECURITY.md): Security model and vulnerability reporting as Markdown.
-- [Examples](https://github.com/thegruber/linkpeek/tree/main/examples): Next.js, Express, Cloudflare Workers, React, Supabase Edge Functions, and Bun examples.
+- [Examples](https://github.com/thegruber/linkpeek/tree/main/examples): Next.js, Express, Cloudflare Workers, React, Editor.js, Supabase Edge Functions, and Bun examples.
 
 ## Source
 
@@ -31,5 +31,6 @@ Agent use is an optional integration pattern for link labels and source cards. N
 
 ## Package
 
-- [npm package](https://www.npmjs.com/package/linkpeek): Published package.
+- [npm package](https://www.npmjs.com/package/linkpeek): Published npm package.
+- [JSR package](https://jsr.io/@thegruber/linkpeek): Published JSR package for Deno.
 - [GitHub repository](https://github.com/thegruber/linkpeek): Source, issues, and releases.
